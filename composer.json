@@ -1,0 +1,26 @@
+{
+    "name": "studio-net/laravel-graphql",
+    "authors": [
+        {
+            "name": "Cyril Mizzi",
+            "email": "cyril@lesiteimmo.com"
+        }
+    ],
+    "require": {
+        "webonyx/graphql-php": "^0.9.13"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.2",
+        "orchestra/testbench": "^3.4"
+    },
+    "autoload" : {
+        "psr-4" : {
+            "StudioNet\\GraphQL\\" : "./src"
+        }
+    },
+    "autoload-dev" : {
+        "psr-4" : {
+            "StudioNet\\GraphQL\\Tests\\" : "./tests"
+        }
+    }
+}
