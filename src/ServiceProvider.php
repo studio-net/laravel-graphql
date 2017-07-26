@@ -33,14 +33,26 @@ class ServiceProvider extends BaseServiceProvider {
 	}
 
 	/**
+	 * Register types
+	 *
+	 * @return void
+	 */
+	public function registerTypes() {
+		$types = config('graphql.types', []);
+
+		foreach ($types as $type) {
+			$this->app['graphql']->registerType($type);
+		}
+	}
+
+	/**
 	 * Register the application services.
 	 *
 	 * @return void
 	 */
 	public function register() {
-		$this->app->singleton('graphql', function($app) {
-			return new GraphQL($app);
-		});
+		$this->app->singleton(GraphQL::class, function($app) { return new GraphQL($app); });
+		$this->app->bind('graphql', GraphQL::class);
 	}
 
 	/**
@@ -49,7 +61,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return array
 	 */
 	public function provides() {
-		return ['graphql'];
+		return ['graphql', GraphQL::class];
 	}
 
 	/**
