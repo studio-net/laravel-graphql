@@ -59,7 +59,7 @@ class TypesManager {
 	static public function getDefaultQueryArguments($pluralize = false) {
 		if ($pluralize === false) {
 			return [
-				'id' => ['type' => GraphQLType::id()  , 'description' => 'Retrieve single entity']
+				'id' => ['type' => GraphQLType::nonNull(GraphQLType::id()), 'description' => 'Retrieve single entity']
 			];
 		}
 
