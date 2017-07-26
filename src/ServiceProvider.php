@@ -10,13 +10,16 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function boot() {
-		$config = $this->getConfigurationFile();
+		$config = $this->getConfigurationPath() . '/' . 'config.php';
+		$routes = $this->getConfigurationPath() . '/' . 'routes.php';
 
 		$this->mergeConfigFrom($config, 'graphql');
+		$this->loadRoutesFrom($routes);
 		$this->publishes([$config => config_path('graphql.php')]);
 
 		// Call external methods to load defined schemas and others things
 		$this->registerSchemas();
+		$this->registerTypes();
 	}
 
 	/**
@@ -69,7 +72,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 *
 	 * @return string
 	 */
-	private function getConfigurationFile() {
-		return __DIR__ . '/' . '../config.php';
+	private function getConfigurationPath() {
+		return __DIR__ . '/' . '..';
 	}
 }
