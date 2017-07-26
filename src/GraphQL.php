@@ -96,10 +96,10 @@ class GraphQL {
 		// TODO
 		// Manage custom queries
 
-		if (config('graphql.types_as_query')) {
-			$schemas = config('graphql.types_in_schemas', 'all');
+		if (config('graphql.type.as_query')) {
+			$schemas = config('graphql.type.schemas', []);
 
-			if ($schemas === 'all' or in_array($name, $schemas)) {
+			if ($schemas === 'all' or in_array($name, (array) $schemas)) {
 				$types   = TypesManager::toQuery($this->types);
 				$queries = array_merge($types, $queries);
 			}

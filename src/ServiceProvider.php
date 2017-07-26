@@ -28,7 +28,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function registerSchemas() {
-		$schemas = config('graphql.schemas', []);
+		$schemas = config('graphql.schema.definitions', []);
 
 		foreach ($schemas as $name => $data) {
 			$this->app['graphql']->registerSchema($name, $data);
@@ -41,7 +41,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function registerTypes() {
-		$types = config('graphql.types', []);
+		$types = config('graphql.type.entities', []);
 
 		foreach ($types as $type) {
 			$this->app['graphql']->registerType($type);
