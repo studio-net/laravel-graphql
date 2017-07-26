@@ -1,6 +1,8 @@
 <?php
 namespace StudioNet\GraphQL\Type;
 
+use GraphQL\Type\Definition\ObjectType;
+
 /**
  * Type
  *
@@ -19,6 +21,20 @@ abstract class Type implements TypeInterface {
 	 * {@inheritDoc}
 	 */
 	public function getArguments() {
+		return [];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getAttributes() {
+		return [];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getInterfaces() {
 		return [];
 	}
 
@@ -66,5 +82,44 @@ abstract class Type implements TypeInterface {
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * By default, $attributes doesn't handle name and description fields :
+	 * they're manage by custom methods
+	 */
+	public function getBuiltAttributes() {
+		$attributes = $this->getAttributes();
+		$interfaces = $this->getInterfaces();
+		$attributes = array_merge([
+			'name'        => $this->getName(),
+			'description' => $this->getDescription(),
+			'fields'      => $this->getBuiltFields()
+		], $attributes);
+
+		// Append interfaces if not empty
+		if (count($interfaces)) {
+			$attributes['interfaces'] = $interfaces;
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Return instance as array
+	 *
+	 * @return array
+	 */
+	public function toArray() {
+		return $this->getBuiltAttributes();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function toType() {
+		return new ObjectType($this->toArray());
 	}
 }

@@ -12,21 +12,6 @@ class EloquentTypeTest extends TestCase {
 	use EloquentTypeStubTrait;
 
 	/**
-	 * testArguments
-	 *
-	 * @return void
-	 */
-	public function testArguments() {
-		$stub = $this->getEloquentTypeStub(User::class, 'user', 'a user graphql type');
-
-		$this->assertArrayHasKey('take'   , $stub->getArguments());
-		$this->assertArrayHasKey('skip'   , $stub->getArguments());
-		$this->assertArrayHasKey('before' , $stub->getArguments());
-		$this->assertArrayHasKey('after'  , $stub->getArguments());
-		$this->assertArrayHasKey('id'     , $stub->getArguments());
-	}
-
-	/**
 	 * testResolve
 	 *
 	 * @return void

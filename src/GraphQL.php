@@ -7,6 +7,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Type\TypeInterface;
+use StudioNet\GraphQL\Type\TypesManager;
 
 class GraphQL {
 	/** @var Application $app */
@@ -51,6 +52,7 @@ class GraphQL {
 			'mutation' => []
 		]);
 
+		// Compute query and mutation fields
 		$schema['query']    = $this->manageQuery($name, $schema['query']);
 		$schema['mutation'] = $this->manageMutation($name, $schema['mutation']);
 
@@ -73,9 +75,7 @@ class GraphQL {
 		$operation  = array_get($opts, 'operationName', null);
 		$schema     = $this->getSchema($schemaName);
 		$result     = GraphQLBase::executeAndReturnResult($schema, $query, $root, $context, $variables, $operation);
-		$data       = [
-			'data' => $result->data
-		];
+		$data       = ['data' => $result->data];
 
 		if (!empty($result->errors)) {
 			$data['errors'] = $result->errors;
@@ -100,79 +100,14 @@ class GraphQL {
 			$schemas = config('graphql.types_in_schemas', 'all');
 
 			if ($schemas === 'all' or in_array($name, $schemas)) {
-				$types   = $this->getTypes();
-				$queries = array_merge($queries, $types);
+				$types   = TypesManager::toQuery($this->types);
+				$queries = array_merge($types, $queries);
 			}
 		}
 
 		return new ObjectType([
 			'name'   => 'Query',
 			'fields' => $queries
-		]);
-	}
-
-	/**
-	 * Return available types for query
-	 *
-	 * @return array
-	 */
-	public function getTypes() {
-		$types = $this->types;
-		$query = [];
-
-		foreach ($types as $type) {
-			foreach ([false, true] as $plural) {
-				$instance = $this->type($type, $plural);
-				$name     = $instance->name;
-				$config   = $instance->config;
-				$value    = ($plural) ? GraphQLType::listOf($instance) : $instance;
-
-				$query[$name] = [
-					'type'    => $value,
-					'args'    => $config['args'],
-					'resolve' => $config['resolve']
-				];
-			}
-		}
-
-		return $query;
-	}
-
-	/**
-	 * Return type based on the class name
-	 *
-	 * @param  string|TypeInterface $cls
-	 * @param  bool $plural
-	 *
-	 * @return ObjectType
-	 */
-	public function type($type, $plural = false) {
-		if (!$type instanceof TypeInterface) {
-			if (!array_key_exists($cls, $this->types)) {
-				return null;
-			}
-
-			$type = $this->types[$cls];
-		}
-
-		$name   = $type->getName();
-		$args   = $type->getArguments();
-		$fields = $type->getBuiltFields();
-		$desc   = $type->getDescription();
-
-		if ($plural) {
-			$name = str_plural($name);
-			$args = array_except($args, ['id']);
-		} else {
-			$args = array_only($args, ['id']);
-		}
-
-		return new ObjectType([
-			'name'        => $name,
-			'description' => $desc,
-			'fields'      => $fields,
-			'args'        => $args,
-			'resolve'     => [$type, 'resolve']
 		]);
 	}
 

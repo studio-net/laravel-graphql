@@ -22,6 +22,13 @@ interface TypeInterface {
 	public function getArguments();
 
 	/**
+	 * Return availabled interfaces
+	 *
+	 * @return array
+	 */
+	public function getInterfaces();
+
+	/**
 	 * Return name
 	 *
 	 * @return string
@@ -49,7 +56,7 @@ interface TypeInterface {
 	 * `resolve{field}Field` to resolve specific field
 	 *
 	 * @param  string $name
-	 * @param  array|GraphQL\Type\Definition\ScalarType $field
+	 * @param  array|GraphQL\Type\Definition\Type $field
 	 *
 	 * @return callable|null
 	 */
@@ -62,4 +69,25 @@ interface TypeInterface {
 	 * @return array
 	 */
 	public function getBuiltFields();
+
+	/**
+	 * Return user defined attributes
+	 *
+	 * @return array
+	 */
+	public function getAttributes();
+
+	/**
+	 * Return built attributes
+	 *
+	 * @return array
+	 */
+	public function getBuiltAttributes();
+
+	/**
+	 * Convert instance to GraphQL\Type\Definition\Type
+	 *
+	 * @return GraphQL\Type\Definition\Type
+	 */
+	public function toType();
 }

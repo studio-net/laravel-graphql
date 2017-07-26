@@ -1,7 +1,6 @@
 <?php
 namespace StudioNet\GraphQL\Type;
 
-use GraphQL\Type\Definition\Type as GraphQLType;
 
 /**
  * Type
@@ -33,18 +32,5 @@ abstract class EloquentType extends Type implements EloquentTypeInterface {
 		}
 
 		return $builder->get();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getArguments() {
-		return [
-			'id'     => ['type' => GraphQLType::id()  , 'description' => 'Retrieve single entity'  ] ,
-			'after'  => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation' ] ,
-			'before' => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation' ] ,
-			'skip'   => ['type' => GraphQLType::int() , 'description' => 'Offset-based navigation' ] ,
-			'take'   => ['type' => GraphQLType::int() , 'description' => 'Limit-based navigation'  ] ,
-		];
 	}
 }
