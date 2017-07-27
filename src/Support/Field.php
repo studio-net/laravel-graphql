@@ -30,8 +30,8 @@ abstract class Field implements Interfaces\FieldInterface {
 	public function getBuiltAttributes() {
 		$attributes = $this->getAttributes();
 		$attributes = array_merge([
-			'args'    => $this->getArguments(),
-			'type'    => $this->getType()
+			'type' => $this->getType(),
+			'args' => $this->getArguments(),
 		], $attributes);
 
 		if (method_exists($this, 'resolve')) {

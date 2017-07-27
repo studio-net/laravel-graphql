@@ -2,11 +2,12 @@
 namespace StudioNet\GraphQL\Support\Interfaces;
 
 /**
- * TypeInterface
+ * FieldInterface
  *
  * @interface
+ * @see BaseFieldInterface
  */
-interface FieldInterface {
+interface FieldInterface extends BaseFieldInterface {
 	/**
 	 * Return availabled arguments
 	 *
@@ -15,13 +16,11 @@ interface FieldInterface {
 	public function getArguments();
 
 	/**
-	 * Resolve current type
+	 * Return instance name
 	 *
-	 * @param  mixed $root
-	 * @param  array $context
-	 * @return Illuminate\Database\Eloquent\Collection|array
+	 * @return string
 	 */
-	public function resolve($root, array $context);
+	public function getName();
 
 	/**
 	 * Return user defined attributes
@@ -29,18 +28,4 @@ interface FieldInterface {
 	 * @return array
 	 */
 	public function getAttributes();
-
-	/**
-	 * Return built attributes
-	 *
-	 * @return array
-	 */
-	public function getBuiltAttributes();
-
-	/**
-	 * Convert instance to GraphQL\Type\Definition\Type
-	 *
-	 * @return GraphQL\Type\Definition\Type
-	 */
-	public function toType();
 }

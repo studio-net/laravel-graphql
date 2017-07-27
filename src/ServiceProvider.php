@@ -41,7 +41,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function registerTypes() {
-		$types = config('graphql.type.entities', []);
+		$types = config('graphql.type.definitions', []);
 
 		foreach ($types as $type) {
 			$this->app['graphql']->registerType($type);
@@ -54,8 +54,11 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function register() {
+		$this->app->singleton(QueryManager::class, function($app) { return new QueryManager($app); });
 		$this->app->singleton(GraphQL::class, function($app) { return new GraphQL($app); });
+
 		$this->app->bind('graphql', GraphQL::class);
+		$this->app->bind('graphql.query_manager', QueryManager::class);
 	}
 
 	/**
@@ -64,7 +67,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return array
 	 */
 	public function provides() {
-		return ['graphql', GraphQL::class];
+		return ['graphql', 'graphql.query_manager', GraphQL::class, QueryManager::class];
 	}
 
 	/**

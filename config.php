@@ -12,7 +12,8 @@ return [
 		'definitions' => [
 			'default' => [
 				'query'    => [],
-				'mutation' => []
+				'mutation' => [],
+				'entities' => []
 			]
 		]
 	],
@@ -20,18 +21,11 @@ return [
 	// Type configuration. It allows you to define custom Type based on
 	// StudioNet\GraphQL\Type\{EloquentType,Type}
 	//
-	// `entities`    : list of custom Type
-	// `as_query`    : make each Type queriable
-	// `as_mutation` : make each type mutable
-	// `schemas`     : apply Type conversion to given schema.
-	//    - `all` : all schemas
-	//    - false : no schemas (equals to `as_query` and `as_mutation` = false)
-	//    - [schema name]
+	// `entities`    : list of entities
+	// `definitions` : list of custom Type
 	'type' => [
 		'entities'    => [],
-		'as_query'    => true,
-		'as_mutation' => true,
-		'schemas'     => 'all'
+		'definitions' => []
 	],
 
 	// Response configuration

@@ -1,13 +1,14 @@
 <?php
 namespace StudioNet\GraphQL\Support;
 
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * Type
  *
- * @see TypeInterface
- * @abstract
+ * @see Interfaces\BaseFieldInterface
  */
-abstract class EloquentType extends Type implements Interfaces\EloquentTypeInterface {
+class EloquentType implements Interfaces\BaseFieldInterface {
 	/**
 	 * {@inheritDoc}
 	 */
@@ -31,5 +32,22 @@ abstract class EloquentType extends Type implements Interfaces\EloquentTypeInter
 		}
 
 		return $builder->get();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getBuiltAttributes() {
+		
+	}
+
+	/**
+	 * fromEntity
+	 *
+	 * @param  Model $model
+	 * @return self
+	 */
+	static public function fromEntity(Model $model) {
+		dd($model);
 	}
 }
