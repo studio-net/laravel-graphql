@@ -36,107 +36,35 @@ $ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 
 ## Usage
 
-- [First step](#first-step)
+- [Basic usage](#basic-usage)
 - [Query](#query)
 - [Mutation](#mutation)
 
-### First step
+### Basic usage
 
-At now, the package is a smart way to use Eloquent entity with GraphQL. The main
-goal is to use a single defined EloquentTypeInterface per entity and inject them
-automatically within the given schema :
-
-```php
-# app/GraphQL/Type/User.php
-
-<?php
-namespace App\GraphQL\Type;
-
-use StudioNet\GraphQL\Type\EloquentType;
-use GraphQL\Type\Definition\Type as GraphQLType;
-
-class User extends EloquentType {
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getName() {
-		return 'User';
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getDescription() {
-		return 'A user description';
-	}
-
-	/**
-	 * {@inheritDoc}
-	 	 */
-	public function getFields() {
-		return [
-			'name'  => GraphQLType::string(),
-			'email' => GraphQLType::string()
-		];
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getEntityClass() {
-		return \App\User::class;
-	}
-}
-```
+If you're using Laravel with Eloquent and wanna implement GraphQL easily, you're
+very lucky. You can quickly do that with the following example :
 
 ```php
-# config/graphql.php
+# app/graphql.php
 
 return [
-	'type' => [
-		'entities' => [
-			\App\GraphQL\Type\User::class
+	'schema' => [
+		'definitions' => [
+			'default' => [
+				'entities' => [\App\User::class]
+			]
 		]
 	]
 ];
 ```
 
-That's all ! Now, you can try query on `http://localhost/graphql` and fetch data
-from your `\App\User` entity !
+... Magic ! That's all you need to do.
 
 ### Query
 
-Queries are auto-generated based on custom type entities (see
-`config/graphql.php`). This is availabled arguments from example below :
-
-```graphql
-query {
-	User (id : 1) {
-		name
-		email
-	}
-}
-
-query {
-	Users (take : 10, skip : 2) {
-		name
-		email
-	}
-}
-```
-
-List of availabled arguments for a singular query :
-
-- [x] `id` entity primary key
-
-List of availabled arguments for a plural query :
-
-- [x] `take` equivalent to `limit`
-- [x] `skip` equivalent to `offset`
-- [x] `after` primary-key based cursor
-- [x] `before` primary-key based cursor
-- [ ] `filter` filter entry with SQL conditions (not yet)
+Custom queries are not implemented yet.
 
 ### Mutation
 
-Mutation are not running yet.
+Eloquent model-based mutations and custom mutation are not implemented yet.
