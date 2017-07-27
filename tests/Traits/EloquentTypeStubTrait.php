@@ -1,7 +1,7 @@
 <?php
 namespace StudioNet\GraphQL\Tests\Traits;
 
-use StudioNet\GraphQL\Type\EloquentType;
+use StudioNet\GraphQL\Support\EloquentType;
 
 trait EloquentTypeStubTrait {
 	/**

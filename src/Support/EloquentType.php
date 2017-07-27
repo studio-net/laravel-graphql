@@ -1,6 +1,5 @@
 <?php
-namespace StudioNet\GraphQL\Type;
-
+namespace StudioNet\GraphQL\Support;
 
 /**
  * Type
@@ -8,7 +7,7 @@ namespace StudioNet\GraphQL\Type;
  * @see TypeInterface
  * @abstract
  */
-abstract class EloquentType extends Type implements EloquentTypeInterface {
+abstract class EloquentType extends Type implements Interfaces\EloquentTypeInterface {
 	/**
 	 * {@inheritDoc}
 	 */

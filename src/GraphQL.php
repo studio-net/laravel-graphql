@@ -6,8 +6,8 @@ use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
-use StudioNet\GraphQL\Type\TypeInterface;
-use StudioNet\GraphQL\Type\TypesManager;
+use StudioNet\GraphQL\Support\Interfaces\TypeInterface;
+use StudioNet\GraphQL\Support\Converters\TypeConverter;
 
 class GraphQL {
 	/** @var Application $app */
@@ -100,7 +100,7 @@ class GraphQL {
 			$schemas = config('graphql.type.schemas', []);
 
 			if ($schemas === 'all' or in_array($name, (array) $schemas)) {
-				$types   = TypesManager::toQuery($this->types);
+				$types   = TypeConverter::toQuery($this->types);
 				$queries = array_merge($types, $queries);
 			}
 		}
@@ -117,6 +117,8 @@ class GraphQL {
 	 * @param  string $name
 	 * @param  array  $mutations
 	 * @return array
+	 *
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function manageMutation($name, array $mutations) {
 		return $mutations;

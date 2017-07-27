@@ -1,5 +1,5 @@
 <?php
-namespace StudioNet\GraphQL\Type;
+namespace StudioNet\GraphQL\Support\Interfaces;
 
 /**
  * EloquentTypeInterface

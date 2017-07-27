@@ -1,6 +1,7 @@
 <?php
-namespace StudioNet\GraphQL\Type;
+namespace StudioNet\GraphQL\Support\Converters;
 
+use StudioNet\GraphQL\Support\Interfaces\TypeInterface;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 
@@ -8,7 +9,7 @@ use GraphQL\Type\Definition\Type as GraphQLType;
  * This class allows us to build dynamically queries and mutations based on
  * given types
  */
-class TypesManager {
+class TypeConverter {
 	/**
 	 * Convert many types to query
 	 *
@@ -44,6 +45,8 @@ class TypesManager {
 	 *
 	 * @param  array $types
 	 * @return arrray
+	 *
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	static public function toMutation(array $types) {
 		return [];

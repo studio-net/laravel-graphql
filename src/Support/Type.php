@@ -1,7 +1,5 @@
 <?php
-namespace StudioNet\GraphQL\Type;
-
-use GraphQL\Type\Definition\ObjectType;
+namespace StudioNet\GraphQL\Support;
 
 /**
  * Type
@@ -9,7 +7,7 @@ use GraphQL\Type\Definition\ObjectType;
  * @see TypeInterface
  * @abstract
  */
-abstract class Type implements TypeInterface {
+abstract class Type extends Field implements Interfaces\TypeInterface {
 	/**
 	 * {@inheritDoc}
 	 */
@@ -105,21 +103,5 @@ abstract class Type implements TypeInterface {
 		}
 
 		return $attributes;
-	}
-
-	/**
-	 * Return instance as array
-	 *
-	 * @return array
-	 */
-	public function toArray() {
-		return $this->getBuiltAttributes();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function toType() {
-		return new ObjectType($this->toArray());
 	}
 }
