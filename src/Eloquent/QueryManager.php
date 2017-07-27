@@ -1,5 +1,5 @@
 <?php
-namespace StudioNet\GraphQL;
+namespace StudioNet\GraphQL\Eloquent;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;

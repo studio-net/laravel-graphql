@@ -7,7 +7,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\Interfaces\TypeInterface;
-use StudioNet\GraphQL\Support\Converters\TypeConverter;
 
 class GraphQL {
 	/** @var Application $app */

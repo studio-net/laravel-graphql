@@ -1,5 +1,5 @@
 <?php
-namespace StudioNet\GraphQL;
+namespace StudioNet\GraphQL\Eloquent;
 
 use ErrorException;
 use Illuminate\Database\Eloquent\Model;

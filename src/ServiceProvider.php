@@ -1,6 +1,7 @@
 <?php
 namespace StudioNet\GraphQL;
 
+use StudioNet\GraphQL\Eloquent\QueryManager;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider {
