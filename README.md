@@ -52,7 +52,7 @@ return [
 	'schema' => [
 		'definitions' => [
 			'default' => [
-				'entities' => [\App\User::class]
+				'entities' => [\App\User::class, \App\Post::class]
 			]
 		]
 	]
@@ -60,6 +60,57 @@ return [
 ```
 
 ... Magic ! That's all you need to do.
+
+#### More explanations
+
+In fact, each entity has some attributes like hidden fields and can also have some relations with anothers entities. You're models are re-used in order to keep your desire. So, let's take the following entities example :
+
+```
+\App\User :
+    - fields [name, password, email]
+    - hidden fields [password]
+    - posts [hasMany \App\Post]
+   
+\App\Post :
+    - fields [title, content, user_id]
+    - author [belongsTo \App\User]
+```
+
+You will be able to make queries like :
+
+```graphql
+query {
+    users(take: 10) {
+       name
+       email
+      
+       posts(take: 2, skip : 1) { # Availabled filters : take, skip, after, before
+          title
+	      content
+          
+          author { # Don't really smart, but it's okay
+              name
+              
+              # posts { # Will not work because reached depth
+              #      title
+              # }
+          }
+       }
+    }
+}
+
+query {
+    user(id: 1) { # Availabled filters : id
+        name
+        email
+        
+        posts {
+            title
+            content
+        }
+    }
+}
+```
 
 ### Query
 
