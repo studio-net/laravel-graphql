@@ -22,13 +22,6 @@ interface TypeInterface extends FieldInterface {
 	public function getInterfaces();
 
 	/**
-	 * Return name
-	 *
-	 * @return string
-	 */
-	public function getName();
-
-	/**
 	 * Return description
 	 *
 	 * @return string

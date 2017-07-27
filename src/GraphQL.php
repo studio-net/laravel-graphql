@@ -89,20 +89,23 @@ class GraphQL {
 	 * allowed
 	 *
 	 * @param  string $name
-	 * @param  array  $queries
+	 * @param  TypeInterface[] $queries
 	 * @return array
 	 */
 	public function manageQuery($name, array $queries) {
-		// TODO
 		// Manage custom queries
+		foreach ($queries as $query) {
+			$name    = $query->getName();
+			$queries = array_merge($queries, $query->toType());
+		}
 
-		if (config('graphql.type.as_query')) {
-			$schemas = config('graphql.type.schemas', []);
+		$entities = config('graphql.type.entities', []) + $this->schemas[$name]['entities'];
 
-			if ($schemas === 'all' or in_array($name, (array) $schemas)) {
-				$types   = TypeConverter::toQuery($this->types);
-				$queries = array_merge($types, $queries);
-			}
+		// Manage type-based queries
+		foreach ($entities as $entity) {
+			$entity  = $this->app->make($entity);
+			$query   = $this->app->make('graphql.query_manager')->fromEntity($entity);
+			$queries = array_merge($query, $queries);
 		}
 
 		return new ObjectType([
@@ -133,7 +136,11 @@ class GraphQL {
 	 * @return void
 	 */
 	public function registerSchema($name, array $data) {
-		$this->schemas[$name] = $data;
+		$this->schemas[$name] = array_merge([
+			'query'    => [],
+			'mutation' => [],
+			'entities' => []
+		], $data);
 	}
 
 	/**
