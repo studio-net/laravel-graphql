@@ -101,8 +101,9 @@ class GraphQL {
 
 		// Manage type-based queries
 		foreach (config('graphql.type.entities', []) as $entity) {
-			$types   = $this->app->make('graphql.query_manager')->fromEntity($entity);
-			$queries = array_merge($types, $queries);
+			$entity  = $this->app->make($entity);
+			$query   = $this->app->make('graphql.query_manager')->fromEntity($entity);
+			$queries = array_merge($query, $queries);
 		}
 
 		return new ObjectType([
