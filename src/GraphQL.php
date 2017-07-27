@@ -99,8 +99,10 @@ class GraphQL {
 			$queries = array_merge($queries, $query->toType());
 		}
 
+		$entities = config('graphql.type.entities', []) + $this->schemas[$name]['entities'];
+
 		// Manage type-based queries
-		foreach (config('graphql.type.entities', []) as $entity) {
+		foreach ($entities as $entity) {
 			$entity  = $this->app->make($entity);
 			$query   = $this->app->make('graphql.query_manager')->fromEntity($entity);
 			$queries = array_merge($query, $queries);
@@ -134,7 +136,11 @@ class GraphQL {
 	 * @return void
 	 */
 	public function registerSchema($name, array $data) {
-		$this->schemas[$name] = $data;
+		$this->schemas[$name] = array_merge([
+			'query'    => [],
+			'mutation' => [],
+			'entities' => []
+		], $data);
 	}
 
 	/**

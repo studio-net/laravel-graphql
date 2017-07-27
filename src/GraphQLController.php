@@ -23,7 +23,7 @@ class GraphQLController extends Controller {
 	
 		// If there's no schema, just use default one
 		if (empty($schema)) {
-			$schema = config('graphql.schema.default');
+			$schema = config('graphql.schema.default', 'default');
 		}
 
 		// If we're working on batch queries, we have to parse and execute each

@@ -5,24 +5,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Application;
 
-class QueryManager {
-	/** @var Application $app */
-	private $app;
-
-	/** @var array $cache */
-	private $cache = [];
-
-	/**
-	 * __construct
-	 *
-	 * @param  Application $app
-	 * @return void
-	 */
-	public function __construct(Application $app) {
-		$this->app = $app;
-	}
+class QueryManager extends Manager {
 	/**
 	 * fromEntity
 	 *
@@ -45,7 +29,7 @@ class QueryManager {
 	 * @param  Model $model
 	 * @return array
 	 */
-	public function buildSingular(Model $model) {
+	private function buildSingular(Model $model) {
 		return [
 			'resolve' => $this->getResolver($model),
 			'args'    => $this->getArguments(),
@@ -59,7 +43,7 @@ class QueryManager {
 	 * @param  Model $model
 	 * @return array
 	 */
-	public function buildPlural(Model $model) {
+	private function buildPlural(Model $model) {
 		return [
 			'resolve' => $this->getResolver($model),
 			'args'    => $this->getArguments(true),
@@ -73,7 +57,7 @@ class QueryManager {
 	 * @param  bool $plural
 	 * @return array
 	 */
-	public function getArguments($plural = false) {
+	private function getArguments($plural = false) {
 		if ($plural === false) {
 			return [
 				'id' => ['type' => GraphQLType::id(), 'description' => 'Primary key lookup']
@@ -96,7 +80,7 @@ class QueryManager {
 	 *
 	 * @return ObjectType
 	 */
-	public function getType(Model $model, array $depth = []) {
+	private function getType(Model $model, array $depth = []) {
 		$relations = $this->getRelations($model);
 		$columns   = $this->getColumns($model, $relations);
 		$fields    = [
@@ -180,7 +164,7 @@ class QueryManager {
 	 *
 	 * @return bool
 	 */
-	public function assertMaximalDepth(Model $model, array $relation, array $depth) {
+	private function assertMaximalDepth(Model $model, array $relation, array $depth) {
 		$table = $model->getTable();
 
 		if (array_key_exists($table, $depth)) {
@@ -199,7 +183,7 @@ class QueryManager {
 	 *
 	 * @return array
 	 */
-	public function buildDepth(array $depth, Model $model, array $relation) {
+	private function buildDepth(array $depth, Model $model, array $relation) {
 		$table = $model->getTable();
 
 		if (!array_key_exists($table, $depth)) {
@@ -211,41 +195,6 @@ class QueryManager {
 	}
 
 	/**
-	 * Return columns name for given model
-	 *
-	 * @param  Model $model
-	 * @param  array $include
-	 * @return array
-	 */
-	public function getColumns(Model $model, array $include = []) {
-		$key = 'schema:' . get_class($model);
-
-		if (empty($this->cache[$key])) {
-			$columns = \Schema::getColumnListing($model->getTable());
-			$columns = array_diff($columns, $model->getHidden());
-			$columns = array_merge($columns, array_keys($include));
-
-			$this->cache[$key] = $columns;
-		}
-		
-		return $this->cache[$key];
-	}
-
-	/**
-	 * Return relationships
-	 *
-	 * @param  Model $model
-	 * @return array
-	 */
-	public function getRelations(Model $model) {
-		if (method_exists($model, 'relationships')) {
-			return $model->relationships();
-		}
-
-		return [];
-	}
-
-	/**
 	 * Return resolver for given model
 	 *
 	 * @param  Model $model
@@ -253,13 +202,13 @@ class QueryManager {
 	 *
 	 * @SuppressWarnings(PHPMD.UnusedLocalVariable)
 	 */
-	public function getResolver(Model $model) {
+	private function getResolver(Model $model) {
 		$relations = $this->getRelations($model);
 
 		return function($root, array $args, $context, ResolveInfo $info) use ($model, $relations) {
 			$primary = $model->getKeyName();
 			$builder = $model->newQuery();
-			$fields  = $info->getFieldSelection($depth = 3);
+			$fields  = $info->getFieldSelection(3);
 			$common  = array_intersect_key($fields, $relations);
 
 			if (!empty($common)) {
@@ -291,10 +240,8 @@ class QueryManager {
 	 *
 	 * @param  array $relation
 	 * @return callable
-	 *
-	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
-	public function getChildResolver(array $relation) {
+	private function getChildResolver(array $relation) {
 		$method = $relation['field'];
 
 		return function($root, array $args) use ($method) {
