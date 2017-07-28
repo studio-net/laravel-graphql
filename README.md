@@ -82,15 +82,15 @@ query {
 
 			posts(take: 2, skip : 1) { # Availabled filters : take, skip, after, before
 				title
-					content
+				content
 
-					author { # Don't really smart, but it's okay
-						name
+				author { # Don't really smart, but it's okay
+					name
 
-						# posts { # Will not work because reached depth
-						#      title
-						# }
-					}
+					# posts { # Will not work because reached depth
+					#      title
+					# }
+				}
 			}
 	}
 }
