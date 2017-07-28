@@ -108,6 +108,10 @@ query {
 }
 ```
 
+By default, each entity are created as type. You can call them within each
+custom query with the facade like `\GraphQL::type('user')` or
+`\GraphQL::listOf('user')`. Entity name is built from lowercase class name.
+
 ### Query
 
 You can implement any custom query like the following example :
