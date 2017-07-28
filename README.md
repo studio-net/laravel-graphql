@@ -59,7 +59,9 @@ return [
 
 #### More explanations
 
-In fact, each entity has some attributes like hidden fields and can also have some relations with anothers entities. You're models are re-used in order to keep your desire. So, let's take the following entities example :
+In fact, each entity has some attributes like hidden fields and can also have
+some relations with anothers entities. You're models are re-used in order to
+keep your desire. So, let's take the following entities example :
 
 ```
 \App\User :
@@ -113,6 +115,11 @@ custom query with the facade like `\GraphQL::type('user')` or
 `\GraphQL::listOf('user')`. Entity name is built from lowercase class name.
 
 ### Query
+
+Queries are auto-generated based on each model. You can fill a custom name when
+register or use the default one.
+
+#### Custom query
 
 You can implement any custom query like the following example :
 
@@ -172,4 +179,80 @@ entities's one).
 
 ### Mutation
 
-Eloquent model-based mutations and custom mutation are not implemented yet.
+As query, mutations are auto-generated based on each specific model. You can
+update each entity based on the name you've filled or with default one.
+
+```graphql
+mutation {
+	updateUser : user(id: 1, name = 'Jean Dupont') {
+		id
+		name
+	}
+}
+```
+
+#### Custom mutation
+
+You can create custom mutation if you want, like the following example :
+
+```php
+# app/GraphQL/Mutation/Profile.php
+namespace App\GraphQL\Mutation;
+
+use StudioNet\GraphQL\Support\Mutation;
+
+class Profile extends Mutation {
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return ObjectType
+	 */
+	public function getRelatedType() {
+		return \GraphQL::type('user');
+	}
+
+	public function getArguments() {
+		return [
+			'id'      => ['type' => GraphQLType::nonNull(GraphQLType::id())],
+			'blocked' => ['type' => GraphQLType::string()]
+		];
+	};
+
+	/**
+	 * Return current logged user
+	 *
+	 * @param  mixed $root
+	 * @param  array $args
+	 *
+	 * @return \App\User
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+	 */
+	public function resolve($root, array $args) {
+		$user = \App\User::findOrFail($args['id']);
+		$user->update($args);
+
+		return $user;
+	}
+}
+
+# config/graphql.php
+return [
+	'schema' => [
+		'definitions' => [
+			'default' => [
+				'query' => [
+					\App\GraphQL\Query\Viewer::class
+					// 'alias' => \App\GraphQL\Query\Viewer::class
+				],
+				'mutation' => [
+					\App\GraphQL\Mutation\Profile::class
+				]
+			]
+		]
+	],
+
+	'type' => [
+		'entities' => [\App\User::class]
+	]
+];
+```
