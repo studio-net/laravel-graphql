@@ -49,12 +49,8 @@ very lucky. You can quickly do that with the following example :
 # app/graphql.php
 
 return [
-	'schema' => [
-		'definitions' => [
-			'default' => [
-				'entities' => [\App\User::class, \App\Post::class]
-			]
-		]
+	'type' => [
+		'entities' => [\App\User::class, \App\Post::class]
 	]
 ];
 ```
@@ -80,35 +76,35 @@ You will be able to make queries like :
 
 ```graphql
 query {
-    users(take: 10) {
-       name
-       email
-      
-       posts(take: 2, skip : 1) { # Availabled filters : take, skip, after, before
-          title
-	      content
-          
-          author { # Don't really smart, but it's okay
-              name
-              
-              # posts { # Will not work because reached depth
-              #      title
-              # }
-          }
-       }
-    }
+	users(take: 10) {
+		name
+			email
+
+			posts(take: 2, skip : 1) { # Availabled filters : take, skip, after, before
+				title
+					content
+
+					author { # Don't really smart, but it's okay
+						name
+
+						# posts { # Will not work because reached depth
+						#      title
+						# }
+					}
+			}
+	}
 }
 
 query {
-    user(id: 1) { # Availabled filters : id
-        name
-        email
-        
-        posts {
-            title
-            content
-        }
-    }
+	user(id: 1) { # Availabled filters : id
+		name
+			email
+
+			posts {
+				title
+					content
+			}
+	}
 }
 ```
 
