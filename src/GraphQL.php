@@ -8,6 +8,11 @@ use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\FieldInterface;
 
+/**
+ * GraphQL implementation singleton
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class GraphQL {
 	/** @var Application $app */
 	private $app;
@@ -98,10 +103,9 @@ class GraphQL {
 		$context    = array_get($opts, 'context', null);
 		$schemaName = array_get($opts, 'schema', null);
 		$operation  = array_get($opts, 'operationName', null);
-
-		$schema = $this->getSchema($schemaName);
-		$result = GraphQLBase::executeAndReturnResult($schema, $query, $root, $context, $variables, $operation);
-		$data   = ['data' => $result->data];
+		$schema     = $this->getSchema($schemaName);
+		$result     = GraphQLBase::executeAndReturnResult($schema, $query, $root, $context, $variables, $operation);
+		$data       = ['data' => $result->data];
 
 		if (!empty($result->errors)) {
 			$data['errors'] = $result->errors;
