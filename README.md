@@ -110,7 +110,61 @@ query {
 
 ### Query
 
-Custom queries are not implemented yet.
+You can implement any custom query like the following example :
+
+```php
+# app/GraphQL/Query/Viewer.php
+namespace App\GraphQL\Query;
+
+use StudioNet\GraphQL\Support\Query;
+
+class Viewer extends Query {
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return ObjectType
+	 */
+	public function getRelatedType() {
+		return \GraphQL::type('user');
+	}
+
+	/**
+	 * Return current logged user
+	 *
+	 * @param  mixed $root
+	 * @param  array $args
+	 *
+	 * @return \App\User
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+	 */
+	public function resolve($root, array $args) {
+		return \App\User::first();
+	}
+}
+
+# config/graphql.php
+return [
+	'schema' => [
+		'definitions' => [
+			'default' => [
+				'query' => [
+					\App\GraphQL\Query\Viewer::class
+					// 'alias' => \App\GraphQL\Query\Viewer::class
+				]
+			]
+		]
+	],
+
+	'type' => [
+		'entities' => [\App\User::class]
+	]
+];
+```
+
+By default, if you don't specify alias for each query, the class name will be
+used (as lowercase) : `\App\GraphQL\Query\Viewer => viewer`. Of course, you can
+use custom type within each of your custom queries (you're not constraint to use
+entities's one).
 
 ### Mutation
 

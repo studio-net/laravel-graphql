@@ -6,7 +6,7 @@ use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
-use StudioNet\GraphQL\Support\Interfaces\TypeInterface;
+use StudioNet\GraphQL\Support\FieldInterface;
 
 class GraphQL {
 	/** @var Application $app */
@@ -55,7 +55,7 @@ class GraphQL {
 
 		// Compute query and mutation fields
 		$schema['query']    = $this->manageQuery($schema['query']);
-		$schema['mutation'] = $this->manageMutation($name, $schema['mutation']);
+		$schema['mutation'] = $this->manageMutation($schema['mutation']);
 
 		return new Schema($schema);
 	}
@@ -111,16 +111,24 @@ class GraphQL {
 	}
 
 	/**
-	 * Manage query : load all queries and also append type-based queries if
-	 * allowed
+	 * Manage query
 	 *
-	 * @param  TypeInterface[] $queries
+	 * @param  string[] $queries
 	 * @return array
 	 */
 	public function manageQuery(array $queries) {
 		$data    = [];
 		$models  = config('graphql.type.entities', []);
 		$manager = $this->app->make('graphql.eloquent.query_manager');
+
+		foreach ($queries as $name => $query) {
+			if (is_numeric($name)) {
+				$name = strtolower(with(new \ReflectionClass($query))->getShortName());
+			}
+
+			$query = $this->app->make($query);
+			$data  = $data + [$name => $query->toArray()];
+		}
 
 		foreach ($models as $model) {
 			$table = str_singular($this->app->make($model)->getTable());
