@@ -48,11 +48,12 @@ class TypeManager extends Manager {
 		];
 
 		foreach ($columns as $column) {
-			$field = [];
+			$field   = [];
+			$primary = $model->getKeyName();
 
 			switch ($columns) {
-				case 'id' : $type = GraphQLType::nonNull(GraphQL::id()); break;
-				default   : $type = GraphQLType::string(); break;
+				case $primary : $type = GraphQLType::nonNull(GraphQL::id()) ; break;
+				default       : $type = GraphQLType::string()               ; break;
 			}
 
 			// We have a relationship field here !

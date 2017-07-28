@@ -80,8 +80,8 @@ class QueryManager extends Manager {
 			}
 
 			// Retrieve single node
-			if (array_key_exists('id', $args)) {
-				return $builder->findOrFail($args['id']);
+			if (array_key_exists($primary, $args)) {
+				return $builder->findOrFail($args[$primary]);
 			}
 
 			foreach ($args as $key => $value) {

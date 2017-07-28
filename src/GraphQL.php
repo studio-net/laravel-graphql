@@ -166,7 +166,32 @@ class GraphQL {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function manageMutation(array $mutations) {
-		return $mutations;
+		$data    = [];
+		$models  = config('graphql.type.entities', []);
+		$manager = $this->app->make('graphql.eloquent.mutation_manager');
+
+		// Parse each query class and build it within the ObjectType
+		foreach ($mutations as $name => $mutation) {
+			if (is_numeric($name)) {
+				$name = strtolower(with(new \ReflectionClass($mutation))->getShortName());
+			}
+
+			$mutation = $this->app->make($mutation);
+			$data = $data + [$name => $mutation->toArray()];
+		}
+
+		// Parse each model, retrieve is corresponding generated type and build
+		// a generic mutation upon it
+		foreach ($models as $model) {
+			$table = str_singular($this->app->make($model)->getTable());
+			$type  = $this->type($table);
+			$data[$table] = $manager->fromType($type);
+		}
+
+		return new ObjectType([
+			'name'   => 'Mutation',
+			'fields' => $data
+		]);
 	}
 
 	/**

@@ -3,6 +3,7 @@ namespace StudioNet\GraphQL;
 
 use StudioNet\GraphQL\Eloquent\QueryManager;
 use StudioNet\GraphQL\Eloquent\TypeManager;
+use StudioNet\GraphQL\Eloquent\MutationManager;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider {
@@ -56,6 +57,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function register() {
+		$this->app->singleton(MutationManager::class, function($app) { return new MutationManager($app); });
 		$this->app->singleton(QueryManager::class, function($app) { return new QueryManager($app); });
 		$this->app->singleton(TypeManager::class, function($app) { return new TypeManager($app); });
 		$this->app->singleton(GraphQL::class, function($app) { return new GraphQL($app); });
@@ -63,6 +65,7 @@ class ServiceProvider extends BaseServiceProvider {
 		$this->app->bind('graphql', GraphQL::class);
 		$this->app->bind('graphql.eloquent.type_manager', TypeManager::class);
 		$this->app->bind('graphql.eloquent.query_manager', QueryManager::class);
+		$this->app->bind('graphql.eloquent.mutation_manager', MutationManager::class);
 	}
 
 	/**
@@ -72,9 +75,10 @@ class ServiceProvider extends BaseServiceProvider {
 	 */
 	public function provides() {
 		return [
-			'graphql'               , GraphQL::class      ,
-			'graphql.query_manager' , QueryManager::class ,
-			'graphql.eloquent.type_manager'  , TypeManager::class  ,
+			'graphql'                       , GraphQL::class         ,
+			'graphql.query_manager'         , QueryManager::class    ,
+			'graphql.mutation_manager'      , MutationManager::class ,
+			'graphql.eloquent.type_manager' , TypeManager::class     ,
 		];
 	}
 
