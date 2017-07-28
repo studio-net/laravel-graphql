@@ -47,14 +47,8 @@ class TypeManager extends Manager {
 			'model'  => $model
 		];
 
-		foreach ($columns as $column) {
-			$field   = [];
-			$primary = $model->getKeyName();
-
-			switch ($columns) {
-				case $primary : $type = GraphQLType::nonNull(GraphQL::id()) ; break;
-				default       : $type = GraphQLType::string()               ; break;
-			}
+		foreach ($columns as $column => $type) {
+			$field = [];
 
 			// We have a relationship field here !
 			if (array_key_exists($column, $relations)) {

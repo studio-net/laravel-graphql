@@ -27,6 +27,11 @@ return [
 		'definitions' => []
 	],
 
+	// Scalar field definitions
+	'scalar' => [
+		\StudioNet\GraphQL\Support\Scalar\Timestamp::class
+	],
+
 	// Response configuration
 	//
 	// `headers` : custom headers to send on controller response

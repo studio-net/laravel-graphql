@@ -96,5 +96,4 @@ class QueryManager extends Manager {
 			return $builder->get();
 		};
 	}
-
 }

@@ -35,30 +35,21 @@ class MutationManager extends Manager {
 	 * @return array
 	 */
 	protected function getColumns(Model $model, array $include = []) {
-		$key  = 'schema:' . get_class($model);
-		$data = [];
+		$key = 'columns:' . get_class($model);
 
 		if (empty($this->cache[$key])) {
-			if (!empty($model->getFillable())) {
-				$columns = $model->getFillable();
-			} else {
-				$columns = parent::getColumns($model, $include);
-			}
+			$data    = [];
+			$columns = parent::getColumns($model, $include);
+			$columns = array_intersect_key($columns, array_flip($model->getFillable()));
+			$primary = $model->getKeyName();
 
-			$pKey = $model->getKeyName();
-
-			if (!array_key_exists($pKey, $columns)) {
-				$columns[] = $pKey;
+			if (!array_key_exists($primary, $columns)) {
+				$data[$primary] = GraphQLType::nonNull(GraphQLType::id());
 			}
 
 			// Parse each column in order to know which is fillable. To allow
 			// model to be updated, we have to use a uniq id : the id
-			foreach ($columns as $column) {
-				switch ($column) {
-					case $pKey : $type = GraphQLType::nonNull(GraphQLType::id()) ; break;
-					default    : $type = GraphQLType::string()                   ; break;
-				}
-
+			foreach ($columns as $column => $type) {
 				$data[$column] = ['type' => $type];
 			}
 
@@ -78,8 +69,8 @@ class MutationManager extends Manager {
 	 */
 	protected function getResolver(Model $model) {
 		return function($root, array $args) use ($model) {
-			$pKey = $model->getKeyName();
-			$data = $model->query()->findOrFail($args[$pKey]);
+			$primary = $model->getKeyName();
+			$data    = $model->query()->findOrFail($args[$primary]);
 			$data->update($args);
 		
 			return $data;

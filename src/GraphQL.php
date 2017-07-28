@@ -4,6 +4,7 @@ namespace StudioNet\GraphQL;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\FieldInterface;
@@ -23,6 +24,9 @@ class GraphQL {
 
 	/** @var TypeInterface[] $types */
 	private $types = [];
+
+	/** @var ScalarType[] $scalars */
+	private $scalars = [];
 
 	/**
 	 * __construct
@@ -95,6 +99,22 @@ class GraphQL {
 	 */
 	public function listOf($name) {
 		return GraphQLType::listOf($this->type($name));
+	}
+
+	/**
+	 * Return existing scalar
+	 *
+	 * @param  string $name
+	 * @return ScalarType
+	 */
+	public function scalar($name) {
+		$name = strtolower($name);
+
+		if (array_key_exists($name, $this->scalars)) {
+			return $this->scalars[$name];
+		}
+
+		throw new Exception\ScalarNotFoundException('Cannot find scalar ' . $name);
 	}
 
 	/**
@@ -248,6 +268,32 @@ class GraphQL {
 		}
 
 		$this->types[strtolower($name)] = $type;
+	}
+
+	/**
+	 * Register scalar
+	 *
+	 * @param  string|null $name
+	 * @param  ScalarType $scalar
+	 *
+	 * @return void
+	 */
+	public function registerScalar($name, $scalar) {
+		if (is_string($scalar)) {
+			$scalar = $this->app->make($scalar);
+		}
+
+		// Assert that given scalar extends from ScalarType
+		if (!$scalar instanceof ScalarType) {
+			throw new Exception\ScalarException('Given scalar doesn\'t extend from ScalarType');
+		}
+
+		// Append name if doesn't exists or is numeric
+		if (empty($name) or is_numeric($name)) {
+			$name = $scalar->name;
+		}
+
+		$this->scalars[strtolower($name)] = $scalar;
 	}
 
 	/**

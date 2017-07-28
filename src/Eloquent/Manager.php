@@ -6,6 +6,7 @@ use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
+use Doctrine\DBAL\Schema\SchemaException;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -37,11 +38,45 @@ abstract class Manager {
 		$key = 'schema:' . get_class($model);
 
 		if (empty($this->cache[$key])) {
-			$columns = \Schema::getColumnListing($model->getTable());
-			$columns = array_diff($columns, $model->getHidden());
-			$columns = array_merge($columns, array_keys($include));
+			$table    = $model->getTable();
+			$primary  = $model->getKeyName();
+			$doctrine = \DB::connection();
+			$columns  = \Schema::getColumnListing($model->getTable());
+			$columns  = array_diff($columns, $model->getHidden());
+			$columns  = array_merge($columns, array_keys($include));
+			$data     = [];
 
-			$this->cache[$key] = $columns;
+			foreach (array_unique($columns) as $column) {
+				try {
+					$type = $doctrine->getDoctrineColumn($table, $column)->getType();
+				} catch (SchemaException $e) {
+					continue;
+				}
+
+				switch ($type->getName()) {
+					case 'smallint'     :
+					case 'bigint'       :
+					case 'integer'      : $type = GraphQLType::int()                         ; break;
+					case 'decimal'      :
+					case 'float'        : $type = GraphQLType::float()                       ; break;
+					case 'date'         :
+					case 'datetimetz'   :
+					case 'time'         :
+					case 'datetime'     : $type = \GraphQL::scalar('timestamp')              ; break;
+					case 'array'        :
+					case 'simple_array' : $type = GraphQLType::listOf(GraphQLType::string()) ; break;
+					default             : $type = GraphQLType::string()                      ; break;
+				}
+
+				// Assert primary key is mandatory and is an id
+				if ($column === $primary) {
+					$type = GraphQLType::nonNull(GraphQLType::id());
+				}
+
+				$data[$column] = $type;
+			}
+
+			$this->cache[$key] = $data;
 		}
 		
 		return $this->cache[$key];
@@ -56,7 +91,7 @@ abstract class Manager {
 	protected function getArguments($plural = false) {
 		if ($plural === false) {
 			return [
-				'id' => ['type' => GraphQLType::id(), 'description' => 'Primary key lookup']
+				'id' => ['type' => GraphQLType::nonNull(GraphQLType::id()), 'description' => 'Primary key lookup']
 			];
 		}
 

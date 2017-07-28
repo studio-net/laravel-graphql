@@ -23,6 +23,7 @@ class ServiceProvider extends BaseServiceProvider {
 		// Call external methods to load defined schemas and others things
 		$this->registerSchemas();
 		$this->registerTypes();
+		$this->registerScalars();
 	}
 
 	/**
@@ -48,6 +49,19 @@ class ServiceProvider extends BaseServiceProvider {
 
 		foreach ($types as $name => $type) {
 			$this->app['graphql']->registerType($name, $type);
+		}
+	}
+
+	/**
+	 * Register scalar
+	 *
+	 * @return void
+	 */
+	public function registerScalars() {
+		$scalars = config('graphql.scalar', []);
+
+		foreach ($scalars as $name => $scalar) {
+			$this->app['graphql']->registerScalar($name, $scalar);
 		}
 	}
 
