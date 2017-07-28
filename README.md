@@ -128,6 +128,7 @@ You can implement any custom query like the following example :
 namespace App\GraphQL\Query;
 
 use StudioNet\GraphQL\Support\Query;
+use App\User;
 
 class Viewer extends Query {
 	/**
@@ -149,7 +150,7 @@ class Viewer extends Query {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function resolve($root, array $args) {
-		return \App\User::first();
+		return User::first();
 	}
 }
 
@@ -200,6 +201,8 @@ You can create custom mutation if you want, like the following example :
 namespace App\GraphQL\Mutation;
 
 use StudioNet\GraphQL\Support\Mutation;
+use GraphQL\Type\Definition\Type as GraphQLType;
+use App\User;
 
 class Profile extends Mutation {
 	/**
@@ -231,7 +234,7 @@ class Profile extends Mutation {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function resolve($root, array $args) {
-		$user = \App\User::findOrFail($args['id']);
+		$user = User::findOrFail($args['id']);
 		$user->update($args);
 
 		return $user;
