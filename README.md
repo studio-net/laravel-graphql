@@ -211,6 +211,9 @@ class Profile extends Mutation {
 		return \GraphQL::type('user');
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getArguments() {
 		return [
 			'id'      => ['type' => GraphQLType::nonNull(GraphQLType::id())],
