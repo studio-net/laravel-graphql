@@ -108,6 +108,10 @@ class TypeManager extends Manager {
 				}
 
 				unset($relations[$column]);
+			} else {
+				if (is_null($type)) {
+					continue;
+				}
 			}
 
 			$fields['fields'][$column] = array_merge($field, [

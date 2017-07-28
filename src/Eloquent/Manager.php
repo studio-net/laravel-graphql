@@ -50,6 +50,7 @@ abstract class Manager {
 				try {
 					$type = $doctrine->getDoctrineColumn($table, $column)->getType();
 				} catch (SchemaException $e) {
+					$data[$column] = null;
 					continue;
 				}
 
