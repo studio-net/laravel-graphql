@@ -2,6 +2,7 @@
 namespace StudioNet\GraphQL\Eloquent;
 
 use ErrorException;
+use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
@@ -45,6 +46,28 @@ abstract class Manager {
 		
 		return $this->cache[$key];
 	}
+
+	/**
+	 * Return availabled arguments
+	 *
+	 * @param  bool $plural
+	 * @return array
+	 */
+	protected function getArguments($plural = false) {
+		if ($plural === false) {
+			return [
+				'id' => ['type' => GraphQLType::id(), 'description' => 'Primary key lookup']
+			];
+		}
+
+		return [
+			'after'  => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation' ] ,
+			'before' => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation' ] ,
+			'skip'   => ['type' => GraphQLType::int() , 'description' => 'Offset-based navigation' ] ,
+			'take'   => ['type' => GraphQLType::int() , 'description' => 'Limit-based navigation'  ] ,
+		];
+	}
+
 
 	/**
 	 * Return relationships

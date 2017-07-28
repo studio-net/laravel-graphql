@@ -7,13 +7,14 @@ return [
 	//    - `{name}` : schema name
 	//       - `query`    : list of custom queries
 	//       - `mutation` : list of custom mutations
+	//       - `type`     : list of custom types
 	'schema' => [
 		'default'     => 'default',
 		'definitions' => [
 			'default' => [
 				'query'    => [],
 				'mutation' => [],
-				'entities' => []
+				'type'     => []
 			]
 		]
 	],

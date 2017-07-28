@@ -8,190 +8,52 @@ use Illuminate\Database\Eloquent\Model;
 
 class QueryManager extends Manager {
 	/**
-	 * fromEntity
+	 * Return singular and plural of given type
 	 *
-	 * @param  Model $model
-	 * @return ObjectType
+	 * @param  string $table
+	 * @param  ObjectType $type
+	 * @return array
 	 */
-	public function fromEntity(Model $model) {
-		$singular  = str_singular($model->getTable());
-		$pluralize = str_plural($model->getTable());
+	public function fromType($table, ObjectType $type) {
+		$singular = str_singular($table);
+		$plural   = str_plural($table);
 
 		return [
-			$singular  => $this->buildSingular($model),
-			$pluralize => $this->buildPlural($model),
+			$singular => $this->toSingle($type),
+			$plural   => $this->toMany($type)
 		];
 	}
 
 	/**
-	 * Build singular entity
+	 * Return a query that will return a single ObjectType
 	 *
-	 * @param  Model $model
+	 * @param  ObjectType $type
 	 * @return array
 	 */
-	private function buildSingular(Model $model) {
+	private function toSingle(ObjectType $type) {
+		$model = $type->config['model'];
+
 		return [
 			'resolve' => $this->getResolver($model),
 			'args'    => $this->getArguments(),
-			'type'    => $this->getType($model)
+			'type'    => $type
 		];
 	}
 
 	/**
-	 * Build pluralize entity
+	 * Return a query that will return a ListOf
 	 *
-	 * @param  Model $model
+	 * @param  ObjectType $type
 	 * @return array
 	 */
-	private function buildPlural(Model $model) {
+	private function toMany(ObjectType $type) {
+		$model = $type->config['model'];
+
 		return [
 			'resolve' => $this->getResolver($model),
 			'args'    => $this->getArguments(true),
-			'type'    => GraphQLType::listOf($this->getType($model))
+			'type'    => GraphQLType::listOf($type)
 		];
-	}
-
-	/**
-	 * Return availabled arguments
-	 *
-	 * @param  bool $plural
-	 * @return array
-	 */
-	private function getArguments($plural = false) {
-		if ($plural === false) {
-			return [
-				'id' => ['type' => GraphQLType::id(), 'description' => 'Primary key lookup']
-			];
-		}
-
-		return [
-			'after'  => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation' ] ,
-			'before' => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation' ] ,
-			'skip'   => ['type' => GraphQLType::int() , 'description' => 'Offset-based navigation' ] ,
-			'take'   => ['type' => GraphQLType::int() , 'description' => 'Limit-based navigation'  ] ,
-		];
-	}
-
-	/**
-	 * Return ObjectType for given model
-	 *
-	 * @param  Model $model
-	 * @param  array $depth
-	 *
-	 * @return ObjectType
-	 */
-	private function getType(Model $model, array $depth = []) {
-		$relations = $this->getRelations($model);
-		$columns   = $this->getColumns($model, $relations);
-		$fields    = [
-			'name'   => uniqid(),
-			'fields' => []
-		];
-
-		foreach ($columns as $column) {
-			$field = [];
-
-			switch ($columns) {
-				case 'id' : $type = GraphQLType::nonNull(GraphQL::id()); break;
-				default   : $type = GraphQLType::string(); break;
-			}
-
-			// We have a relationship field here !
-			if (array_key_exists($column, $relations)) {
-				$relation = $relations[$column];
-
-				// Manage depth in order to prevent a user with posts with user
-				// with posts, etc.
-				if (!empty($depth) and $this->assertMaximalDepth($model, $relation, $depth)) {
-					continue;
-				}
-
-				$related   = $this->app->make($relation['model']);
-				$pluralize = false;
-				$depth     = $this->buildDepth($depth, $model, $relation);
-
-				// Some relation can handle arguments. Other, none
-				switch ($relation['type']) {
-					case 'HasMany' : $pluralize = true; break;
-				}
-
-				// Only append arguments if not empty. Some relations like
-				// `BelongsTo` doesn't handle arguments (we can't lookup throw
-				// a single entry, even with id)
-				if ($pluralize) {
-					$type = GraphQLType::listOf($this->getType($related, $depth));
-					$field['args']    = $this->getArguments(true);
-					$field['resolve'] = $this->getChildResolver($relation);
-				} else {
-					$type = $this->getType($related, $depth);
-				}
-
-				unset($relations[$column]);
-			}
-
-			$fields['fields'][$column] = array_merge($field, [
-				'description' => title_case(preg_replace('/_/', ' ', $column)),
-				'type'        => $type
-			]);
-		}
-
-		return new ObjectType($fields);
-	}
-
-	/**
-	 * Assert that maximal depth is not already fetch. It prevent many problems
-	 * like this schema :
-	 *
-	 * ```
-	 * {
-	 *    users {
-	 *       posts {
-	 *          author {
-	 *              posts { # Will not be availabled
-	 *                  ...
-	 *              }
-	 *          }
-	 *       }
-	 *    }
-	 * }
-	 * ```
-	 *
-	 * I think the system is not really perfect but it works at now...
-	 *
-	 * @param  Model $model
-	 * @param  array $relation
-	 * @param  array $depth
-	 *
-	 * @return bool
-	 */
-	private function assertMaximalDepth(Model $model, array $relation, array $depth) {
-		$table = $model->getTable();
-
-		if (array_key_exists($table, $depth)) {
-			return in_array($relation['field'], $depth[$table]);
-		}
-
-		return false;
-	}
-
-	/**
-	 * Build depth restriction
-	 *
-	 * @param  array $depth
-	 * @param  Model $model
-	 * @param  array $relation
-	 *
-	 * @return array
-	 */
-	private function buildDepth(array $depth, Model $model, array $relation) {
-		$table = $model->getTable();
-
-		if (!array_key_exists($table, $depth)) {
-			$depth[$table] = [];
-		}
-
-		$depth[$table] = array_merge($depth[$table], [$relation['field']]);
-		return $depth;
 	}
 
 	/**
@@ -235,28 +97,4 @@ class QueryManager extends Manager {
 		};
 	}
 
-	/**
-	 * Return a child resolver from given relation
-	 *
-	 * @param  array $relation
-	 * @return callable
-	 */
-	private function getChildResolver(array $relation) {
-		$method = $relation['field'];
-
-		return function($root, array $args) use ($method) {
-			$collection = $root->{$method};
-
-			foreach ($args as $key => $value) {
-				switch ($key) {
-					case 'after'  : $collection = $collection->where($primary, '>', $value) ; break;
-					case 'before' : $collection = $collection->where($primary, '<', $value) ; break;
-					case 'skip'   : $collection = $collection->skip($value)                 ; break;
-					case 'take'   : $collection = $collection->take($value)                 ; break;
-				}
-			}
-
-			return $collection->all();
-		};
-	}
 }

@@ -39,6 +39,12 @@ class GraphQL {
 			throw new Exception\SchemaNotFoundException('Cannot find schema ' . $name);
 		}
 
+		// This method is called only when `execute()` method is called. So, we
+		// can initialize all our entities right here without problems
+		$manager = $this->app->make('graphql.eloquent.type_manager');
+		$models  = config('graphql.type.entities', []);
+		$this->types = $this->types + $manager->fromModels($models);
+
 		// Represents an array like
 		//
 		// [
@@ -46,16 +52,36 @@ class GraphQL {
 		//    'mutation' => []
 		// ]
 		$schema = $this->schemas[$name];
-		$schema = array_merge($schema, [
-			'query'    => [],
-			'mutation' => []
-		]);
 
 		// Compute query and mutation fields
-		$schema['query']    = $this->manageQuery($name, $schema['query']);
+		$schema['query']    = $this->manageQuery($schema['query']);
 		$schema['mutation'] = $this->manageMutation($name, $schema['mutation']);
 
 		return new Schema($schema);
+	}
+
+	/**
+	 * Return existing type
+	 *
+	 * @param  string $name
+	 * @return ObjectType
+	 */
+	public function type($name) {
+		if (array_key_exists($name, $this->types)) {
+			return $this->types[$name];
+		}
+
+		throw new TypeNotFoundException('Cannot find type ' . $name);
+	}
+
+	/**
+	 * Return existing type as lifeOf
+	 *
+	 * @param  string $name
+	 * @return ListOf
+	 */
+	public function listOf($name) {
+		return GraphQLType::listOf($this->type($name));
 	}
 
 	/**
@@ -72,9 +98,10 @@ class GraphQL {
 		$context    = array_get($opts, 'context', null);
 		$schemaName = array_get($opts, 'schema', null);
 		$operation  = array_get($opts, 'operationName', null);
-		$schema     = $this->getSchema($schemaName);
-		$result     = GraphQLBase::executeAndReturnResult($schema, $query, $root, $context, $variables, $operation);
-		$data       = ['data' => $result->data];
+
+		$schema = $this->getSchema($schemaName);
+		$result = GraphQLBase::executeAndReturnResult($schema, $query, $root, $context, $variables, $operation);
+		$data   = ['data' => $result->data];
 
 		if (!empty($result->errors)) {
 			$data['errors'] = $result->errors;
@@ -87,42 +114,35 @@ class GraphQL {
 	 * Manage query : load all queries and also append type-based queries if
 	 * allowed
 	 *
-	 * @param  string $name
 	 * @param  TypeInterface[] $queries
 	 * @return array
 	 */
-	public function manageQuery($name, array $queries) {
-		// Manage custom queries
-		foreach ($queries as $query) {
-			$name    = $query->getName();
-			$queries = array_merge($queries, $query->toType());
-		}
+	public function manageQuery(array $queries) {
+		$data    = [];
+		$models  = config('graphql.type.entities', []);
+		$manager = $this->app->make('graphql.eloquent.query_manager');
 
-		$entities = config('graphql.type.entities', []) + $this->schemas[$name]['entities'];
-
-		// Manage type-based queries
-		foreach ($entities as $entity) {
-			$entity  = $this->app->make($entity);
-			$query   = $this->app->make('graphql.query_manager')->fromEntity($entity);
-			$queries = array_merge($query, $queries);
+		foreach ($models as $model) {
+			$table = str_singular($this->app->make($model)->getTable());
+			$type  = $this->type($table);
+			$data  = $data + $manager->fromType($table, $type);
 		}
 
 		return new ObjectType([
 			'name'   => 'Query',
-			'fields' => $queries
+			'fields' => $data
 		]);
 	}
 
 	/**
 	 * TODO
 	 *
-	 * @param  string $name
-	 * @param  array  $mutations
+	 * @param  array $mutations
 	 * @return array
 	 *
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
-	public function manageMutation($name, array $mutations) {
+	public function manageMutation(array $mutations) {
 		return $mutations;
 	}
 
@@ -138,27 +158,9 @@ class GraphQL {
 		$this->schemas[$name] = array_merge([
 			'query'    => [],
 			'mutation' => [],
-			'entities' => []
+			'entities' => [],
+			'type'     => []
 		], $data);
-	}
-
-	/**
-	 * Register a type
-	 *
-	 * @param  string|TypeInterface $type
-	 * @return void
-	 */
-	public function registerType($type) {
-		if (!$type instanceof TypeInterface) {
-			if (!class_exists($type)) {
-				throw new Exception\TypeNotFoundException('Cannot find type ' . $type);
-			}
-
-			$type = $this->app->make($type);
-		}
-
-		$key = get_class($type);
-		$this->types[$key] = $type;
 	}
 
 	/**
