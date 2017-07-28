@@ -45,8 +45,8 @@ class ServiceProvider extends BaseServiceProvider {
 	public function registerTypes() {
 		$types = config('graphql.type.definitions', []);
 
-		foreach ($types as $type) {
-			$this->app['graphql']->registerType($type);
+		foreach ($types as $name => $type) {
+			$this->app['graphql']->registerType($name, $type);
 		}
 	}
 

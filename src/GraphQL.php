@@ -7,6 +7,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\FieldInterface;
+use StudioNet\GraphQL\Support\TypeInterface;
 
 /**
  * GraphQL implementation singleton
@@ -46,9 +47,14 @@ class GraphQL {
 
 		// This method is called only when `execute()` method is called. So, we
 		// can initialize all our entities right here without problems
+		//
+		// TODO I don't really like to see this here... Must be refactored later
 		$manager = $this->app->make('graphql.eloquent.type_manager');
 		$models  = config('graphql.type.entities', []);
-		$this->types = $this->types + $manager->fromModels($models);
+
+		foreach ($manager->fromModels($models) as $key => $type) {
+			$this->registerType($key, $type);
+		}
 
 		// Represents an array like
 		//
@@ -72,11 +78,13 @@ class GraphQL {
 	 * @return ObjectType
 	 */
 	public function type($name) {
+		$name = strtolower($name);
+
 		if (array_key_exists($name, $this->types)) {
 			return $this->types[$name];
 		}
 
-		throw new TypeNotFoundException('Cannot find type ' . $name);
+		throw new Exception\TypeNotFoundException('Cannot find type ' . $name);
 	}
 
 	/**
@@ -125,6 +133,7 @@ class GraphQL {
 		$models  = config('graphql.type.entities', []);
 		$manager = $this->app->make('graphql.eloquent.query_manager');
 
+		// Parse each query class and build it within the ObjectType
 		foreach ($queries as $name => $query) {
 			if (is_numeric($name)) {
 				$name = strtolower(with(new \ReflectionClass($query))->getShortName());
@@ -134,6 +143,8 @@ class GraphQL {
 			$data  = $data + [$name => $query->toArray()];
 		}
 
+		// Parse each model, retrieve is corresponding generated type and build
+		// a generic query upon it
 		foreach ($models as $model) {
 			$table = str_singular($this->app->make($model)->getTable());
 			$type  = $this->type($table);
@@ -171,8 +182,47 @@ class GraphQL {
 			'query'    => [],
 			'mutation' => [],
 			'entities' => [],
-			'type'     => []
 		], $data);
+	}
+
+	/**
+	 * Register a type
+	 *
+	 * @param  string|null $name
+	 * @param  string|ObjectType|TypeInterface $type
+	 *
+	 * @return void
+	 */
+	public function registerType($name, $type) {
+		if (is_string($type)) {
+			$type = $this->app->make($type);
+		}
+
+		// Assert that the given type extend from TypeInterface or is an
+		// instance of ObjectType
+		if ((!$type instanceof ObjectType) and (!$type instanceof TypeInterface)) {
+			throw new Exception\TypeException('Given type doesn\'t extend from TypeInterface');
+		}
+
+		// Assert name is not empty : otherwise, get the class name from type
+		if (empty($name) or is_numeric($name)) {
+			$name = with(new \ReflectionClass($type))->getShortName();
+		}
+
+		// If the type is extended from TypeInterface, we know that he has a
+		// `toType` method : so let's call it in order to retrieve an ObjectType
+		if ($type instanceof TypeInterface) {
+			$type = $type->toType();
+		}
+
+		// As we're working with generated types, we can't allow override
+		// because user will be lost. So let's throw an exception when this
+		// case is here
+		if (array_key_exists($name, $this->types)) {
+			throw new Exception\TypeException('Cannot override existing type');
+		}
+
+		$this->types[strtolower($name)] = $type;
 	}
 
 	/**

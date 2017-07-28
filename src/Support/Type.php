@@ -3,7 +3,12 @@ namespace StudioNet\GraphQL\Support;
 
 use GraphQL\Type\Definition\ObjectType;
 
-class Type {
+/**
+ * Represent a class implementation of an ObjectType
+ *
+ * @see TypeInterface
+ */
+abstract class Type implements TypeInterface {
 	/**
 	 * {@inheritDoc}
 	 */
@@ -66,7 +71,11 @@ class Type {
 			}
 		}
 
-		$attributes = array_merge($attributes, ['fields' => $fields]);
+		$attributes = array_merge($attributes, [
+			'fields' => $fields,
+			'name'   => $this->getName(),
+			'description' => $this->getDescription(),
+		]);
 
 		if (!empty($interfaces)) {
 			$attributes['interfaces'] = $interfaces;

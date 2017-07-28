@@ -2,7 +2,7 @@
 namespace StudioNet\GraphQL\Exception;
 
 /**
- * Thrown when a type is not instanciable
+ * Type not found exception
  *
  * @see \Exception
  */
