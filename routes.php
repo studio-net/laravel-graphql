@@ -7,6 +7,6 @@ $parameters = [
 Route::group($parameters, function() {
 	$controller = config('graphql.route.controller', '\\StudioNet\\GraphQL\\GraphQLController@query');
 
-	Route::get('/', ['as' => 'graphql.query', 'uses' => $controller]);
-	Route::post('/', ['as' => 'graphql.query.post', 'uses' => $controller]);
+	Route::get('/{schema?}'  , ['as' => 'graphql.query'      , 'uses' => $controller]);
+	Route::post('/{schema?}' , ['as' => 'graphql.query.post' , 'uses' => $controller]);
 });
