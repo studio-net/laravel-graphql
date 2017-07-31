@@ -55,5 +55,17 @@ return [
 		'prefix'     => 'graphql',
 		'middleware' => [],
 		'controller' => '\\StudioNet\\GraphQL\\GraphQLController@query'
+	],
+
+	// Route in order to auto-generate documentation for GraphQL schema
+	//
+	// `prefix` : route prefix
+	// `route`  : full route (without prefix)
+	//
+	// Will generate URL like `prefix`/`route`
+	'documentation' => [
+		'active' => true,
+		'prefix' => 'doc',
+		'route'  => 'graphql'
 	]
 ];
