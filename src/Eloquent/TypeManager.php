@@ -35,92 +35,73 @@ class TypeManager extends Manager {
 	 * Convert a Model to an ObjectType
 	 *
 	 * @param  Model $model
-	 * @param  array $depth
 	 * @return ObjectType
 	 */
-	public function toType(Model $model, array $depth = []) {
-		$relations = $this->getRelations($model);
-		$columns   = $this->getColumns($model, $relations);
-		$fields    = [
-			'name'   => uniqid(),
-			'fields' => [],
-			'model'  => $model
-		];
+	public function toType(Model $model) {
+		$table = str_singular($model->getTable());
+		$key   = 'type:type:' . $table;
 
-		foreach ($columns as $column => $type) {
-			$field = [];
+		if (empty($this->cache[$key])) {
+			$relations = $this->getRelations($model);
+			$columns   = $this->getColumns($model, $relations);
+			$fields    = function() use ($columns, $relations) {
+				$fields = [];
 
-			// We have a relationship field here !
-			if (array_key_exists($column, $relations)) {
-				$relation  = $relations[$column];
-				$related   = $this->app->make($relation['model']);
-				$table     = $related->getTable();
-				$pluralize = false;
+				foreach ($columns as $column => $type) {
+					$field = [];
 
-				// The main goal here is to prevent infinite depth : if a model
-				// `User` have to `hasMany` to `Post` and `Post` have a
-				// `BelongsTo` relation to `User`, we could create request like
-				// 
-				// ```graphql
-				// query {
-				//    users {
-				//       posts {
-				//          user { <- stop here
-				//              posts {
-				//                  ...
-				//              }
-				//          }
-				//       }
-				//    }
-				// }
-				// ```
-				if (array_key_exists($table, $depth)) {
-					if (in_array($relation['field'], $depth[$table])) {
+					// We have a relationship field here !
+					if (array_key_exists($column, $relations)) {
+						$relation  = $relations[$column];
+						$related   = $this->app->make($relation['model']);
+						$table     = $related->getTable();
+						$pluralize = false;
+						$type      = $this->toType($related);
+
+						// Build relationship : how to know if we have to return
+						// a listOf or directly the type ? With the known
+						// relationship !  If we have a `HasMany` relationship,
+						// we're able to know that we have to return many type
+						// at once
+						switch ($relation['type']) {
+							case 'HasMany' : $pluralize = true; break;
+						}
+
+						// Only append arguments if not empty. Some relations
+						// like `BelongsTo` doesn't handle arguments (we can't
+						// lookup throw a single entry, even with id)
+						if ($pluralize) {
+							$type  = GraphQLType::listOf($type);
+							$field = array_merge([
+								'args'    => $this->getArguments(true),
+								'resolve' => $this->getResolver($relation)
+							], $field);
+						}
+
+						unset($relations[$column]);
+					}
+
+					if (is_null($type)) {
 						continue;
 					}
+
+					$fields[$column] = array_merge($field, [
+						'description' => title_case(preg_replace('/_/', ' ', $column)),
+						'type'        => $type
+					]);
 				}
 
-				// Create empty array
-				else {
-					$depth[$table] = [];
-				}
+				return $fields;
+			};
 
-				$depth[$table] = array_merge($depth[$table], [$relation['field']]);
-				$type = $this->toType($related, $depth);
-
-				// Build relationship : how to know if we have to return a
-				// listOf or directly the type ? With the known relationship !
-				// If we have a `HasMany` relationship, we're able to know that
-				// we have to return many type at once
-				switch ($relation['type']) {
-					case 'HasMany' : $pluralize = true; break;
-				}
-
-				// Only append arguments if not empty. Some relations like
-				// `BelongsTo` doesn't handle arguments (we can't lookup throw
-				// a single entry, even with id)
-				if ($pluralize) {
-					$type  = GraphQLType::listOf($type);
-					$field = array_merge([
-						'args'    => $this->getArguments(true),
-						'resolve' => $this->getResolver($relation)
-					], $field);
-				}
-
-				unset($relations[$column]);
-			} else {
-				if (is_null($type)) {
-					continue;
-				}
-			}
-
-			$fields['fields'][$column] = array_merge($field, [
-				'description' => title_case(preg_replace('/_/', ' ', $column)),
-				'type'        => $type
+			$this->cache[$key] = new ObjectType([
+				'name'   => $table,
+				'model'  => $model,
+				'fields' => $fields
 			]);
 		}
 
-		return new ObjectType($fields);
+		return $this->cache[$key];
 	}
 
 	/**

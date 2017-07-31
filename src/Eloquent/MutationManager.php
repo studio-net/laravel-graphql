@@ -35,16 +35,25 @@ class MutationManager extends Manager {
 	 * @return array
 	 */
 	protected function getColumns(Model $model, array $include = []) {
-		$key = 'columns:' . get_class($model);
+		$key = 'mutation:columns:' . get_class($model);
 
 		if (empty($this->cache[$key])) {
-			$data    = [];
-			$columns = parent::getColumns($model, $include);
-			$columns = array_intersect_key($columns, array_flip($model->getFillable()));
-			$primary = $model->getKeyName();
+			$data     = [];
+			$columns  = parent::getColumns($model, $include);
+			$fillable = array_flip($model->getFillable());
+			$hidden   = array_flip($model->getHidden());
+			$primary  = $model->getKeyName();
+
+			if (!empty($fillable)) {
+				$columns = array_intersect_key($columns, $fillable);
+			}
+
+			if (!empty($hidden)) {
+				$columns = array_diff_key($columns, $hidden);
+			}
 
 			if (!array_key_exists($primary, $columns)) {
-				$data[$primary] = GraphQLType::nonNull(GraphQLType::id());
+				$data[$primary] = GraphQLType::id();
 			}
 
 			// Parse each column in order to know which is fillable. To allow
@@ -70,8 +79,10 @@ class MutationManager extends Manager {
 	protected function getResolver(Model $model) {
 		return function($root, array $args) use ($model) {
 			$primary = $model->getKeyName();
-			$data    = $model->query()->findOrFail($args[$primary]);
-			$data->update($args);
+			$data    = $model->query()->updateOrCreate(
+				[$primary => $args[$primary]],
+				$args
+			);
 		
 			return $data;
 		};

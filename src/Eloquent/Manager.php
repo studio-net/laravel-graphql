@@ -35,7 +35,7 @@ abstract class Manager {
 	 * @return array
 	 */
 	protected function getColumns(Model $model, array $include = []) {
-		$key = 'schema:' . get_class($model);
+		$key = 'columns:' . get_class($model);
 
 		if (empty($this->cache[$key])) {
 			$table    = $model->getTable();
@@ -69,9 +69,9 @@ abstract class Manager {
 					default             : $type = GraphQLType::string()                      ; break;
 				}
 
-				// Assert primary key is mandatory and is an id
+				// Assert primary key is an id
 				if ($column === $primary) {
-					$type = GraphQLType::nonNull(GraphQLType::id());
+					$type = GraphQLType::id();
 				}
 
 				$data[$column] = $type;
