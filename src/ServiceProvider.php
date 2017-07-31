@@ -13,8 +13,8 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function boot() {
-		$config = $this->getConfigurationPath() . '/' . 'config.php';
-		$routes = $this->getConfigurationPath() . '/' . 'routes.php';
+		$config = $this->getConfigurationPath() . '/' . 'resources/config.php';
+		$routes = $this->getConfigurationPath() . '/' . 'resources/routes.php';
 		$views  = $this->getConfigurationPath() . '/' . 'resources/views';
 
 		$this->mergeConfigFrom($config, 'graphql');
@@ -71,6 +71,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * Register the application services.
 	 *
 	 * @return void
+	 * TODO I don't thing creating manager is the good way. Need refactoring
 	 */
 	public function register() {
 		$this->app->singleton(MutationManager::class, function($app) { return new MutationManager($app); });
