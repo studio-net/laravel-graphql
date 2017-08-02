@@ -10,7 +10,6 @@ use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\Interfaces\ModelAttributes;
 use StudioNet\GraphQL\Transformer\Transformer;
 use StudioNet\GraphQL\Type\EloquentObjectType;
-use StudioNet\GraphQL\Traits\ModelRelationTrait;
 
 /**
  * Convert a Model instance to an EloquentObjectType
@@ -19,8 +18,6 @@ use StudioNet\GraphQL\Traits\ModelRelationTrait;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class ModelTransformer extends Transformer {
-	use ModelRelationTrait;
-
 	/** @var array $cache */
 	private $cache = [];
 
@@ -51,6 +48,11 @@ class ModelTransformer extends Transformer {
 	 * {@inheritDoc}
 	 */
 	public function transform($instance) {
+		// Assert useful methods exists
+		if (!method_exists($instance, 'getColumns') or !method_exists($instance, 'getRelationship')) {
+			throw new \Exception('Cannot transform model that doesn\'t use EloquentModel trait');
+		}
+
 		$key = 'type:' . $instance->getTable();
 
 		if (empty($this->cache[$key])) {
@@ -105,8 +107,8 @@ class ModelTransformer extends Transformer {
 	 * @see    github.com/webonyx/graphql-php/blob/master/docs/type-system/object-types.md#field-configuration-options
 	 */
 	private function getFields(Model $model) {
-		$columns   = $this->getColumns($model);
-		$relations = $this->getRelations($model);
+		$columns   = $model->getColumns();
+		$relations = $model->getRelationship();
 
 		return function() use ($model, $columns, $relations) {
 			$fields = [];
@@ -203,70 +205,5 @@ class ModelTransformer extends Transformer {
 			'skip'   => ['type' => GraphQLType::int() , 'description' => 'Offset-based navigation' ] ,
 			'take'   => ['type' => GraphQLType::int() , 'description' => 'Limit-based navigation'  ] ,
 		];
-	}
-
-	/**
-	 * Return available columns for given Model ; it also append relationships
-	 * fields : it's virtual within the database but real in GraphQL schema
-	 *
-	 * @param  Model $model
-	 * @return array
-	 */
-	private function getColumns(Model $model) {
-		// Handle cache management
-		$table = $model->getTable();
-		$key   = 'columns:' . $table;
-
-		if (empty($this->cache[$key])) {
-			$data    = [];
-			$primary = $model->getKeyName();
-			$columns = $this->connection->getSchemaBuilder()->getColumnListing($table);
-
-			// Remove hidden columns : we don't want show or update them. Also
-			// append relationships virtual columns
-			$related = $this->getRelations($model);
-			$columns = array_diff($columns, $model->getHidden());
-			$columns = array_merge(array_keys($related), $columns);
-
-			foreach (array_unique($columns) as $column) {
-				try {
-					$type = $this->connection->getDoctrineColumn($table, $column);
-					$type = $type->getType();
-				} catch (SchemaException $e) {
-					// There's nothing left to do (it's a virtual field or, it
-					// also could append with PostgreSQL multiple schemas)
-					$data[$column] = null;
-					continue;
-				}
-
-				// Parse each available database data type and call is related
-				// GraphQL type
-				switch ($type->getName()) {
-					case 'smallint'     :
-					case 'bigint'       :
-					case 'integer'      : $type = GraphQLType::int()                         ; break;
-					case 'decimal'      :
-					case 'float'        : $type = GraphQLType::float()                       ; break;
-					case 'date'         :
-					case 'datetimetz'   :
-					case 'time'         :
-					case 'datetime'     : $type = $this->app['graphql']->scalar('timestamp') ; break;
-					case 'array'        :
-					case 'simple_array' : $type = GraphQLType::listOf(GraphQLType::string()) ; break;
-					default             : $type = GraphQLType::string()                      ; break;
-				}
-
-				// Assert primary key is an id
-				if ($column === $primary) {
-					$type = GraphQLType::id();
-				}
-
-				$data[$column] = $type;
-			}
-
-			$this->cache[$key] = $data;
-		}
-
-		return $this->cache[$key];
 	}
 }

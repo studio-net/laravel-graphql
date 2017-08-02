@@ -3,7 +3,6 @@ namespace StudioNet\GraphQL\Generator;
 
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
-use StudioNet\GraphQL\Traits\ModelRelationTrait;
 
 /**
  * EloquentGenerator
@@ -13,20 +12,16 @@ use StudioNet\GraphQL\Traits\ModelRelationTrait;
  * @abstract
  */
 abstract class EloquentGenerator extends Generator implements EloquentGeneratorInterface {
-	use ModelRelationTrait;
-
 	/**
 	 * {@inheritDoc}
 	 * @SuppressWarnings(PHPMD.UnusedLocalVariable)
 	 */
 	public function getResolver(Model $model) {
-		$relations = $this->getRelations($model);
-
-		return function($root, array $args, $context, ResolveInfo $info) use ($model, $relations) {
+		return function($root, array $args, $context, ResolveInfo $info) use ($model) {
 			$primary = $model->getKeyName();
 			$builder = $model->newQuery();
 			$fields  = $info->getFieldSelection(3);
-			$common  = array_intersect_key($fields, $relations);
+			$common  = array_intersect_key($fields, $model->getRelationship());
 
 			if (!empty($common)) {
 				foreach (array_keys($common) as $related) {
