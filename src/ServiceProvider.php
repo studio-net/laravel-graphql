@@ -22,6 +22,7 @@ class ServiceProvider extends BaseServiceProvider {
 		// Call external methods to load defined schemas and others things
 		$this->registerScalars();
 		$this->registerTransformers();
+		$this->registerGenerators();
 		$this->registerSchemas();
 		$this->registerTypes();
 	}
@@ -76,6 +77,21 @@ class ServiceProvider extends BaseServiceProvider {
 		foreach ($transformers as $key => $many) {
 			foreach ($many as $transformer) {
 				$this->app['graphql']->registerTransformer($key, $transformer);
+			}
+		}
+	}
+
+	/**
+	 * Register generators
+	 *
+	 * @return void
+	 */
+	public function registerGenerators() {
+		$generators = config('graphql.generator', []);
+
+		foreach ($generators as $key => $many) {
+			foreach ($many as $generator) {
+				$this->app['graphql']->registerGenerator($key, $generator);
 			}
 		}
 	}
