@@ -17,7 +17,13 @@ provider will be added.
 
 ### Laravel 5.x
 
-Add service provider to `config/app.php` :
+Simply run
+
+```bash
+composer require 'studio-net/laravel-graphql:0.1-beta'
+```
+
+... and add service provider to `config/app.php` :
 
 ```php
 <?php

@@ -9,6 +9,7 @@
         }
     ],
     "require": {
+        "laravel/laravel": ">=5.0",
         "webonyx/graphql-php": "^0.9.13",
         "doctrine/dbal": "^2.5"
     },
