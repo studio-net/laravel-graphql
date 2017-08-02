@@ -27,7 +27,7 @@ class FieldTransformer extends Transformer {
 
 		if (method_exists($instance, 'getResolver')) {
 			$attributes = $attributes + [
-				'resolve' => [$this, 'resolve']
+				'resolve' => [$instance, 'getResolver']
 			];
 		}
 
