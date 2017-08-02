@@ -17,19 +17,36 @@ return [
 		]
 	],
 
-	// Type configuration. It allows you to define custom Type based on
-	// StudioNet\GraphQL\Type\{EloquentType,Type}
-	//
-	// `entities`    : list of entities
-	// `definitions` : list of custom Type
-	'type' => [
-		'entities'    => [],
-		'definitions' => []
-	],
+	// Type configuration. You can append any data : a transformer will handle
+	// them (if exists)
+	'type' => [],
 
 	// Scalar field definitions
 	'scalar' => [
 		\StudioNet\GraphQL\Support\Scalar\Timestamp::class
+	],
+
+	// A transformer handles a supports and a transform method. I can convert
+	// any type of data in specific content. In order to make work Eloquent
+	// models, a transformer convert it into specific ObjectType.
+	//
+	// Take care about order : the first supported transformer will handle the
+	// transformation ; others will simply not be called. I you want make
+	// modifications about a specific transformer, you'll have to extend
+	// existing one and replace it below
+	//
+	// There's 3 types of transformers : type, query and mutation
+	'transformer' => [
+		'type'     => [
+			\StudioNet\GraphQL\Transformer\Type\ModelTransformer::class,
+			\StudioNet\GraphQL\Transformer\TypeTransformer::class,
+		],
+		'query'    => [
+			\StudioNet\GraphQL\Transformer\FieldTransformer::class,
+		],
+		'mutation' => [
+			\StudioNet\GraphQL\Transformer\FieldTransformer::class,
+		]
 	],
 
 	// Response configuration

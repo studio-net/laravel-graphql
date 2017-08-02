@@ -28,6 +28,13 @@ class GraphQL {
 	/** @var ScalarType[] $scalars */
 	private $scalars = [];
 
+	/** @var array $transformers */
+	private $transformers = [
+		'type'     => [],
+		'query'    => [],
+		'mutation' => []
+	];
+
 	/**
 	 * __construct
 	 *
@@ -47,17 +54,6 @@ class GraphQL {
 	public function getSchema($name) {
 		if (!$this->hasSchema($name)) {
 			throw new Exception\SchemaNotFoundException('Cannot find schema ' . $name);
-		}
-
-		// This method is called only when `execute()` method is called. So, we
-		// can initialize all our entities right here without problems
-		//
-		// TODO I don't really like to see this here... Must be refactored later
-		$manager = $this->app->make('graphql.eloquent.type_manager');
-		$models  = config('graphql.type.entities', []);
-
-		foreach ($manager->fromModels($models) as $key => $type) {
-			$this->registerType($key, $type);
 		}
 
 		// Represents an array like
@@ -149,9 +145,7 @@ class GraphQL {
 	 * @return array
 	 */
 	public function manageQuery(array $queries) {
-		$data    = [];
-		$models  = config('graphql.type.entities', []);
-		$manager = $this->app->make('graphql.eloquent.query_manager');
+		$data = [];
 
 		// Parse each query class and build it within the ObjectType
 		foreach ($queries as $name => $query) {
@@ -159,16 +153,13 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($query))->getShortName());
 			}
 
-			$query = $this->app->make($query);
-			$data  = $data + [$name => $query->toArray()];
-		}
+			try {
+				$query = $this->applyTransformers('query', $query);
+			} catch (\ReflectionException $e) {
+				throw new Exception\TypeNotFoundException($e->getMessage());
+			}
 
-		// Parse each model, retrieve is corresponding generated type and build
-		// a generic query upon it
-		foreach ($models as $model) {
-			$table = str_singular($this->app->make($model)->getTable());
-			$type  = $this->type($table);
-			$data  = $data + $manager->fromType($table, $type);
+			$data = $data + [$name => $query];
 		}
 
 		return new ObjectType([
@@ -186,9 +177,7 @@ class GraphQL {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function manageMutation(array $mutations) {
-		$data    = [];
-		$models  = config('graphql.type.entities', []);
-		$manager = $this->app->make('graphql.eloquent.mutation_manager');
+		$data = [];
 
 		// Parse each query class and build it within the ObjectType
 		foreach ($mutations as $name => $mutation) {
@@ -196,16 +185,13 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($mutation))->getShortName());
 			}
 
-			$mutation = $this->app->make($mutation);
-			$data = $data + [$name => $mutation->toArray()];
-		}
+			try {
+				$mutation = $this->applyTransformers('mutation', $mutation);
+			} catch (\ReflectionException $e) {
+				throw new Exception\TypeNotFoundException($e->getMessage());
+			}
 
-		// Parse each model, retrieve is corresponding generated type and build
-		// a generic mutation upon it
-		foreach ($models as $model) {
-			$table = str_singular($this->app->make($model)->getTable());
-			$type  = $this->type($table);
-			$data[$table] = $manager->fromType($type);
+			$data = $data + [$name => $mutation];
 		}
 
 		return new ObjectType([
@@ -226,7 +212,6 @@ class GraphQL {
 		$this->schemas[$name] = array_merge([
 			'query'    => [],
 			'mutation' => [],
-			'entities' => [],
 		], $data);
 	}
 
@@ -234,40 +219,31 @@ class GraphQL {
 	 * Register a type
 	 *
 	 * @param  string|null $name
-	 * @param  string|ObjectType|TypeInterface $type
+	 * @param  mixed $type
 	 *
 	 * @return void
 	 */
 	public function registerType($name, $type) {
-		if (is_string($type)) {
-			$type = $this->app->make($type);
+		try {
+			$type = $this->applyTransformers('type', $type);
+		} catch (\ReflectionException $e) {
+			throw new Exception\TypeNotFoundException($e->getMessage());
 		}
 
 		// Assert that the given type extend from TypeInterface or is an
-		// instance of ObjectType
-		if ((!$type instanceof ObjectType) and (!$type instanceof TypeInterface)) {
-			throw new Exception\TypeException('Given type doesn\'t extend from TypeInterface');
+		// instance of typeType
+		if ((!$type instanceof ObjectType)) {
+			throw new Exception\TypeException('Given type doesn\'t extends from typeType');
 		}
 
-		// Assert name is not empty : otherwise, get the class name from type
-		if (empty($name) or is_numeric($name)) {
+		// If there's no name, just guess it from built typeType or fallback
+		// on type name
+		if (empty($name) and empty($type->name)) {
 			$name = with(new \ReflectionClass($type))->getShortName();
+			$type->name = $name;
 		}
 
-		// If the type is extended from TypeInterface, we know that he has a
-		// `toType` method : so let's call it in order to retrieve an ObjectType
-		if ($type instanceof TypeInterface) {
-			$type = $type->toType();
-		}
-
-		// As we're working with generated types, we can't allow override
-		// because user will be lost. So let's throw an exception when this
-		// case is here
-		if (array_key_exists($name, $this->types)) {
-			throw new Exception\TypeException('Cannot override existing type');
-		}
-
-		$this->types[strtolower($name)] = $type;
+		$this->types[strtolower($type->name)] = $type;
 	}
 
 	/**
@@ -294,6 +270,52 @@ class GraphQL {
 		}
 
 		$this->scalars[strtolower($name)] = $scalar;
+	}
+
+	/**
+	 * Register transformer. A transformer performs transactions between an
+	 * Object to another. Each transformer is applied on specific type of data :
+	 * type, query or mutation. It cannot handle either.
+	 *
+	 * @param  string $category
+	 * @param  string $transformer
+	 * @return void
+	 */
+	public function registerTransformer($category, $transformer) {
+		if (!in_array($category, ['type', 'query', 'mutation'])) {
+			throw new Exception\TransformerException('Unable to find given category');
+		}
+
+		$this->transformers[$category][] = $this->app->make($transformer);
+	}
+
+	/**
+	 * Apply transformation. When a transformer can handle the given class, the
+	 * while will break and return the current state
+	 *
+	 * @param  string $type
+	 * @param  mixed  $cls
+	 * @return mixed
+	 */
+	private function applyTransformers($type, $cls) {
+		if (!array_key_exists($type, $this->transformers)) {
+			throw new Exception\TransformerException('Cannot transform given type');
+		}
+
+		// Convert string to instance if possible
+		if (is_string($cls)) {
+			$cls = $this->app->make($cls);
+		}
+
+		foreach ($this->transformers[$type] as $transformer) {
+			if ($transformer->supports($cls)) {
+				return $transformer->transform($cls);
+			}
+		}
+
+		// No transformer was found. Let's throw an error : the given class is
+		// not supported at all
+		throw new Exception\TransformerNotFoundException('There\'s no transformer for given class');
 	}
 
 	/**
