@@ -3,7 +3,6 @@ namespace StudioNet\GraphQL\Generator\Query;
 
 use GraphQL\Type\Definition\Type as GraphQLType;
 use StudioNet\GraphQL\Generator\EloquentGenerator;
-use StudioNet\GraphQL\Generator\Generator;
 use StudioNet\GraphQL\Type\EloquentObjectType;
 
 /**

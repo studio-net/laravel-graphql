@@ -1,11 +1,8 @@
 <?php
 namespace StudioNet\GraphQL\Transformer\Type;
 
-use Doctrine\DBAL\Schema\SchemaException;
 use GraphQL\Type\Definition\Type as GraphQLType;
-use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\Interfaces\ModelAttributes;
 use StudioNet\GraphQL\Transformer\Transformer;
@@ -15,27 +12,10 @@ use StudioNet\GraphQL\Type\EloquentObjectType;
  * Convert a Model instance to an EloquentObjectType
  *
  * @see Transformer
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class ModelTransformer extends Transformer {
 	/** @var array $cache */
 	private $cache = [];
-
-	/** @var Connection $connection */
-	private $connection;
-
-	/**
-	 * @override
-	 *
-	 * @param  Application $application
-	 * @param  Connection $connection
-	 *
-	 * @return void
-	 */
-	public function __construct(Application $application, Connection $connection) {
-		$this->connection = $connection;
-		parent::__construct($application);
-	}
 
 	/**
 	 * {@inheritDoc}

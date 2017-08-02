@@ -7,8 +7,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
-use StudioNet\GraphQL\Support\FieldInterface;
-use StudioNet\GraphQL\Support\TypeInterface;
 
 /**
  * GraphQL implementation singleton
@@ -22,7 +20,7 @@ class GraphQL {
 	/** @var array $schemas */
 	private $schemas = [];
 
-	/** @var TypeInterface[] $types */
+	/** @var array $types */
 	private $types = [];
 
 	/** @var ScalarType[] $scalars */
@@ -240,8 +238,7 @@ class GraphQL {
 			throw new Exception\TypeNotFoundException($e->getMessage());
 		}
 
-		// Assert that the given type extend from TypeInterface or is an
-		// instance of typeType
+		// Assert that object is an ObjectType
 		if ((!$type instanceof ObjectType)) {
 			throw new Exception\TypeException('Given type doesn\'t extends from typeType');
 		}

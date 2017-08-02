@@ -3,6 +3,11 @@ namespace StudioNet\GraphQL;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
+/**
+ * ServiceProvider
+ *
+ * @see BaseServiceProvider
+ */
 class ServiceProvider extends BaseServiceProvider {
 	/**
 	 * Bootstrap the application services.

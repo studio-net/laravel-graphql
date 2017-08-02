@@ -1,6 +1,9 @@
 <?php
 namespace StudioNet\GraphQL\Transformer;
 
+/**
+ * TransformerInterface
+ */
 interface TransformerInterface {
 	/**
 	 * Check if the current transformer can handle given instance
