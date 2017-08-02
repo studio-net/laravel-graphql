@@ -10,6 +10,7 @@ use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\Interfaces\ModelAttributes;
 use StudioNet\GraphQL\Transformer\Transformer;
 use StudioNet\GraphQL\Type\EloquentObjectType;
+use StudioNet\GraphQL\Traits\ModelRelationTrait;
 
 /**
  * Convert a Model instance to an EloquentObjectType
@@ -18,6 +19,8 @@ use StudioNet\GraphQL\Type\EloquentObjectType;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class ModelTransformer extends Transformer {
+	use ModelRelationTrait;
+
 	/** @var array $cache */
 	private $cache = [];
 
@@ -262,67 +265,6 @@ class ModelTransformer extends Transformer {
 			}
 
 			$this->cache[$key] = $data;
-		}
-
-		return $this->cache[$key];
-	}
-
-	/**
-	 * Return model relationships
-	 *
-	 * @param  Model $model
-	 * @return array
-	 */
-	private function getRelations(Model $model) {
-		// Handle cache managment
-		$key = 'relation:' . get_class($model);
-
-		if (empty($this->cache[$key])) {
-			$relations  = [];
-			$reflection = new \ReflectionClass($model);
-			$traits     = $reflection->getTraits();
-			$exclude    = [];
-
-			// Get traits methods and append them to the excluded methods
-			foreach ($traits as $trait) {
-				foreach ($trait->getMethods() as $method) {
-					$exclude[$method->getName()] = true;
-				}
-			}
-
-			foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-				if ($method->class !== get_class($model)) {
-					continue;
-				}
-
-				// We don't want method with parameters (relationship doesn't have
-				// parameter)
-				if (!empty($method->getParameters())) {
-					continue;
-				}
-
-				// We don't want parsing this current method
-				if (array_key_exists($method->getName(), $exclude)) {
-					continue;
-				}
-
-				try {
-					$return = $method->invoke($model);
-
-					// Get only method that returned Relation instance
-					if ($return instanceof Relation) {
-						$name = $method->getName();
-
-						$relations[$name] = [
-							'field' => $method->getName(),
-							'type'  => (new \ReflectionClass($return))->getShortName(),
-							'model' => (new \ReflectionClass($return->getRelated()))->getName()
-						];
-					}
-				} catch (\ErrorException $e) {}
-			}
-
-			$this->cache[$key] = $relations;
 		}
 
 		return $this->cache[$key];
