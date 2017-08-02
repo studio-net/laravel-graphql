@@ -54,7 +54,9 @@ return [
 			\StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator::class,
 			\StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator::class
 		],
-		'mutation' => []
+		'mutation' => [
+			\StudioNet\GraphQL\Generator\Mutation\NodeEloquentGenerator::class,
+		]
 	],
 
 	// Response configuration
