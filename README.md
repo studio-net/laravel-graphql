@@ -1,14 +1,14 @@
 Laravel GraphQL
 ===============
 
-Use Facebook GraphQL with Laravel 5 or Lumen. It is based on the PHP
-implementation [here](https://github.com/webonyx/graphql-php). You can find more
-information about GraphQL in the [GraphQL Introduction](http://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html)
-on the [React](http://facebook.github.io/react) blog or you can read the
-[GraphQL specifications](https://facebook.github.io/graphql/).
+Use Facebook GraphQL with Laravel 5 or Lumen. It is based on the PHP implementation [here](https://github.com/webonyx/graphql-php). You can find more information about GraphQL in the [GraphQL Introduction](http://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html) on the [React](http://facebook.github.io/react) blog or you can read the [GraphQL specifications](https://facebook.github.io/graphql/).
 
 This is a work in progress.
 > Warning : this package is not abled to run in production yet
+
+## Installation
+
+This package is only able to work with Laravel (at now). Later, a Lumen service provider will be added.
 
 ### Laravel 5.x
 
@@ -39,89 +39,51 @@ Now, you can run the following command and review the `config/graphql.php` file
 $ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 ```
 
+### Lumen 5.x
+
+(not impleted yet)
+
 ## Usage
 
-- [Basic usage](#basic-usage)
+- [Transformer](#transformer)
+- [Type](#type)
 - [Query](#query)
 - [Mutation](#mutation)
+- [Self documentation](#self-documentation)
 
-### Basic usage
+### Transformer
 
-If you're using Laravel with Eloquent and wanna implement GraphQL easily, you're
-very lucky. You can quickly do that with the following example :
+In order to make you understand how this package works, we have to start with transformer. A transformer is a simple way to transform any kind of source-data into an `ObjectType`. By default, we've implemented two transformers : `ModelTransformer` and `TypeTransformer`.
+
+* `ModelTransformer` transforms an Eloquent model by using reflection from database field, hiddens and fillable fields declared within the class. It also supports relationships between models ;
+* `TypeTransformer` transforms a custom built class inherit from `StudioNet\GraphQL\Support\Type` class ;
+
+Each transformer must have a `supports` method. If a transformer can handle a given type of data, it will be converted. Otherwise, an exception will be thrown. All transformers are registered within the configuration file. If you want create you're custom one, just append it.
+
+### Type
+
+You can register any source of data that you want into the configuration file (if a transformer can handle it).
 
 ```php
-# app/graphql.php
+# app/config.php
 
 return [
-	'type' => [
-		'entities' => [\App\User::class, \App\Post::class]
-	]
-];
+    'type' => [
+        \App\User::class,
+        \App\Property::class
+    ]
+]
 ```
 
-... Magic ! That's all you need to do.
-
-#### More explanations
-
-In fact, each entity has some attributes like hidden fields and can also have
-some relations with anothers entities. You're models are re-used in order to
-keep your desire. So, let's take the following entities example :
-
-```
-\App\User :
-    - fields [name, password, email]
-    - hidden fields [password]
-    - posts [hasMany \App\Post]
-   
-\App\Post :
-    - fields [title, content, user_id]
-    - author [belongsTo \App\User]
-```
-
-You will be able to make queries like :
-
-```graphql
-query {
-	users(take: 10) {
-		name
-			email
-
-			posts(take: 2, skip : 1) { # Availabled filters : take, skip, after, before
-				title
-				content
-			}
-	}
-}
-
-query {
-	user(id: 1) { # Availabled filters : id
-		name
-			email
-
-			posts {
-				title
-					content
-			}
-	}
-}
-```
-
-By default, each entity are created as type. You can call them within each
-custom query with the facade like `\GraphQL::type('user')` or
-`\GraphQL::listOf('user')`. Entity name is built from lowercase class name.
+You can use two kind of syntax : the first one is shown above. The second one using alias like `'user' => \App\User::class`.
 
 ### Query
 
-Queries are auto-generated based on each model. You can fill a custom name when
-register or use the default one.
-
-#### Custom query
-
-You can implement any custom query like the following example :
+Query are used in order to fetch data. Each query has it's own related [type](#type). 
 
 ```php
 # app/GraphQL/Query/Viewer.php
+
 namespace App\GraphQL\Query;
 
 use StudioNet\GraphQL\Support\Query;
@@ -130,71 +92,47 @@ use App\User;
 class Viewer extends Query {
 	/**
 	 * {@inheritDoc}
-	 *
-	 * @return ObjectType
 	 */
 	public function getRelatedType() {
 		return \GraphQL::type('user');
 	}
 
 	/**
-	 * Return current logged user
-	 *
-	 * @param  mixed $root
-	 * @param  array $args
+	 * Return first user in database
 	 *
 	 * @return \App\User
-	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
-	public function resolve($root, array $args) {
+	public function resolve() {
 		return User::first();
 	}
 }
 
 # config/graphql.php
+
 return [
 	'schema' => [
 		'definitions' => [
 			'default' => [
 				'query' => [
-					\App\GraphQL\Query\Viewer::class
-					// 'alias' => \App\GraphQL\Query\Viewer::class
+					'viewer' => \App\GraphQL\Query\Viewer::class
 				]
 			]
 		]
 	],
 
 	'type' => [
-		'entities' => [\App\User::class]
+		\App\User::class
 	]
 ];
 ```
 
-By default, if you don't specify alias for each query, the class name will be
-used (as lowercase) : `\App\GraphQL\Query\Viewer => viewer`. Of course, you can
-use custom type within each of your custom queries (you're not constraint to use
-entities's one).
-
 ### Mutation
 
-As query, mutations are auto-generated based on each specific model. You can
-update each entity based on the name you've filled or with default one.
-
-```graphql
-mutation {
-	updateUser : user(id: 1, name = 'Jean Dupont') {
-		id
-		name
-	}
-}
-```
-
-#### Custom mutation
-
-You can create custom mutation if you want, like the following example :
+Mutation are used to update or create data :
 
 ```php
 # app/GraphQL/Mutation/Profile.php
+
 namespace App\GraphQL\Mutation;
 
 use StudioNet\GraphQL\Support\Mutation;
@@ -239,23 +177,29 @@ class Profile extends Mutation {
 }
 
 # config/graphql.php
+
 return [
 	'schema' => [
 		'definitions' => [
 			'default' => [
 				'query' => [
-					\App\GraphQL\Query\Viewer::class
-					// 'alias' => \App\GraphQL\Query\Viewer::class
+					'viewer' => \App\GraphQL\Query\Viewer::class
 				],
 				'mutation' => [
-					\App\GraphQL\Mutation\Profile::class
+					'viewer' => \App\GraphQL\Mutation\Profile::class
 				]
 			]
 		]
 	],
 
 	'type' => [
-		'entities' => [\App\User::class]
+		\App\User::class
 	]
 ];
 ```
+
+Mutation's aliases are not dependent of query's one
+
+### Self documentation
+
+A documentation generator is implemented with the package. By default, you can access it by navigate to `/doc/graphql`. You can change this behavior within the configuration file. The built-in documentation is implemented from [this repository](https://github.com/mhallin/graphql-docs).
