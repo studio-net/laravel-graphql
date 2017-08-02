@@ -153,8 +153,8 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($query))->getShortName());
 			}
 
-			$query = $this->app->make($query);
-			$data  = $data + [$name => $query->toArray()];
+			$query = $this->applyTransformers('query', $query);
+			$data  = $data + [$name => $query];
 		}
 
 		return new ObjectType([
@@ -172,9 +172,7 @@ class GraphQL {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function manageMutation(array $mutations) {
-		$data    = [];
-		$models  = config('graphql.type.entities', []);
-		$manager = $this->app->make('graphql.eloquent.mutation_manager');
+		$data = [];
 
 		// Parse each query class and build it within the ObjectType
 		foreach ($mutations as $name => $mutation) {
@@ -182,16 +180,8 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($mutation))->getShortName());
 			}
 
-			$mutation = $this->app->make($mutation);
-			$data = $data + [$name => $mutation->toArray()];
-		}
-
-		// Parse each model, retrieve is corresponding generated type and build
-		// a generic mutation upon it
-		foreach ($models as $model) {
-			$table = str_singular($this->app->make($model)->getTable());
-			$type  = $this->type($table);
-			$data[$table] = $manager->fromType($type);
+			$mutation = $this->applyTransformers('mutation', $mutation);
+			$data = $data + [$name => $mutation];
 		}
 
 		return new ObjectType([
