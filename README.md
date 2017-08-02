@@ -116,6 +116,12 @@ return [
 You can use two kind of syntax : the first one is shown above. The second one
 using alias like `'user' => \App\User::class`.
 
+#### Overide default name and description
+
+Each model can implements `StudioNet\GraphQL\Support\Interfaces\ModelAttributes`
+interface in order to override default name and descriptions. By default,
+they're built based on generic sentence and singularize table name.
+
 ### Generator
 
 Generators are used to make life easier : for example, it's very useful when a
