@@ -35,6 +35,12 @@ class GraphQL {
 		'mutation' => []
 	];
 
+	/** @var array $generators */
+	private $generators = [
+		'query'    => [],
+		'mutation' => []
+	];
+
 	/**
 	 * __construct
 	 *
@@ -153,6 +159,13 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($query))->getShortName());
 			}
 
+			// Prevent overriding existing key
+			if (array_key_exists($name, $data)) {
+				throw new Exception\QueryException('Cannot declare query twice');
+			}
+
+			// We don't want \ReflectionException exception : just override it
+			// and return ours
 			try {
 				$query = $this->applyTransformers('query', $query);
 			} catch (\ReflectionException $e) {
@@ -164,7 +177,7 @@ class GraphQL {
 
 		return new ObjectType([
 			'name'   => 'Query',
-			'fields' => $data
+			'fields' => $this->applyGenerators('query', $data)
 		]);
 	}
 
@@ -316,6 +329,60 @@ class GraphQL {
 		// No transformer was found. Let's throw an error : the given class is
 		// not supported at all
 		throw new Exception\TransformerNotFoundException('There\'s no transformer for given class');
+	}
+
+	/**
+	 * Register generator. A generator performs generations based on given
+	 * ObjectType. Instead of transformer, if multiple generators can handles a
+	 * given type, all will be called and will be merged
+	 *
+	 * A generator cannot be used to generate ObjectType
+	 *
+	 * @param  string $category
+	 * @param  string $generator
+	 * @return void
+	 */
+	public function registerGenerator($category, $generator) {
+		if (!in_array($category, ['query', 'mutation'])) {
+			throw new Exception\GeneratorException('Unable to find given category');
+		}
+
+		$this->generators[$category][] = $this->app->make($generator);
+	}
+
+	/**
+	 * Apply generators
+	 *
+	 * @param  string $type
+	 * @param  string $cls
+	 * @param  array  $data
+	 *
+	 * @return array
+	 */
+	private function applyGenerators($type, array $data = []) {
+		if (!array_key_exists($type, $this->generators)) {
+			throw new Exception\GeneratorException('Cannot generate given type');
+		}
+
+		// A generator can only handle types
+		$types = $this->types;
+
+		foreach ($this->generators[$type] as $generator) {
+			foreach ($types as $type) {
+				if ($generator->supports($type)) {
+					$key   = $generator->getKey($type);
+					$field = $generator->generate($type);
+
+					if (array_key_exists($key, $data)) {
+						throw new Exception\GeneratorException('Cannot override existing field');
+					}
+
+					$data[$key] = $field;
+				}
+			}
+		}
+
+		return $data;
 	}
 
 	/**
