@@ -159,11 +159,6 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($query))->getShortName());
 			}
 
-			// Prevent overriding existing key
-			if (array_key_exists($name, $data)) {
-				throw new Exception\QueryException('Cannot declare query twice');
-			}
-
 			// We don't want \ReflectionException exception : just override it
 			// and return ours
 			try {
@@ -198,6 +193,8 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($mutation))->getShortName());
 			}
 
+			// We don't want \ReflectionException exception : just override it
+			// and return ours
 			try {
 				$mutation = $this->applyTransformers('mutation', $mutation);
 			} catch (\ReflectionException $e) {
@@ -209,7 +206,7 @@ class GraphQL {
 
 		return new ObjectType([
 			'name'   => 'Mutation',
-			'fields' => $data
+			'fields' => $this->applyGenerators('mutation', $data)
 		]);
 	}
 
