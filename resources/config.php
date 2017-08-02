@@ -49,6 +49,11 @@ return [
 		]
 	],
 
+	// A generator can be applied with each ObjectType. You can register any
+	// generator you want.
+	//
+	// Instead of transformers, generators will not stopping at first match :
+	// all will be called
 	'generator' => [
 		'query'    => [
 			\StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator::class,
