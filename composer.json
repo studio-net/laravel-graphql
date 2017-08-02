@@ -1,5 +1,6 @@
 {
     "name": "studio-net/laravel-graphql",
+    "description": "GraphQL implementation with power of Laravel",
     "authors": [
         {
             "name": "Cyril Mizzi",
