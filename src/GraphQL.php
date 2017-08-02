@@ -153,8 +153,13 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($query))->getShortName());
 			}
 
-			$query = $this->applyTransformers('query', $query);
-			$data  = $data + [$name => $query];
+			try {
+				$query = $this->applyTransformers('query', $query);
+			} catch (\ReflectionException $e) {
+				throw new Exception\TypeNotFoundException($e->getMessage());
+			}
+
+			$data = $data + [$name => $query];
 		}
 
 		return new ObjectType([
@@ -180,7 +185,12 @@ class GraphQL {
 				$name = strtolower(with(new \ReflectionClass($mutation))->getShortName());
 			}
 
-			$mutation = $this->applyTransformers('mutation', $mutation);
+			try {
+				$mutation = $this->applyTransformers('mutation', $mutation);
+			} catch (\ReflectionException $e) {
+				throw new Exception\TypeNotFoundException($e->getMessage());
+			}
+
 			$data = $data + [$name => $mutation];
 		}
 
@@ -209,12 +219,16 @@ class GraphQL {
 	 * Register a type
 	 *
 	 * @param  string|null $name
-	 * @param  string|ObjectType|TypeInterface $type
+	 * @param  mixed $type
 	 *
 	 * @return void
 	 */
 	public function registerType($name, $type) {
-		$type = $this->applyTransformers('type', $type);
+		try {
+			$type = $this->applyTransformers('type', $type);
+		} catch (\ReflectionException $e) {
+			throw new Exception\TypeNotFoundException($e->getMessage());
+		}
 
 		// Assert that the given type extend from TypeInterface or is an
 		// instance of typeType

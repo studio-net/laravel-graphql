@@ -2,8 +2,9 @@
 namespace StudioNet\GraphQL\Tests;
 
 use GraphQL\Type\Definition\Type as GraphQLType;
-use StudioNet\GraphQL\GraphQL;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use StudioNet\GraphQL\GraphQL;
+use StudioNet\GraphQL\Transformer\Transformer;
 
 class GraphQLTest extends TestCase {
 	use DatabaseTransactions;
@@ -25,6 +26,6 @@ class GraphQLTest extends TestCase {
 	 * @expectedException \StudioNet\GraphQL\Exception\TypeNotFoundException
 	 */
 	public function testRegisterTypeException() {
-		app(GraphQL::class)->registerType('\\Test\\Class\\Type');
+		app(GraphQL::class)->registerType(null, '\\Test\\Class\\Type');
 	}
 }
