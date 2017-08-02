@@ -1,6 +1,9 @@
 <?php
 namespace StudioNet\GraphQL\Support;
 
+/**
+ * Represents must-used methods for an existing field
+ */
 interface FieldInterface {
 	/**
 	 * Return represented type

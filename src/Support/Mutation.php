@@ -1,4 +1,10 @@
 <?php
 namespace StudioNet\GraphQL\Support;
 
-class Mutation extends Field {}
+/**
+ * Mutation
+ *
+ * @see Field
+ * @abstract
+ */
+abstract class Mutation extends Field {}

@@ -1,4 +1,10 @@
 <?php
 namespace StudioNet\GraphQL\Support;
 
-class Query extends Field {}
+/**
+ * Query
+ *
+ * @see Field
+ * @abstract
+ */
+abstract class Query extends Field {}
