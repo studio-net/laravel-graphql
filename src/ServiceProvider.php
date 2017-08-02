@@ -23,9 +23,10 @@ class ServiceProvider extends BaseServiceProvider {
 		$this->publishes([$config => config_path('graphql.php')]);
 
 		// Call external methods to load defined schemas and others things
+		$this->registerScalars();
+		$this->registerTransformers();
 		$this->registerSchemas();
 		$this->registerTypes();
-		$this->registerScalars();
 	}
 
 	/**
@@ -47,7 +48,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function registerTypes() {
-		$types = config('graphql.type.definitions', []);
+		$types = config('graphql.type', []);
 
 		foreach ($types as $name => $type) {
 			$this->app['graphql']->registerType($name, $type);
@@ -64,6 +65,21 @@ class ServiceProvider extends BaseServiceProvider {
 
 		foreach ($scalars as $name => $scalar) {
 			$this->app['graphql']->registerScalar($name, $scalar);
+		}
+	}
+
+	/**
+	 * Register transformers
+	 *
+	 * @return void
+	 */
+	public function registerTransformers() {
+		$transformers = config('graphql.transformer', []);
+
+		foreach ($transformers as $key => $many) {
+			foreach ($many as $transformer) {
+				$this->app['graphql']->registerTransformer($key, $transformer);
+			}
 		}
 	}
 

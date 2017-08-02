@@ -56,17 +56,6 @@ class GraphQL {
 			throw new Exception\SchemaNotFoundException('Cannot find schema ' . $name);
 		}
 
-		// This method is called only when `execute()` method is called. So, we
-		// can initialize all our entities right here without problems
-		//
-		// TODO I don't really like to see this here... Must be refactored later
-		$manager = $this->app->make('graphql.eloquent.type_manager');
-		$models  = config('graphql.type.entities', []);
-
-		foreach ($manager->fromModels($models) as $key => $type) {
-			$this->registerType($key, $type);
-		}
-
 		// Represents an array like
 		//
 		// [
@@ -156,9 +145,7 @@ class GraphQL {
 	 * @return array
 	 */
 	public function manageQuery(array $queries) {
-		$data    = [];
-		$models  = config('graphql.type.entities', []);
-		$manager = $this->app->make('graphql.eloquent.query_manager');
+		$data = [];
 
 		// Parse each query class and build it within the ObjectType
 		foreach ($queries as $name => $query) {
@@ -168,14 +155,6 @@ class GraphQL {
 
 			$query = $this->app->make($query);
 			$data  = $data + [$name => $query->toArray()];
-		}
-
-		// Parse each model, retrieve is corresponding generated type and build
-		// a generic query upon it
-		foreach ($models as $model) {
-			$table = str_singular($this->app->make($model)->getTable());
-			$type  = $this->type($table);
-			$data  = $data + $manager->fromType($table, $type);
 		}
 
 		return new ObjectType([
@@ -244,55 +223,23 @@ class GraphQL {
 	 *
 	 * @return void
 	 */
-	public function registerType($type) {
-		$types = $this->applyTransformers('type', $type);
+	public function registerType($name, $type) {
+		$type = $this->applyTransformers('type', $type);
 
-		// As you're able to transform multiple time the same object (have
-		// multiple objects from same one), we have to while until the last one
-		foreach ($types as $object) {
-			// Assert that the given type extend from TypeInterface or is an
-			// instance of ObjectType
-			if ((!$object instanceof ObjectType)) {
-				throw new Exception\TypeException('Given type doesn\'t extends from ObjectType');
-			}
-
-			// Try to register the object as query and mutation. For example,
-			// it's useful in order to generate query and mutation
-			// for EloquentObjectType
-			try {
-				$this->registerQuery($object);
-				$this->registerMutation($object);
-			} catch (\Exception $e) {}
-
-			// If there's no name, just guess it from built ObjectType or fallback
-			// on type name
-			if (empty($type->name)) {
-				$name = with(new \ReflectionClass($type))->getShortName();
-				$type->name = $name;
-			}
-
-			$this->types[strtolower($type->name)] = $type;
+		// Assert that the given type extend from TypeInterface or is an
+		// instance of typeType
+		if ((!$type instanceof ObjectType)) {
+			throw new Exception\TypeException('Given type doesn\'t extends from typeType');
 		}
-	}
 
-	/**
-	 * Register a global query
-	 *
-	 * @param  string|ObjectType $query
-	 * @return void
-	 */
-	public function registerQuery($query) {
-		$queries = $this->applyTransformers('query', $query);
-
-		foreach ($queries as $object) {
-			if (!is_array($object)) {
-				throw new Exception\QueryException('A query must be an array');
-			}
-
-			foreach ($this->schemas as $key => $schema) {
-				$this->schemas[$key]['query'] = array_merge($object, $schema['query']);
-			}
+		// If there's no name, just guess it from built typeType or fallback
+		// on type name
+		if (empty($name) and empty($type->name)) {
+			$name = with(new \ReflectionClass($type))->getShortName();
+			$type->name = $name;
 		}
+
+		$this->types[strtolower($type->name)] = $type;
 	}
 
 	/**
@@ -356,21 +303,15 @@ class GraphQL {
 			$cls = $this->app->make($cls);
 		}
 
-		$data = [];
-
 		foreach ($this->transformers[$type] as $transformer) {
 			if ($transformer->supports($cls)) {
-				$data[] = $transformer->transform($cls);
+				return $transformer->transform($cls);
 			}
 		}
 
 		// No transformer was found. Let's throw an error : the given class is
 		// not supported at all
-		if (empty($data)) {
-			throw new Exception\TransformerNotFoundException('There\'s no transformer for given class');
-		}
-
-		return $data;
+		throw new Exception\TransformerNotFoundException('There\'s no transformer for given class');
 	}
 
 	/**

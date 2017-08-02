@@ -39,15 +39,13 @@ return [
 	'transformer' => [
 		'type'     => [
 			\StudioNet\GraphQL\Transformer\Type\ModelTransformer::class,
-			\StudioNet\GraphQL\Transformer\Type\DefaultTransformer::class
+			\StudioNet\GraphQL\Transformer\TypeTransformer::class,
 		],
 		'query'    => [
-			\StudioNet\GraphQL\Transformer\Query\ModelTransformer::class,
-			\StudioNet\GraphQL\Transformer\Query\DefaultTransformer::class
+			\StudioNet\GraphQL\Transformer\FieldTransformer::class,
 		],
 		'mutation' => [
-			\StudioNet\GraphQL\Transformer\Mutation\ModelTransformer::class,
-			\StudioNet\GraphQL\Transformer\Mutation\DefaultTransformer::class
+			\StudioNet\GraphQL\Transformer\FieldTransformer::class,
 		]
 	],
 

@@ -1,37 +1,34 @@
 <?php
-namespace StudioNet\GraphQL\Transformer\Type;
+namespace StudioNet\GraphQL\Transformer;
 
-use StudioNet\GraphQL\Support\TypeInterface;
 use GraphQL\Type\Definition\ObjectType;
+use StudioNet\GraphQL\Support\TypeInterface;
+use StudioNet\GraphQL\Transformer\Transformer;
 
 /**
  * Convert a TypeInterface to ObjectType
+ *
+ * @see Transformer
  */
-class DefaultTransformer {
+class TypeTransformer extends Transformer {
 	/**
-	 * supports
-	 *
-	 * @param  mixed $instance
-	 * @return bool
+	 * {@inheritDoc}
 	 */
 	public function supports($instance) {
 		return ($instance instanceof TypeInterface);
 	}
 
 	/**
-	 * Transform a Model to an EloquentObjectType
-	 *
-	 * @param  Model $model
-	 * @return EloquentObjectType
+	 * {@inheritDoc}
 	 */
-	public function transform(TypeInterface $type) {
-		$fields     = $type->getFields();
-		$attributes = $type->getAttributes();
-		$interfaces = $type->getInterfaces();
+	public function transform($instance) {
+		$fields     = $instance->getFields();
+		$attributes = $instance->getAttributes();
+		$interfaces = $instance->getInterfaces();
 
 		foreach ($fields as $key => $field) {
 			if (is_array($field)) {
-				$resolver = $this->getFieldResolver($type, $key, $field);
+				$resolver = $this->getFieldResolver($instance, $key, $field);
 
 				if ($resolver !== null) {
 					$fields[$key]['resolve'] = $resolver;
@@ -39,13 +36,14 @@ class DefaultTransformer {
 			}
 		}
 
+		// Merge all attributes within attributes var
 		$attributes = array_merge($attributes, [
-			'fields' => $fields,
-			'name'   => $this->getName(),
+			'fields'      => $fields,
+			'name'        => $this->getName(),
 			'description' => $this->getDescription()
 		]);
 
-		if (!empty($nterfaces)) {
+		if (!empty($interfaces)) {
 			$attributes['interfaces'] = $interfaces;
 		}
 

@@ -11,7 +11,7 @@ use Illuminate\Foundation\Application;
  */
 abstract class Transformer implements TransformerInterface {
 	/** @var Application $app */
-	private $app;
+	protected $app;
 
 	/**
 	 * __construct

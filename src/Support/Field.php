@@ -1,20 +1,22 @@
 <?php
 namespace StudioNet\GraphQL\Support;
 
-abstract class Field {
+/**
+ * Represent a field
+ *
+ * @see FieldInterface
+ * @abstract
+ */
+abstract class Field implements FieldInterface {
 	/**
-	 * Return availabled attributes
-	 *
-	 * @return array
+	 * {@inheritDoc}
 	 */
 	public function getAttributes() {
 		return [];
 	}
 
 	/**
-	 * Return availabled arguments
-	 *
-	 * @return array
+	 * {@inheritDoc}
 	 */
 	public function getArguments() {
 		return [];
