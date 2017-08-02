@@ -98,6 +98,6 @@ return [
 	'documentation' => [
 		'active' => true,
 		'prefix' => 'doc',
-		'route'  => 'graphql'
+		'route'  => 'graphql/{schema?}'
 	]
 ];
