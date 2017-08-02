@@ -124,7 +124,7 @@ pluralize query for us. A generator is similar to a transformer : it handles a
 `supports` methods but return an array (it doesn't convert any data, just use
 existing one).
 
-```
+```php
 # config/graphql.php
 
 return [
