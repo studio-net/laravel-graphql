@@ -49,6 +49,14 @@ return [
 		]
 	],
 
+	'generator' => [
+		'query'    => [
+			\StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator::class,
+			\StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator::class
+		],
+		'mutation' => []
+	],
+
 	// Response configuration
 	//
 	// `headers` : custom headers to send on controller response
