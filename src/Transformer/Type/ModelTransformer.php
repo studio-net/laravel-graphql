@@ -154,16 +154,25 @@ class ModelTransformer extends Transformer {
 	 * @return callable
 	 */
 	private function getResolver(array $relation) {
-		$method = $relation['field'];
+		$method  = $relation['field'];
+		$primary = $this->app->make($relation['model'])->getKeyName();
+		$order   = array_flip(array_keys($this->getArguments()));
 
-		return function($root, array $args) use ($method) {
-			$collection = $root->{$method};
+		return function($root, array $args) use ($method, $primary, $order) {
+			// Clone collection in order to not erase existin collection
+			$collection = clone $root->{$method};
+
+			// We have to specific custom order to args because we cannot take
+			// some elements before splicing it...
+			uksort($args, function($key) use ($order) {
+				return $order[$key];
+			});
 
 			foreach ($args as $key => $value) {
 				switch ($key) {
 					case 'after'  : $collection = $collection->where($primary, '>', $value) ; break;
 					case 'before' : $collection = $collection->where($primary, '<', $value) ; break;
-					case 'skip'   : $collection = $collection->skip($value)                 ; break;
+					case 'skip'   : $collection = $collection->splice($value)               ; break;
 					case 'take'   : $collection = $collection->take($value)                 ; break;
 				}
 			}
@@ -174,7 +183,7 @@ class ModelTransformer extends Transformer {
 
 	/**
 	 * Return available arguments (many because there's no argument for single
-	 * element)
+	 * element). Order matter
 	 *
 	 * @return array
 	 */
