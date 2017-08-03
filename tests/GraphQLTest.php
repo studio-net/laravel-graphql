@@ -69,7 +69,6 @@ class GraphQLTest extends TestCase {
 		$graphql->registerType('post', Entity\Post::class);
 
 		$params   = ['query' => 'query { user(id: 1) { name, posts { title } }}'];
-		$response = $this->call('GET', '/graphql', $params);
 		$content  = $response->getData(true);
 		$user     = Entity\User::with('posts')->find(1);
 		$posts    = [];
@@ -78,14 +77,15 @@ class GraphQLTest extends TestCase {
 			$posts[]['title'] = $post->title;
 		}
 
-		$this->assertArrayHasKey('data', $content);
-		$this->assertArrayNotHasKey('errors', $content);
+		$this->call('GET', '/graphql', $params);
+		$this->seeJsonEquals([
 		$this->assertSame([
 			'user' => [
 				'name'  => $user->name,
 				'posts' => $posts
 			]
 		], $content['data']);
+		]);
 	}
 
 	/**
@@ -100,12 +100,12 @@ class GraphQLTest extends TestCase {
 		$graphql->registerSchema('default', []);
 		$graphql->registerType('user', Entity\User::class);
 
-		$params   = ['query' => 'mutation { updateName : user(id: 1, name : "Test") { id, name } }'];
-		$response = $this->call('POST', '/graphql', $params);
+		$params = ['query' => 'mutation { updateName : user(id: 1, name : "Test") { id, name } }'];
+		$this->json('POST', '/graphql', $params);
 		$content  = $response->getData(true);
-		$entity   = Entity\User::find(1);
+		$entity = Entity\User::find(1);
 
-		$this->assertArrayHasKey('data', $content);
+		$this->seeJsonEquals([
 		$this->assertArrayNotHasKey('errors', $content);
 		$this->assertSame([
 			'updateName' => [
@@ -113,5 +113,6 @@ class GraphQLTest extends TestCase {
 				'name' => $entity->name
 			]
 		], $content['data']);
+		]);
 	}
 }

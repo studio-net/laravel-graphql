@@ -1,7 +1,7 @@
 <?php
 namespace StudioNet\GraphQL\Tests;
 
-use Orchestra\Testbench\TestCase as BaseTestCase;
+use Orchestra\Testbench\BrowserKit\TestCase as BaseTestCase;
 
 /**
  * TestCase
