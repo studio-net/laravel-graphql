@@ -57,7 +57,7 @@ class ModelTransformer extends Transformer {
 		if ($model instanceof ModelAttributes) {
 			return $model->getObjectName();
 		}
-	
+
 		return ucfirst(with(new \ReflectionClass($model))->getShortName());
 	}
 
@@ -71,7 +71,7 @@ class ModelTransformer extends Transformer {
 		if ($model instanceof ModelAttributes) {
 			return $model->getObjectDescription();
 		}
-	
+
 		return sprintf('A %s model representation', $this->getName($model));
 	}
 
