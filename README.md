@@ -28,7 +28,7 @@ provider will be added.
 Simply run
 
 ```bash
-composer require 'studio-net/laravel-graphql:0.1-beta'
+composer require 'studio-net/laravel-graphql:0.2-beta'
 ```
 
 ... and add service provider to `config/app.php` :
@@ -70,6 +70,7 @@ $ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 - [Query](#query)
 - [Mutation](#mutation)
 - [Self documentation](#self-documentation)
+- [Example](#example)
 
 ### Transformer
 
@@ -136,6 +137,34 @@ Each model can implements `StudioNet\GraphQL\Support\Interfaces\ModelAttributes`
 interface in order to override default name and descriptions. By default,
 they're built based on generic sentence and singularize table name.
 
+#### `StudioNet\GraphQL\Transformer\Type\ModelTransformer`
+
+Transform given `Illuminate\Database\Eloquent\Model` to `EloquentObjectType`. It
+lists all availabled fetchable columns and resolve each relationships fields
+with following configuration (`hasMany`) :
+
+```
+- Type      : List of "EloquentObjectType"
+- Return    : "Illuminate\Support\Collection"
+- Arguments :
+  - "take"   : limit
+  - "skip"   : offset
+  - "before" : cursor-based navigation
+  - "after"  : cursor-based navigation
+```
+
+#### `StudioNet\GraphQL\Transformer\TypeTransformer`
+
+Transform user-specified type. It handles the following methods :
+
+```
+- getName()        : Return type name
+- getDescription() : Return type description
+- getAttributes()  : Return type attributes
+- getFields()      : Return type fields
+- getInterfaces()  : Return type interfaces
+```
+
 ### Generator
 
 Generators are used to make life easier : for example, it's very useful when a
@@ -158,6 +187,44 @@ return [
 		]
 	]
 ]
+```
+
+#### `StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator`
+
+Generate singular query based on `EloquentObjectType`.
+
+```
+- Type      : "EloquentObjectType"
+- Return    : "Illuminate\Database\Eloquent\Model"
+- Arguments :
+  - "id" : id-based navigation
+```
+
+#### `StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator`
+
+Generate pluralized query based on `EloquentObjectType`.
+
+```
+- Type      : List of "EloquentObjectType"
+- Return    : "Illuminate\Database\Eloquent\Collection"
+- Arguments :
+  - "take"   : limit
+  - "skip"   : offset
+  - "before" : cursor-based navigation
+  - "after"  : cursor-based navigation
+```
+
+#### `StudioNet\GraphQL\Generator\Mutation\NodeEloquentGenerator`
+
+Generate mutation based on `EloquentObjectType`. It allows create or update
+methods (primary key specified).
+
+```
+- Type      : "EloquentObjectType"
+- Return    : "Illuminate\Database\Eloquent\Model"
+- Arguments :
+  - "{primaryKey}" : model defined primary key
+  - "{columns}"    : availabled fillable or non-guarded fields (no hidden ones)
 ```
 
 ### Query
@@ -287,3 +354,89 @@ Mutation's aliases are not dependent of query's one
 ### Self documentation
 
 A documentation generator is implemented with the package. By default, you can access it by navigate to `/doc/graphql`. You can change this behavior within the configuration file. The built-in documentation is implemented from [this repository](https://github.com/mhallin/graphql-docs).
+
+### Example
+
+To run the following example, we assumed that you have two existing models :
+`User` and `Post`. A `User` model has a method `posts` that will return a
+`HasMany` relationship with `Post` model.
+
+We'll simply create a query that represents the first user in the database
+(there's no really use case but it's only for the example). We just have to
+register models and created query.
+
+```php
+# app/GraphQL/Query/Viewer.php
+
+namespace App\GraphQL\Query;
+
+use GraphQL;
+use StudioNet\GraphQL\Support\Query;
+
+/**
+ * Viewer
+ *
+ * @see Query
+ */
+class Viewer extends Query {
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getRelatedType() {
+		return \GraphQL::type('user');
+	}
+
+	/**
+	 * Return first user in database
+	 *
+	 * @return \App\User
+	 */
+	public function getResolver() {
+		return \App\User::first();
+	}
+}
+
+# config/graphql.php
+
+return [
+	'schema' => [
+		'default' => 'default',
+		'definitions' => [
+			'default' => [
+				'query'    => [\App\GraphQL\Query\Viewer::class],
+				'mutation' => []
+			]
+		]
+	],
+
+	'type' => [\App\User::class, \App\Post::class]
+];
+```
+
+```graphql
+query {
+	viewer {
+		name
+		email
+
+		posts {
+			title
+			content
+		}
+	}
+}
+
+# is equivalent to (if user id exists)
+
+query {
+	user (id: 1) {
+		name
+		email
+
+		posts {
+			title
+			content
+		}
+	}
+}
+```
