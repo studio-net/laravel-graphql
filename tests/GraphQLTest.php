@@ -69,7 +69,6 @@ class GraphQLTest extends TestCase {
 		$graphql->registerType('post', Entity\Post::class);
 
 		$params   = ['query' => 'query { user(id: 1) { name, posts { title } }}'];
-		$content  = $response->getData(true);
 		$user     = Entity\User::with('posts')->find(1);
 		$posts    = [];
 
@@ -79,13 +78,12 @@ class GraphQLTest extends TestCase {
 
 		$this->call('GET', '/graphql', $params);
 		$this->seeJsonEquals([
-		$this->assertSame([
-			'user' => [
-				'name'  => $user->name,
-				'posts' => $posts
+				'user' => [
+					'name' => $user->name,
+					'posts' => $posts
+				]
 			]
-		], $content['data']);
-		]);
+		], $response);
 	}
 
 	/**
@@ -102,17 +100,33 @@ class GraphQLTest extends TestCase {
 
 		$params = ['query' => 'mutation { updateName : user(id: 1, name : "Test") { id, name } }'];
 		$this->json('POST', '/graphql', $params);
-		$content  = $response->getData(true);
 		$entity = Entity\User::find(1);
 
 		$this->seeJsonEquals([
-		$this->assertArrayNotHasKey('errors', $content);
-		$this->assertSame([
-			'updateName' => [
-				'id'   => (string) $entity->getKey(),
-				'name' => $entity->name
+			'data' => [
+				'updateName' => [
+					'id'   => (string) $entity->getKey(),
+					'name' => $entity->name
+				]
 			]
-		], $content['data']);
-		]);
+		], $response);
+	}
+
+	/**
+	 * Backward compatibility between 5.3 and 5.4
+	 *
+	 * @param  array $data
+	 * @param  mixed $response
+	 *
+	 * @return void
+	 */
+	public function assertJsonEquals(array $data, $response) {
+		if (method_exists($response, 'assertJson')) {
+			$response->assertJson($data);
+		}
+
+		if (method_exists($response, 'seeJsonEquals')) {
+			$response->seeJsonEquals($data);
+		}
 	}
 }

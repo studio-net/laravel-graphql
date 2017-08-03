@@ -5,6 +5,7 @@ use StudioNet\GraphQL\Tests\Entity;
 use StudioNet\GraphQL\Tests\TestCase;
 use StudioNet\GraphQL\Transformer\Type\ModelTransformer;
 use StudioNet\GraphQL\Type\EloquentObjectType;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 /**
  * ModelTransformerTest
@@ -12,6 +13,8 @@ use StudioNet\GraphQL\Type\EloquentObjectType;
  * @see TestCase
  */
 class ModelTransformerTest extends TestCase {
+	use DatabaseTransactions;
+
 	/**
 	 * testSupports
 	 *
@@ -85,6 +88,7 @@ class ModelTransformerTest extends TestCase {
 		$resolver    = $transformer->transform($user)->getFields()['posts']->config['resolve'];
 		$response    = call_user_func_array($resolver, [$entity, ['take' => 1, 'skip' => 1]]);
 
-		$this->assertSame($entity->posts->get(1)->toArray(), $response[0]->toArray());
+		$this->assertSame(1, count($response));
+		$this->assertSame($entity->posts->get(1)->toArray(), current($response)->toArray());
 	}
 }
