@@ -47,10 +47,15 @@ class NodeEloquentGenerator extends Generator {
 		$data     = [];
 		$columns  = array_filter($model->getColumns());
 		$fillable = array_flip($model->getFillable());
+		$guarded  = array_flip($model->getGuarded());
 		$hidden   = array_flip($model->getHidden());
 
 		if (!empty($fillable)) {
 			$columns = array_intersect_key($columns, $fillable);
+		}
+
+		else if (!empty($guarded)) {
+			$columns = array_diff(key($columns, $guarded));
 		}
 
 		if (!empty($hidden)) {
@@ -77,12 +82,13 @@ class NodeEloquentGenerator extends Generator {
 	protected function getResolver(Model $model) {
 		return function($root, array $args) use ($model) {
 			$primary = $model->getKeyName();
-			$data    = $model->query()->updateOrCreate(
-				[$primary => $args[$primary]],
-				$args
-			);
+			$entity  = $model->findOrNew($args[$primary]);
 
-			return $data;
+			unset($args[$primary]);
+			$entity->fill($args);
+			$entity->save();
+
+			return $entity;
 		};
 	}
 }

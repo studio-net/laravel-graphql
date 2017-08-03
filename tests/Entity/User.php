@@ -15,6 +15,9 @@ class User extends Model {
 	/** @var array $hidden */
 	protected $hidden = ['password'];
 
+	/** @var array $guarded */
+	protected $guarded = [];
+
 	/**
 	 * Return related posts
 	 *
