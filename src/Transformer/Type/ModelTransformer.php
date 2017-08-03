@@ -164,9 +164,8 @@ class ModelTransformer extends Transformer {
 
 			// We have to specific custom order to args because we cannot take
 			// some elements before splicing it...
-			uksort($args, function($key) use ($order) {
-				return $order[$key];
-			});
+			$order = array_intersect_key($order, $args);
+			$args  = array_merge($order, $args);
 
 			foreach ($args as $key => $value) {
 				switch ($key) {
