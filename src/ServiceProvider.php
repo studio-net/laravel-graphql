@@ -20,9 +20,9 @@ class ServiceProvider extends BaseServiceProvider {
 		$views  = $this->getConfigurationPath() . '/' . 'resources/views';
 
 		$this->mergeConfigFrom($config, 'graphql');
-		$this->loadRoutesFrom($routes);
 		$this->loadViewsFrom($views, 'graphql');
 		$this->publishes([$config => config_path('graphql.php')]);
+		require $routes;
 
 		// Call external methods to load defined schemas and others things
 		$this->registerScalars();
