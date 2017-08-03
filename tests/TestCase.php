@@ -1,8 +1,14 @@
 <?php
 namespace StudioNet\GraphQL\Tests;
 
-use Orchestra\Testbench\TestCase as BaseTestCase;
+use Orchestra\Testbench\BrowserKit\TestCase as BaseTestCase;
 
+/**
+ * TestCase
+ *
+ * @see BaseTestCase
+ * @abstract
+ */
 abstract class TestCase extends BaseTestCase {
 	/**
 	 * {@inheritDoc}
@@ -10,7 +16,7 @@ abstract class TestCase extends BaseTestCase {
 	public function setUp() {
 		parent::setUp();
 	
-		$this->loadLaravelMigrations(['--database' => 'testing']);
+		$this->artisan('migrate', ['--database' => 'testing']);
 		$this->withFactories(dirname(__DIR__) . '/database/factories');
 	}
 
@@ -20,7 +26,7 @@ abstract class TestCase extends BaseTestCase {
 	 */
 	protected function getPackageProviders($app) {
 		return [
-			\StudioNet\GraphQL\ServiceProvider::class
+			\StudioNet\GraphQL\Tests\Stubs\ServiceProvider::class
 		];
 	}
 

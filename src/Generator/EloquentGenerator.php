@@ -30,21 +30,20 @@ abstract class EloquentGenerator extends Generator implements EloquentGeneratorI
 			}
 
 			// Retrieve single node
-			if (array_key_exists($primary, $args)) {
-				return $builder->findOrFail($args[$primary]);
+			if (array_key_exists('id', $args)) {
+				return $builder->findOrFail($args['id']);
 			}
 
 			foreach ($args as $key => $value) {
 				switch ($key) {
-				case 'after'  : $builder->where($primary, '>', $value) ; break;
-				case 'before' : $builder->where($primary, '<', $value) ; break;
-				case 'skip'   : $builder->skip($value)                 ; break;
-				case 'take'   : $builder->take($value)                 ; break;
+				case 'after'  : $builder = $builder->where($primary, '>', $value) ; break;
+				case 'before' : $builder = $builder->where($primary, '<', $value) ; break;
+				case 'skip'   : $builder = $builder->skip($value)                 ; break;
+				case 'take'   : $builder = $builder->take($value)                 ; break;
 				}
 			}
 
 			return $builder->get();
 		};
 	}
-
 }
