@@ -55,7 +55,7 @@ class NodeEloquentGenerator extends Generator {
 		}
 
 		else if (!empty($guarded)) {
-			$columns = array_diff(key($columns, $guarded));
+			$columns = array_diff_key($columns, $guarded);
 		}
 
 		if (!empty($hidden)) {
