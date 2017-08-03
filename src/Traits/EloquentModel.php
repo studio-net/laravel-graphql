@@ -16,12 +16,7 @@ trait EloquentModel {
 	 * @return array
 	 */
 	public function getRelationship() {
-		static $relations = [];
-
-		if (!empty($relations)) {
-			return $relations;
-		}
-
+		$relations  = [];
 		$reflection = new ReflectionClass($this);
 		$traits     = $reflection->getTraits();
 		$exclude    = [];
@@ -83,12 +78,7 @@ trait EloquentModel {
 	 * @return array
 	 */
 	public function getColumns() {
-		static $data = [];
-
-		if (!empty($data)) {
-			return $data;
-		}
-
+		$data       = [];
 		$table      = $this->getTable();
 		$connection = $this->getConnection();
 		$primary    = $this->getKeyName();
