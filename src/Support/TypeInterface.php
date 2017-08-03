@@ -36,18 +36,4 @@ interface TypeInterface {
 	 * @return array
 	 */
 	public function getInterfaces();
-
-	/**
-	 * Convert type to array
-	 *
-	 * @return array
-	 */
-	public function toArray();
-
-	/**
-	 * Convert instance to ObjectType
-	 *
-	 * @return ObjectType
-	 */
-	public function toType();
 }
