@@ -46,5 +46,4 @@ abstract class EloquentGenerator extends Generator implements EloquentGeneratorI
 			return $builder->get();
 		};
 	}
-
 }
