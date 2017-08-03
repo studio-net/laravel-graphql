@@ -58,7 +58,7 @@ class GraphQLTest extends TestCase {
 	 *
 	 * @return void
 	 */
-	public function testEndpoint() {
+	public function testQuery() {
 		factory(Entity\User::class, 5)->create()->each(function($user) {
 			$user->posts()->saveMany(factory(Entity\Post::class, 5)->make());
 		});
@@ -84,6 +84,33 @@ class GraphQLTest extends TestCase {
 			'user' => [
 				'name'  => $user->name,
 				'posts' => $posts
+			]
+		], $content['data']);
+	}
+
+	/**
+	 * testMutation
+	 *
+	 * @return void
+	 */
+	public function testMutation() {
+		factory(Entity\User::class, 1)->create();
+
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerType('user', Entity\User::class);
+
+		$params   = ['query' => 'mutation { updateName : user(id: 1, name : "Test") { id, name } }'];
+		$response = $this->call('POST', '/graphql', $params);
+		$content  = $response->getData(true);
+		$entity   = Entity\User::find(1);
+
+		$this->assertArrayHasKey('data', $content);
+		$this->assertArrayNotHasKey('errors', $content);
+		$this->assertSame([
+			'updateName' => [
+				'id'   => (string) $entity->getKey(),
+				'name' => $entity->name
 			]
 		], $content['data']);
 	}
