@@ -78,12 +78,13 @@ class GraphQLTest extends TestCase {
 
 		$this->call('GET', '/graphql', $params);
 		$this->seeJsonEquals([
+			'data' => [
 				'user' => [
 					'name' => $user->name,
 					'posts' => $posts
 				]
 			]
-		], $response);
+		]);
 	}
 
 	/**
@@ -109,24 +110,6 @@ class GraphQLTest extends TestCase {
 					'name' => $entity->name
 				]
 			]
-		], $response);
-	}
-
-	/**
-	 * Backward compatibility between 5.3 and 5.4
-	 *
-	 * @param  array $data
-	 * @param  mixed $response
-	 *
-	 * @return void
-	 */
-	public function assertJsonEquals(array $data, $response) {
-		if (method_exists($response, 'assertJson')) {
-			$response->assertJson($data);
-		}
-
-		if (method_exists($response, 'seeJsonEquals')) {
-			$response->seeJsonEquals($data);
-		}
+		]);
 	}
 }
