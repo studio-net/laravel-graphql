@@ -49,6 +49,7 @@ class NodeEloquentGenerator extends Generator {
 		$fillable = array_flip($model->getFillable());
 		$guarded  = array_flip($model->getGuarded());
 		$hidden   = array_flip($model->getHidden());
+		$primary  = $model->getKeyName();
 
 		if (!empty($fillable)) {
 			$columns = array_intersect_key($columns, $fillable);
@@ -60,6 +61,11 @@ class NodeEloquentGenerator extends Generator {
 
 		if (!empty($hidden)) {
 			$columns = array_diff_key($columns, $hidden);
+		}
+
+		// Append primary key
+		if (!array_key_exists($primary, $columns)) {
+			$columns[$primary] = GraphQLType::id();
 		}
 
 		// Parse each column in order to know which is fillable. To allow
