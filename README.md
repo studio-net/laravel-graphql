@@ -28,7 +28,7 @@ provider will be added.
 Simply run
 
 ```bash
-composer require 'studio-net/laravel-graphql:0.2-beta'
+composer require 'studio-net/laravel-graphql:dev-master'
 ```
 
 ... and add service provider to `config/app.php` :
