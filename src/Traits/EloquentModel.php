@@ -100,33 +100,39 @@ trait EloquentModel {
 			$related = $this->getRelationship();
 			$columns = array_diff($columns, $this->getHidden());
 			$columns = array_merge(array_keys($related), $columns);
+			$casts   = $this->getGenericCasts();
 
 			foreach (array_unique($columns) as $column) {
-				try {
-					$type = $connection->getDoctrineColumn($table, $column);
-					$type = $type->getType();
-				} catch (SchemaException $e) {
-					// There's nothing left to do (it's a virtual field or, it
-					// also could append with PostgreSQL multiple schemas)
-					$data[$column] = null;
-					continue;
+				if (array_key_exists($column, $casts)) {
+					$type = $casts[$column];
+				} else {
+					try {
+						$type = $connection->getDoctrineColumn($table, $column);
+						$type = $type->getType()->getName();
+					} catch (SchemaException $e) {
+						// There's nothing left to do (it's a virtual field or,
+						// it also could append with PostgreSQL multiple
+						// schemas)
+						$data[$column] = null;
+						continue;
+					}
 				}
 
 				// Parse each available database data type and call is related
 				// GraphQL type
-				switch ($type->getName()) {
-				case 'smallint'     :
-				case 'bigint'       :
-				case 'integer'      : $type = GraphQLType::int()                         ; break;
-				case 'decimal'      :
-				case 'float'        : $type = GraphQLType::float()                       ; break;
-				case 'date'         :
-				case 'datetimetz'   :
-				case 'time'         :
-				case 'datetime'     : $type = \GraphQL::scalar('timestamp')              ; break;
-				case 'array'        :
-				case 'simple_array' : $type = GraphQLType::listOf(GraphQLType::string()) ; break;
-				default             : $type = GraphQLType::string()                      ; break;
+				switch ($type) {
+				case 'real'       :
+				case 'int'        :
+				case 'integer'    : $type = GraphQLType::int()            ; break;
+				case 'double'     :
+				case 'float'      : $type = GraphQLType::float()          ; break;
+				case 'date'       :
+				case 'datetime'   : $type = \GraphQL::scalar('timestamp') ; break;
+				case 'boolean'    : $type = GraphQLType::boolean()        ; break;
+				case 'object'     :
+				case 'array'      :
+				case 'collection' : $type = \GraphQL::scalar('array')     ; break;
+				default           : $type = GraphQLType::string()         ; break;
 				}
 
 				// Assert primary key is an id
@@ -141,5 +147,19 @@ trait EloquentModel {
 		}
 
 		return $this->columns;
+	}
+
+	/**
+	 * Return generic cast : use date and casts parameters in one single array
+	 * statement
+	 *
+	 * @return array
+	 */
+	public function getGenericCasts() {
+		$dates = array_flip($this->getDates());
+		$dates = array_map(function() { return 'datetime'; }, $dates);
+		$casts = $this->getCasts();
+
+		return array_merge($dates, $casts);
 	}
 }
