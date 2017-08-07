@@ -153,6 +153,21 @@ with following configuration (`hasMany`) :
   - "after"  : cursor-based navigation
 ```
 
+This transformer also converts [mutated fields from model](https://laravel.com/docs/5.4/eloquent-mutators).
+Let's show you the convertion mapping (based on supported model cast) :
+
+```
++------------------+--------+---------+------------+---------+
+| integer          | float  | boolean | array      | string  |
++------------------+--------+---------+------------+---------+
+| real             | double | boolean | object     | default |
+| int              | float  |         | array      |         |
+| integer          |        |         | collection |         |
+| date (epoch)     |        |         |            |         |
+| datetime (epoch) |        |         |            |         |
++------------------+--------+---------+------------+---------+
+```
+
 #### `StudioNet\GraphQL\Transformer\TypeTransformer`
 
 Transform user-specified type. It handles the following methods :

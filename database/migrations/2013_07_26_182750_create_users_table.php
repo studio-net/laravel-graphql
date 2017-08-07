@@ -18,6 +18,9 @@ class CreateUsersTable extends Migration {
 
 			$table->string('name');
 			$table->string('email');
+			$table->timestamp('last_login')->nullable();
+			$table->json('permissions')->nullable();
+			$table->boolean('is_admin');
 			$table->string('password');
 
 			$table->timestamps();

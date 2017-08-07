@@ -112,4 +112,35 @@ class GraphQLTest extends TestCase {
 			]
 		]);
 	}
+
+	/**
+	 * testTypeResponse
+	 *
+	 * @return void
+	 */
+	public function testTypeResponse() {
+		factory(Entity\User::class, 1)->create();
+
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerType('user', Entity\User::class);
+
+		$params = ['query' => 'query { user (id: 1) { last_login, is_admin, permissions }}'];
+		$this->json('POST', '/graphql', $params);
+		$data   = $this->response->getData(true);
+
+		$this->assertArrayHasKey('data', $data);
+		$this->assertArrayHasKey('user', $data['data']);
+
+		$data = $data['data']['user'];
+		$user = Entity\User::find(1);
+
+		$this->assertTrue(is_bool($data['is_admin']));
+		$this->assertTrue(is_array($data['permissions']));
+		$this->assertTrue(is_int($data['last_login']));
+
+		$this->assertSame($user->last_login->timestamp, $data['last_login']);
+		$this->assertSame($user->permissions, $data['permissions']);
+		$this->assertSame($user->is_admin, $data['is_admin']);
+	}
 }
