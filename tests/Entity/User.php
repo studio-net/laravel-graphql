@@ -18,6 +18,17 @@ class User extends Model {
 	/** @var array $guarded */
 	protected $guarded = [];
 
+	/** @var array $dates */
+	protected $dates = [
+		'last_login'
+	];
+
+	/** @var array $casts */
+	protected $casts = [
+		'is_admin'    => 'boolean',
+		'permissions' => 'array'
+	];
+
 	/**
 	 * Return related posts
 	 *
@@ -25,5 +36,15 @@ class User extends Model {
 	 */
 	public function posts() {
 		return $this->hasMany(Post::class);
+	}
+
+	/**
+	 * Override name
+	 *
+	 * @param  string $value
+	 * @return string
+	 */
+	public function getNameAttribute($value) {
+		return strtoupper($value);
 	}
 }
