@@ -23,7 +23,8 @@ return [
 
 	// Scalar field definitions
 	'scalar' => [
-		\StudioNet\GraphQL\Support\Scalar\Timestamp::class
+		\StudioNet\GraphQL\Support\Scalar\Timestamp::class,
+		\StudioNet\GraphQL\Support\Scalar\JsonArray::class
 	],
 
 	// A transformer handles a supports and a transform method. I can convert
