@@ -81,9 +81,7 @@ into an `ObjectType`. By default, we've implemented two transformers :
 
 * `ModelTransformer` transforms an Eloquent model by using reflection from
 database field, hiddens and fillable fields declared within the class. It also
-supports relationships between models ; This transformer has a dependency on
-`StudioNet\GraphQL\Traits\EloquentModel` trait : you have to use it in either
-eloquent model you registered ;
+supports relationships between models ; 
 * `TypeTransformer` transforms a custom built class inherit from
 `StudioNet\GraphQL\Support\Type` class ;
 
@@ -103,7 +101,6 @@ You can register any source of data that you want into the configuration file
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use StudioNet\GraphQL\Traits\EloquentModel;
 use Illuminate\Notifications\Notifiable;
 
 /**
@@ -112,7 +109,6 @@ use Illuminate\Notifications\Notifiable;
  * @see Model
  */
 class User extends Model {
-	use EloquentModel; // -> Mandatory
 	use Notifiable;
 
 	/** @var array $hidden */
