@@ -27,9 +27,9 @@ class ServiceProvider extends BaseServiceProvider {
 		// Call external methods to load defined schemas and others things
 		$this->registerScalars();
 		$this->registerTransformers();
-		$this->registerGenerators();
 		$this->registerSchemas();
 		$this->registerTypes();
+		$this->registerGenerators();
 	}
 
 	/**

@@ -21,4 +21,11 @@ abstract class Generator implements GeneratorInterface {
 	public function __construct(Application $app) {
 		$this->app = $app;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function dependsOn() {
+		return [];
+	}
 }
