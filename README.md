@@ -153,6 +153,10 @@ with following configuration (`hasMany`) :
   - "after"  : cursor-based navigation
 ```
 
+I case of relationships and if `StudioNet\GraphQL\Support\Type\Meta` type is
+registered, you'll be granted to use field like `_posts_meta { count }` in order
+to retrieve global count.
+
 This transformer also converts [mutated fields from model](https://laravel.com/docs/5.4/eloquent-mutators).
 Let's show you the convertion mapping (based on supported model cast) :
 
@@ -213,6 +217,17 @@ Generate singular query based on `EloquentObjectType`.
 - Return    : "Illuminate\Database\Eloquent\Model"
 - Arguments :
   - "id" : id-based navigation
+```
+
+#### `StudioNet\GraphQL\Generator\Query\MetaEloquentGenerator`
+
+Generate meta query based on `EloquentObjectType`.
+
+```
+- Type      : "EloquentObjectType"
+- Return    : [
+   - "count" : count of objects
+]
 ```
 
 #### `StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator`
@@ -451,6 +466,44 @@ query {
 		posts {
 			title
 			content
+		}
+	}
+}
+```
+
+#### Using metadata
+
+```php
+# config/graphql.php
+
+return [
+	'type' => [
+		\StudioNet\GraphQL\Support\Type\Meta::class,
+		\App\User::class,
+		\App\Post::class
+	]
+];
+```
+
+```graphql
+query {
+	_users_meta {
+		count
+	}
+
+	users (take: 2) {
+		id
+		first_name
+		last_name
+
+		posts (take: 5) {
+			id
+			title
+			content
+		}
+
+		_posts_meta {
+			count
 		}
 	}
 }

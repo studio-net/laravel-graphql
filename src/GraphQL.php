@@ -341,7 +341,21 @@ class GraphQL {
 			throw new Exception\GeneratorException('Unable to find given category');
 		}
 
-		$this->generators[$category][] = $this->app->make($generator);
+		$generator    = $this->app->make($generator);
+		$dependencies = $generator->dependsOn();
+
+		// Assert generator has all is types dependencies
+		if (!empty($dependencies)) {
+			foreach ($dependencies as $dependency) {
+				$dependency = strtolower($dependency);
+
+				if (!array_key_exists($dependency, $this->types)) {
+					return;
+				}
+			}
+		}
+
+		$this->generators[$category][] = $generator;
 	}
 
 	/**

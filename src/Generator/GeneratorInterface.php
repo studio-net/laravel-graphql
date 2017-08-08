@@ -28,4 +28,12 @@ interface GeneratorInterface {
 	 * @return string
 	 */
 	public function getKey($instance);
+
+	/**
+	 * Assert a specific type is registered before executing. If not, the
+	 * generator will not be triggered
+	 *
+	 * @return array
+	 */
+	public function dependsOn();
 }

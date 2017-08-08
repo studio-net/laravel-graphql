@@ -18,8 +18,14 @@ return [
 	],
 
 	// Type configuration. You can append any data : a transformer will handle
-	// them (if exists)
-	'type' => [],
+	// them (if exists). Order matter
+	'type' => [
+		// Mandatory in order to make working meta data
+		\StudioNet\GraphQL\Support\Type\Meta::class
+
+		// Custom types
+		// \App\User::class
+	],
 
 	// Scalar field definitions
 	'scalar' => [
@@ -57,6 +63,7 @@ return [
 	// all will be called
 	'generator' => [
 		'query'    => [
+			\StudioNet\GraphQL\Generator\Query\MetaEloquentGenerator::class,
 			\StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator::class,
 			\StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator::class
 		],

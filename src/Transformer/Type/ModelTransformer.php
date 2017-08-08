@@ -1,6 +1,8 @@
 <?php
 namespace StudioNet\GraphQL\Transformer\Type;
 
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
@@ -76,8 +78,6 @@ class ModelTransformer extends Transformer {
 	}
 
 	/**
-	 * TODO
-	 *
 	 * Return corresponding fields. We're prefer using callable here because of
 	 * recursive models. As this method handles relationships, we have to manage
 	 * all depths cases
@@ -123,6 +123,18 @@ class ModelTransformer extends Transformer {
 					// like `BelongsTo` doesn't handle arguments (we can't
 					// lookup throw a single entry, even with id)
 					if ($many) {
+						if ($this->hasMeta()) {
+							// Create a field named `_{column}_meta` in order to
+							// access info from it (like global count)
+							$fields[] = [
+								'name'        => "_{$column}_meta",
+								'description' => "{$column} metadata",
+								'type'        => $this->getMeta(),
+								'resolve'     => $this->getMetaResolver($relation)
+							];
+						}
+
+						// Continue throw process
 						$type  = GraphQLType::listOf($type);
 						$field = array_merge([
 							'args'    => $this->getArguments(),
@@ -145,6 +157,28 @@ class ModelTransformer extends Transformer {
 
 			return $fields;
 		};
+	}
+
+	/**
+	 * Check if meta is global registered
+	 *
+	 * @return bool
+	 */
+	private function hasMeta() {
+		try {
+			return (bool) $this->app['graphql']->type('meta');
+		} catch (\Exception $e) {}
+
+		return false;
+	}
+
+	/**
+	 * Return meta type
+	 *
+	 * @return ObjectType
+	 */
+	private function getMeta() {
+		return $this->app['graphql']->type('meta');
 	}
 
 	/**
@@ -177,6 +211,32 @@ class ModelTransformer extends Transformer {
 			}
 
 			return $collection->all();
+		};
+	}
+
+	/**
+	 * Resolve a meta field
+	 *
+	 * @param  array $relation
+	 * @return callable
+	 * @SuppressWarnings(PHPMD.UnusedLocalVariable)
+	 */
+	private function getMetaResolver(array $relation) {
+		$method  = $relation['field'];
+
+		return function($root, array $args, $context, ResolveInfo $info) use ($method) {
+			// Clone collection in order to not erase existin collection
+			$collection = clone $root->{$method}();
+			$fields     = $info->getFieldSelection(3);
+			$data       = [];
+
+			foreach (array_keys($fields) as $key) {
+				switch ($key) {
+					case 'count' : $data['count'] = $collection->count(); break;
+				}
+			}
+
+			return $data;
 		};
 	}
 
