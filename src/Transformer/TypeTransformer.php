@@ -39,8 +39,8 @@ class TypeTransformer extends Transformer {
 		// Merge all attributes within attributes var
 		$attributes = array_merge($attributes, [
 			'fields'      => $fields,
-			'name'        => $this->getName(),
-			'description' => $this->getDescription()
+			'name'        => $instance->getName(),
+			'description' => $instance->getDescription()
 		]);
 
 		if (!empty($interfaces)) {
@@ -64,7 +64,7 @@ class TypeTransformer extends Transformer {
 			return $field['resolve'];
 		}
 
-		$method = studly_case(sprintf('resolve-%s-%field', $name));
+		$method = studly_case(sprintf('resolve-%s-field', $name));
 
 		if (method_exists($type, $method)) {
 			return function() use ($type, $method) { return [$type, $method]; };
