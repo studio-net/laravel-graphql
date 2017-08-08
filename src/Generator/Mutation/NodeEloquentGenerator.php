@@ -3,8 +3,9 @@ namespace StudioNet\GraphQL\Generator\Mutation;
 
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Database\Eloquent\Model;
-use StudioNet\GraphQL\Generator\Generator;
 use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
+use StudioNet\GraphQL\Generator\Generator;
+use StudioNet\GraphQL\Support\Eloquent\ModelAttributes;
 
 /**
  * Generate singular query from Eloquent object type
@@ -44,12 +45,13 @@ class NodeEloquentGenerator extends Generator {
 	 * @return array
 	 */
 	public function getArguments(Model $model) {
-		$data     = [];
-		$columns  = array_filter($model->getColumns());
-		$fillable = array_flip($model->getFillable());
-		$guarded  = array_flip($model->getGuarded());
-		$hidden   = array_flip($model->getHidden());
-		$primary  = $model->getKeyName();
+		$data       = [];
+		$attributes = $this->app->make(ModelAttributes::class);
+		$columns    = array_filter($attributes->getColumns($model));
+		$fillable   = array_flip($model->getFillable());
+		$guarded    = array_flip($model->getGuarded());
+		$hidden     = array_flip($model->getHidden());
+		$primary    = $model->getKeyName();
 
 		if (!empty($fillable)) {
 			$columns = array_intersect_key($columns, $fillable);

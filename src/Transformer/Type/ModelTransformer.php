@@ -6,7 +6,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
-use StudioNet\GraphQL\Support\Interfaces\ModelAttributes;
+use StudioNet\GraphQL\Support\Eloquent\ModelAttributes;
 use StudioNet\GraphQL\Transformer\Transformer;
 use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
 
@@ -30,11 +30,6 @@ class ModelTransformer extends Transformer {
 	 * {@inheritDoc}
 	 */
 	public function transform($instance) {
-		// Assert useful methods exists
-		if (!method_exists($instance, 'getColumns') or !method_exists($instance, 'getRelationship')) {
-			throw new \Exception('Cannot transform model that doesn\'t use EloquentModel trait');
-		}
-
 		$key = 'type:' . $instance->getTable();
 
 		if (empty($this->cache[$key])) {
@@ -87,8 +82,9 @@ class ModelTransformer extends Transformer {
 	 * @see    github.com/webonyx/graphql-php/blob/master/docs/type-system/object-types.md#field-configuration-options
 	 */
 	private function getFields(Model $model) {
-		$columns   = $model->getColumns();
-		$relations = $model->getRelationship();
+		$attributes = $this->app->make(ModelAttributes::class);
+		$columns    = $attributes->getColumns($model);
+		$relations  = $attributes->getRelations($model);
 
 		return function() use ($model, $columns, $relations) {
 			$fields = [];

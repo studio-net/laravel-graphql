@@ -2,7 +2,6 @@
 namespace StudioNet\GraphQL\Tests\Entity;
 
 use Illuminate\Database\Eloquent\Model;
-use StudioNet\GraphQL\Traits\EloquentModel;
 
 /**
  * Post
@@ -10,8 +9,6 @@ use StudioNet\GraphQL\Traits\EloquentModel;
  * @see Model
  */
 class Post extends Model {
-	use EloquentModel;
-
 	/** @var array $fillable */
 	protected $fillable = ['title', 'content'];
 

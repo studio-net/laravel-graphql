@@ -1,30 +1,47 @@
 <?php
-namespace StudioNet\GraphQL\Traits;
+namespace StudioNet\GraphQL\Support\Eloquent;
 
-use GraphQL\Type\Definition\Type as GraphQLType;
 use Doctrine\DBAL\Schema\SchemaException;
+use GraphQL\Type\Definition\Type as GraphQLType;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use ReflectionClass, ReflectionMethod, ErrorException;
+use StudioNet\GraphQL\Cache\Cachable;
 
 /**
- * Implements method `getRelations` and `getColumns`
+ * Get model attributes like columns, relationships, etc.
  */
-trait EloquentModel {
-	/** @var array $columns */
-	private $columns = null;
-
-	/** @var array $relationships */
-	private $relationships = null;
+class ModelAttributes extends Cachable {
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getCacheNamespace() {
+		return 'model.attributes';
+	}
 
 	/**
-	 * Return model relationships
+	 * Return cache key
 	 *
+	 * @param  string $kind
+	 * @param  Model  $model
+	 * @return string
+	 */
+	public function getKey($kind, Model $model) {
+		return sprintf('%s.%s', $kind, $model->getTable());
+	}
+
+	/**
+	 * Return model relations
+	 *
+	 * @param  Model $model
 	 * @return array
 	 */
-	public function getRelationship() {
-		if (is_null($this->relationships)) {
+	public function getRelations(Model $model) {
+		$key = $this->getKey('relation', $model);
+
+		if (!$this->has($key)) {
 			$relations  = [];
-			$reflection = new ReflectionClass($this);
+			$reflection = new ReflectionClass($model);
 			$traits     = $reflection->getTraits();
 			$exclude    = [];
 
@@ -35,8 +52,11 @@ trait EloquentModel {
 				}
 			}
 
+			// Parse each public methods (a relationship must be defined as
+			// public) in order to reduce list of possibilites
 			foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-				if ($method->class !== get_class($this)) {
+				// Assert method come from our model and not trait or extended
+				if ($method->class !== get_class($model)) {
 					continue;
 				}
 
@@ -52,55 +72,52 @@ trait EloquentModel {
 				}
 
 				try {
-					$return = $method->invoke($this);
+					$return = $method->invoke($model);
 
 					// Get only method that returned Relation instance
 					if ($return instanceof Relation) {
-						$name   = $method->getName();
-						$type   = with(new ReflectionClass($return))->getShortName();
-						$model  = with(new ReflectionClass($return->getRelated()));
-
-						// Assert that relationship field handle this trait :
-						// otherwise, we cannot check columns and relationships
-						if (!array_key_exists(__TRAIT__, $model->getTraits())) {
-							continue;
-						}
+						$name    = $method->getName();
+						$type    = with(new ReflectionClass($return))->getShortName();
+						$related = with(new ReflectionClass($return->getRelated()));
 
 						$relations[$name] = [
 							'field' => $method->getName(),
 							'type'  => $type,
-							'model' => $model->getName()
+							'model' => $related->getName()
 						];
 					}
 				} catch (ErrorException $e) {}
 			}
 
-			$this->relationships = $relations;
+			$this->save($key, $relations);
 		}
 
-		return $this->relationships;
+		return $this->get($key);
 	}
 
 	/**
 	 * Return available columns ; it also append relationships fields : it's
 	 * virtual within the database but real in GraphQL schema
 	 *
+	 * @param  Model $model
 	 * @return array
 	 */
-	public function getColumns() {
-		if (is_null($this->columns)) {
+	public function getColumns(Model $model) {
+		$key = $this->getKey('columns', $model);
+
+		if (!$this->has($key)) {
 			$data       = [];
-			$table      = $this->getTable();
-			$connection = $this->getConnection();
-			$primary    = $this->getKeyName();
+			$table      = $model->getTable();
+			$connection = $model->getConnection();
+			$primary    = $model->getKeyName();
 			$columns    = $connection->getSchemaBuilder()->getColumnListing($table);
 
 			// Remove hidden columns : we don't want show or update them. Also
 			// append relationships virtual columns
-			$related = $this->getRelationship();
-			$columns = array_diff($columns, $this->getHidden());
+			$related = $this->getRelations($model);
+			$columns = array_diff($columns, $model->getHidden());
 			$columns = array_merge(array_keys($related), $columns);
-			$casts   = $this->getGenericCasts();
+			$casts   = $this->getGenericCasts($model);
 
 			foreach (array_unique($columns) as $column) {
 				if (array_key_exists($column, $casts)) {
@@ -143,22 +160,23 @@ trait EloquentModel {
 				$data[$column] = $type;
 			}
 
-			$this->columns = $data;
+			$this->save($key, $data);
 		}
 
-		return $this->columns;
+		return $this->get($key);
 	}
 
 	/**
 	 * Return generic cast : use date and casts parameters in one single array
 	 * statement
 	 *
+	 * @param  Model $model
 	 * @return array
 	 */
-	public function getGenericCasts() {
-		$dates = array_flip($this->getDates());
+	private function getGenericCasts(Model $model) {
+		$dates = array_flip($model->getDates());
 		$dates = array_map(function() { return 'datetime'; }, $dates);
-		$casts = $this->getCasts();
+		$casts = $model->getCasts();
 
 		return array_merge($dates, $casts);
 	}

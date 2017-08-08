@@ -2,6 +2,8 @@
 namespace StudioNet\GraphQL;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use StudioNet\GraphQL\Cache\CachePool;
+use StudioNet\GraphQL\Support\Eloquent\ModelAttributes;
 
 /**
  * ServiceProvider
@@ -107,7 +109,9 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->app->singleton(GraphQL::class, function($app) { return new GraphQL($app); });
+		$this->app->singleton(CachePool::class, function() { return new CachePool; });
+		$this->app->singleton(ModelAttributes::class);
+		$this->app->singleton(GraphQL::class);
 		$this->app->bind('graphql', GraphQL::class);
 	}
 
