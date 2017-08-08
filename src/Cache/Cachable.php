@@ -20,7 +20,7 @@ abstract class Cachable implements CachableInterface {
 	 * @return void
 	 */
 	public function __construct(CachePool $cache) {
-		$this->cache = new NamespacedCachePool($cache, $this->getCacheNamespace());
+		$this->cache = $cache;
 	}
 
 	/**
@@ -34,24 +34,49 @@ abstract class Cachable implements CachableInterface {
 	 * Save data into the cache
 	 *
 	 * @param  string $key
-	 * @param  mixed $data
+	 * @param  mixed  $data
 	 * @return bool
 	 */
 	public function save($key, $data) {
-		$item = $this->cache->getItem($key);
-		$item->set($data);
-	
+		$namespace = $this->getCacheNamespace();
+		$item      = $this->cache->getItem(strtolower($namespace));
+		$content   = (is_null($item->get())) ? [] : $item->get();
+		$content   = $content + [strtolower($key) => $data];
+		$item->set($content);
+
 		return $this->cache->save($item);
 	}
 
 	/**
-	 * Check if the cache contains given key
+	 * Push element in array cache
+	 *
+	 * @param  string $key
+	 * @param  mixed $data
+	 * @return bool
+	 */
+	public function push($namespace, $key, $data) {
+		$namespace = $this->getCacheNamespace();
+		$item      = $this->cache->getItem(strtolower($namespace));
+		$content   = (is_null($item->get())) ? [] : $item->get();
+
+		if (!array_key_exists($key, $content)) {
+			$content[$key] = [];
+		}
+
+		array_push($content[$key], $data);
+		$item->set($content);
+
+		return $this->cache->save($item);
+	}
+
+	/**
+	 * Check if cache has key within the namespace
 	 *
 	 * @param  string $key
 	 * @return bool
 	 */
 	public function has($key) {
-		return $this->cache->hasItem($key);
+		return array_key_exists($key, $this->get());
 	}
 
 	/**
@@ -60,7 +85,11 @@ abstract class Cachable implements CachableInterface {
 	 * @param  string $key
 	 * @return mixed
 	 */
-	public function get($key) {
-		return $this->cache->getItem($key)->get();
+	public function get($key = null) {
+		$namespace = $this->getCacheNamespace();
+		$data      = $this->cache->getItem(strtolower($namespace))->get();
+		$data      = empty($data) ? [] : $data;
+
+		return (is_null($key)) ? $data : $data[$key];
 	}
 }

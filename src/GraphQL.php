@@ -443,6 +443,8 @@ class GraphQL {
 	 */
 	public function get($namespace, $key = null) {
 		$data = $this->cache->getItem(strtolower($namespace))->get();
+		$data = empty($data) ? [] : $data;
+
 		return (is_null($key)) ? $data : $data[$key];
 	}
 

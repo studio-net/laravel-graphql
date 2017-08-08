@@ -16,9 +16,6 @@ use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
  * @see Transformer
  */
 class ModelTransformer extends Transformer {
-	/** @var array $cache */
-	private $cache = [];
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -30,18 +27,20 @@ class ModelTransformer extends Transformer {
 	 * {@inheritDoc}
 	 */
 	public function transform($instance) {
-		$key = 'type:' . $instance->getTable();
+		$key = $instance->getTable();
 
-		if (empty($this->cache[$key])) {
-			$this->cache[$key] = new EloquentObjectType([
+		if (!$this->has($key)) {
+			$type = new EloquentObjectType([
 				'name'        => $this->getName($instance),
 				'description' => $this->getDescription($instance),
 				'fields'      => $this->getFields($instance),
 				'model'       => $instance
 			]);
+
+			$this->save($key, $type);
 		}
 
-		return $this->cache[$key];
+		return $this->get($key);
 	}
 
 	/**
@@ -83,11 +82,11 @@ class ModelTransformer extends Transformer {
 	 */
 	private function getFields(Model $model) {
 		$attributes = $this->app->make(ModelAttributes::class);
-		$columns    = $attributes->getColumns($model);
-		$relations  = $attributes->getRelations($model);
 
-		return function() use ($model, $columns, $relations) {
-			$fields = [];
+		return function() use ($model, $attributes) {
+			$fields    = [];
+			$columns   = $attributes->getColumns($model);
+			$relations = $attributes->getRelations($model);
 
 			foreach ($columns as $column => $type) {
 				$field = [

@@ -2,6 +2,8 @@
 namespace StudioNet\GraphQL\Transformer;
 
 use Illuminate\Foundation\Application;
+use StudioNet\GraphQL\Cache\Cachable;
+use StudioNet\GraphQL\Cache\CachePool;
 
 /**
  * Base transformer class
@@ -9,7 +11,7 @@ use Illuminate\Foundation\Application;
  * @see TransformerInterface
  * @abstract
  */
-abstract class Transformer implements TransformerInterface {
+abstract class Transformer extends Cachable implements TransformerInterface {
 	/** @var Application $app */
 	protected $app;
 
@@ -19,7 +21,8 @@ abstract class Transformer implements TransformerInterface {
 	 * @param  Application $application
 	 * @return void
 	 */
-	public function __construct(Application $application) {
+	public function __construct(Application $application, CachePool $cache) {
+		parent::__construct($cache);
 		$this->app = $application;
 	}
 }
