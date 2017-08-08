@@ -4,7 +4,7 @@ namespace StudioNet\GraphQL\Generator\Mutation;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Database\Eloquent\Model;
 use StudioNet\GraphQL\Generator\Generator;
-use StudioNet\GraphQL\Type\EloquentObjectType;
+use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
 
 /**
  * Generate singular query from Eloquent object type

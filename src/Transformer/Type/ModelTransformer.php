@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\Interfaces\ModelAttributes;
 use StudioNet\GraphQL\Transformer\Transformer;
-use StudioNet\GraphQL\Type\EloquentObjectType;
+use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
 
 /**
  * Convert a Model instance to an EloquentObjectType

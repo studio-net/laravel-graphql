@@ -4,7 +4,7 @@ namespace StudioNet\GraphQL\Tests\Transformer;
 use StudioNet\GraphQL\Tests\Entity;
 use StudioNet\GraphQL\Tests\TestCase;
 use StudioNet\GraphQL\Transformer\Type\ModelTransformer;
-use StudioNet\GraphQL\Type\EloquentObjectType;
+use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 /**

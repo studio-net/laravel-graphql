@@ -1,5 +1,5 @@
 <?php
-namespace StudioNet\GraphQL\Type;
+namespace StudioNet\GraphQL\Definition\Type;
 
 use GraphQL\Utils;
 use Illuminate\Database\Eloquent\Model;

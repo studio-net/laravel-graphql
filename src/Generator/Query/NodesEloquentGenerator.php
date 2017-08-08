@@ -3,7 +3,7 @@ namespace StudioNet\GraphQL\Generator\Query;
 
 use GraphQL\Type\Definition\Type as GraphQLType;
 use StudioNet\GraphQL\Generator\EloquentGenerator;
-use StudioNet\GraphQL\Type\EloquentObjectType;
+use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
 
 /**
  * Generate a pluralized query for given Eloquent object type
