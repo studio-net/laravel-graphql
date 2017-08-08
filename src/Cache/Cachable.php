@@ -58,7 +58,7 @@ abstract class Cachable implements CachableInterface {
 	 * Return cache content
 	 *
 	 * @param  string $key
-	 * @return CacheItemInterface
+	 * @return mixed
 	 */
 	public function get($key) {
 		return $this->cache->getItem($key)->get();

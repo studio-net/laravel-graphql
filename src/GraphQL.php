@@ -1,12 +1,15 @@
 <?php
 namespace StudioNet\GraphQL;
 
+use Cache\Namespaced\NamespacedCachePool;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
+use StudioNet\GraphQL\Cache\Cachable;
+use StudioNet\GraphQL\Cache\CachePool;
 
 /**
  * GraphQL implementation singleton
@@ -17,27 +20,8 @@ class GraphQL {
 	/** @var Application $app */
 	private $app;
 
-	/** @var array $schemas */
-	private $schemas = [];
-
-	/** @var array $types */
-	private $types = [];
-
-	/** @var ScalarType[] $scalars */
-	private $scalars = [];
-
-	/** @var array $transformers */
-	private $transformers = [
-		'type'     => [],
-		'query'    => [],
-		'mutation' => []
-	];
-
-	/** @var array $generators */
-	private $generators = [
-		'query'    => [],
-		'mutation' => []
-	];
+	/** @var CachePool $cache */
+	private $cache;
 
 	/**
 	 * __construct
@@ -45,8 +29,9 @@ class GraphQL {
 	 * @param  Application $app
 	 * @return void
 	 */
-	public function __construct(Application $app) {
-		$this->app = $app;
+	public function __construct(Application $app, CachePool $cache) {
+		$this->app   = $app;
+		$this->cache = $cache;
 	}
 
 	/**
@@ -66,7 +51,7 @@ class GraphQL {
 		//    'query'    => [],
 		//    'mutation' => []
 		// ]
-		$schema = $this->schemas[$name];
+		$schema = $this->get('schema', $name);
 
 		// Compute query and mutation fields
 		$schema['query']    = $this->manageQuery($schema['query']);
@@ -84,8 +69,8 @@ class GraphQL {
 	public function type($name) {
 		$name = strtolower($name);
 
-		if (array_key_exists($name, $this->types)) {
-			return $this->types[$name];
+		if ($this->has('type', $name)) {
+			return $this->get('type', $name);
 		}
 
 		throw new Exception\TypeNotFoundException('Cannot find type ' . $name);
@@ -110,8 +95,8 @@ class GraphQL {
 	public function scalar($name) {
 		$name = strtolower($name);
 
-		if (array_key_exists($name, $this->scalars)) {
-			return $this->scalars[$name];
+		if ($this->has('scalar', $name)) {
+			return $this->get('scalar', $name);
 		}
 
 		throw new Exception\ScalarNotFoundException('Cannot find scalar ' . $name);
@@ -175,12 +160,10 @@ class GraphQL {
 	}
 
 	/**
-	 * TODO
+	 * Manage mutation
 	 *
 	 * @param  array $mutations
 	 * @return array
-	 *
-	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function manageMutation(array $mutations) {
 		$data = [];
@@ -217,10 +200,10 @@ class GraphQL {
 	 * @return void
 	 */
 	public function registerSchema($name, array $data) {
-		$this->schemas[$name] = array_merge([
+		$this->save('schema', $name, array_merge([
 			'query'    => [],
 			'mutation' => [],
-		], $data);
+		], $data));
 	}
 
 	/**
@@ -233,6 +216,12 @@ class GraphQL {
 	 */
 	public function registerType($name, $type) {
 		try {
+			// If there's no name, just guess it from built typeType or fallback
+			// on type name
+			if (empty($name) or is_numeric($name)) {
+				$name = with(new \ReflectionClass($type))->getShortName();
+			}
+
 			$type = $this->applyTransformers('type', $type);
 		} catch (\ReflectionException $e) {
 			throw new Exception\TypeNotFoundException($e->getMessage());
@@ -243,14 +232,7 @@ class GraphQL {
 			throw new Exception\TypeException('Given type doesn\'t extends from typeType');
 		}
 
-		// If there's no name, just guess it from built typeType or fallback
-		// on type name
-		if (empty($name) and empty($type->name)) {
-			$name = with(new \ReflectionClass($type))->getShortName();
-			$type->name = $name;
-		}
-
-		$this->types[strtolower($type->name)] = $type;
+		$this->save('type', strtolower($name), $type);
 	}
 
 	/**
@@ -276,7 +258,7 @@ class GraphQL {
 			$name = $scalar->name;
 		}
 
-		$this->scalars[strtolower($name)] = $scalar;
+		$this->save('scalar', strtolower($name), $scalar);
 	}
 
 	/**
@@ -293,7 +275,7 @@ class GraphQL {
 			throw new Exception\TransformerException('Unable to find given category');
 		}
 
-		$this->transformers[$category][] = $this->app->make($transformer);
+		$this->push('transformer', $category, $this->app->make($transformer));
 	}
 
 	/**
@@ -305,16 +287,14 @@ class GraphQL {
 	 * @return mixed
 	 */
 	private function applyTransformers($type, $cls) {
-		if (!array_key_exists($type, $this->transformers)) {
+		if (!$this->has('transformer', $type)) {
 			throw new Exception\TransformerException('Cannot transform given type');
 		}
 
 		// Convert string to instance if possible
-		if (is_string($cls)) {
-			$cls = $this->app->make($cls);
-		}
+		$cls = $this->make($cls);
 
-		foreach ($this->transformers[$type] as $transformer) {
+		foreach ($this->get('transformer', $type) as $transformer) {
 			if ($transformer->supports($cls)) {
 				return $transformer->transform($cls);
 			}
@@ -341,7 +321,7 @@ class GraphQL {
 			throw new Exception\GeneratorException('Unable to find given category');
 		}
 
-		$generator    = $this->app->make($generator);
+		$generator    = $this->make($generator);
 		$dependencies = $generator->dependsOn();
 
 		// Assert generator has all is types dependencies
@@ -349,13 +329,13 @@ class GraphQL {
 			foreach ($dependencies as $dependency) {
 				$dependency = strtolower($dependency);
 
-				if (!array_key_exists($dependency, $this->types)) {
+				if (!array_key_exists($dependency, $this->get('type'))) {
 					return;
 				}
 			}
 		}
 
-		$this->generators[$category][] = $generator;
+		$this->push('generator', $category, $generator);
 	}
 
 	/**
@@ -368,14 +348,14 @@ class GraphQL {
 	 * @return array
 	 */
 	private function applyGenerators($type, array $data = []) {
-		if (!array_key_exists($type, $this->generators)) {
+		if (!$this->has('generator', $type)) {
 			throw new Exception\GeneratorException('Cannot generate given type');
 		}
 
 		// A generator can only handle types
-		$types = $this->types;
+		$types = $this->get('type');
 
-		foreach ($this->generators[$type] as $generator) {
+		foreach ($this->get('generator', $type) as $generator) {
 			foreach ($types as $type) {
 				if ($generator->supports($type)) {
 					$key   = $generator->getKey($type);
@@ -400,6 +380,79 @@ class GraphQL {
 	 * @return bool
 	 */
 	public function hasSchema($name) {
-		return array_key_exists($name, $this->schemas);
+		return $this->has('schema', $name);
+	}
+
+	/**
+	 * Save data into the cache
+	 *
+	 * @param  string $namespace
+	 * @param  string $key
+	 * @param  mixed  $data
+	 * @return bool
+	 */
+	public function save($namespace, $key, $data) {
+		$item    = $this->cache->getItem(strtolower($namespace));
+		$content = (is_null($item->get())) ? [] : $item->get();
+		$content = $content + [strtolower($key) => $data];
+		$item->set($content);
+
+		return $this->cache->save($item);
+	}
+
+	/**
+	 * Push element in array cache
+	 *
+	 * @param  string $namespace
+	 * @param  string $key
+	 * @param  mixed $data
+	 *
+	 * @return bool
+	 */
+	public function push($namespace, $key, $data) {
+		$item    = $this->cache->getItem(strtolower($namespace));
+		$content = (is_null($item->get())) ? [] : $item->get();
+
+		if (!array_key_exists($key, $content)) {
+			$content[$key] = [];
+		}
+
+		array_push($content[$key], $data);
+		$item->set($content);
+
+		return $this->cache->save($item);
+	}
+
+	/**
+	 * Check if cache has key within the namespace
+	 *
+	 * @param  string $namespace
+	 * @param  string $key
+	 * @return bool
+	 */
+	public function has($namespace, $key) {
+		return array_key_exists($key, $this->get($namespace));
+	}
+
+	/**
+	 * Return cache content
+	 *
+	 * @param  string $namespace
+	 * @param  string $key
+	 * @return mixed
+	 */
+	public function get($namespace, $key = null) {
+		$data = $this->cache->getItem(strtolower($namespace))->get();
+		return (is_null($key)) ? $data : $data[$key];
+	}
+
+	/**
+	 * Make given string if possible
+	 *
+	 * @param  mixed $cls
+	 * @return mixed
+	 */
+	public function make($cls) {
+		return (is_string($cls)) ? $this->app->make($cls) : $cls;
 	}
 }
