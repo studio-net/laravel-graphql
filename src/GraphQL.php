@@ -1,14 +1,12 @@
 <?php
 namespace StudioNet\GraphQL;
 
-use Cache\Namespaced\NamespacedCachePool;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
-use StudioNet\GraphQL\Cache\Cachable;
 use StudioNet\GraphQL\Cache\CachePool;
 
 /**
