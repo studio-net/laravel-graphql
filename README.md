@@ -1,7 +1,7 @@
 Laravel GraphQL
 ===============
 
-Use Facebook GraphQL with Laravel 5 or Lumen. It is based on the PHP
+Use Facebook GraphQL with Laravel 5.2>=. It is based on the PHP
 implementation [here](https://github.com/webonyx/graphql-php). You can find more
 information about GraphQL in the [GraphQL Introduction](http://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html)
 on the [React](http://facebook.github.io/react) blog or you can read the
@@ -20,10 +20,9 @@ This is a work in progress.
 
 ## Installation
 
-This package is only able to work with Laravel (at now). Later, a Lumen service
-provider will be added.
+This package is only able to work with Laravel (at now).
 
-### Laravel 5.x
+### Laravel 5.2>=
 
 Simply run
 
@@ -57,10 +56,6 @@ Now, you can run the following command and review the `config/graphql.php` file
 ```bash
 $ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 ```
-
-### Lumen 5.x
-
-(not impleted yet)
 
 ## Usage
 

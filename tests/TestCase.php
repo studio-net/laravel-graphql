@@ -16,7 +16,21 @@ abstract class TestCase extends BaseTestCase {
 	public function setUp() {
 		parent::setUp();
 	
-		$this->artisan('migrate', ['--database' => 'testing']);
+		// Laravel 5.4 has implemented the service provider's
+		// `loadMigrationsFrom' method and removes the --realpath migrate
+		// option. So, we need to handle unit test for either version
+		if ($this->app->version() < '5.4') {
+			$this->artisan('migrate', [
+				'--realpath' => realpath(__DIR__ . '/' . '../database/migrations'),
+				'--database' => 'testing']
+			);
+		} else {
+			// In Laravel 5.4, no need to specify realpath
+			// @see StudioNet\GraphQL\Tests\Stubs\ServiceProvider
+			$this->artisan('migrate', ['--database' => 'testing']);
+		}
+
+		// Handle up factories
 		$this->withFactories(dirname(__DIR__) . '/database/factories');
 	}
 

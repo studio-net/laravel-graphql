@@ -13,6 +13,11 @@ use StudioNet\GraphQL\Tests\TestCase;
  * @see TestCase
  */
 class NodeEloquentGeneratorTest extends TestCase {
+	/**
+	 * setUp
+	 *
+	 * @return void
+	 */
 	public function setUp() {
 		parent::setUp();
 

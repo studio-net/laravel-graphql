@@ -4,7 +4,6 @@ namespace StudioNet\GraphQL\Tests;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
 use StudioNet\GraphQL\Transformer\Transformer;
@@ -15,8 +14,6 @@ use StudioNet\GraphQL\Transformer\Transformer;
  * @see TestCase
  */
 class GraphQLTest extends TestCase {
-	use DatabaseTransactions;
-
 	/**
 	 * testGetSchemaException
 	 *

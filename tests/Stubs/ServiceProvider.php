@@ -16,6 +16,10 @@ class ServiceProvider extends BaseServiceProvider {
 	 */
 	public function boot() {
 		parent::boot();
-		$this->loadMigrationsFrom(realpath(__DIR__ . '/' . '../../database/migrations'));
+
+		// This method was implemented in Laravel 5.4
+		if ($this->app->version() >= '5.4') {
+			$this->loadMigrationsFrom(realpath(__DIR__ . '/' . '../../database/migrations'));
+		}
 	}
 }
