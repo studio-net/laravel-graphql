@@ -148,6 +148,10 @@ I case of relationships and if `StudioNet\GraphQL\Support\Type\Meta` type is
 registered, you'll be granted to use field like `_posts_meta { count }` in order
 to retrieve global count.
 
+You could also override default name and description for each entity by
+implementing `getObjectDescription` and `getObjectName` within each of them.
+Methods must return a string.
+
 This transformer also converts [mutated fields from model](https://laravel.com/docs/5.4/eloquent-mutators).
 Let's show you the convertion mapping (based on supported model cast) :
 

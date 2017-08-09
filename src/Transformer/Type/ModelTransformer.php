@@ -50,8 +50,8 @@ class ModelTransformer extends Transformer {
 	 * @return string
 	 */
 	private function getName(Model $model) {
-		if ($model instanceof ModelAttributes) {
-			return $model->getObjectName();
+		if (method_exists($model, 'getObjectName')) {
+			return call_user_func([$model, 'getObjectName'], []);
 		}
 
 		return ucfirst(with(new \ReflectionClass($model))->getShortName());
@@ -64,8 +64,8 @@ class ModelTransformer extends Transformer {
 	 * @return string
 	 */
 	private function getDescription(Model $model) {
-		if ($model instanceof ModelAttributes) {
-			return $model->getObjectDescription();
+		if (method_exists($model, 'getObjectDescription')) {
+			return call_user_func([$model, 'getObjectDescription'], []);
 		}
 
 		return sprintf('A %s model representation', $this->getName($model));
