@@ -27,5 +27,15 @@
         "psr-4" : {
             "StudioNet\\GraphQL\\Tests\\" : "./tests"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "StudioNet\\GraphQL\\ServiceProvider"
+            ],
+            "aliases": {
+                "GraphQL": "StudioNet\\GraphQL\\Support\\Facades\\GraphQL"
+            }
+        }
     }
 }
