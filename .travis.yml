@@ -10,6 +10,7 @@ env :
     - TESTBENCH_VERSION=3.2.* LARAVEL_VERSION=5.2.*
     - TESTBENCH_VERSION=3.3.* LARAVEL_VERSION=5.3.*
     - TESTBENCH_VERSION=3.4.* LARAVEL_VERSION=5.4.*
+    - TESTBENCH_VERSION=3.5.* LARAVEL_VERSION=5.5.*
 
 before_install :
     - composer global require hirak/prestissimo --update-no-dev

@@ -3,6 +3,14 @@ namespace StudioNet\GraphQL\Tests;
 
 use Orchestra\Testbench\BrowserKit\TestCase as BaseTestCase;
 
+// Assert class exists. Otherwise, create simple aliases in order to make tests
+// working on newer PHPUnit version
+if (!class_exists('PHPUnit_Framework_TestCase')) {
+	class_alias(\PHPUnit\Framework\TestCase::class              , 'PHPUnit_Framework_TestCase');
+	class_alias(\PHPUnit\Framework\Assert::class                , 'PHPUnit_Framework_Assert');
+	class_alias(\PHPUnit\Framework\Constraint\Constraint::class , 'PHPUnit_Framework_Constraint');
+}
+
 /**
  * TestCase
  *
