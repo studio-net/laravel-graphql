@@ -69,6 +69,7 @@ return [
 		],
 		'mutation' => [
 			\StudioNet\GraphQL\Generator\Mutation\NodeEloquentGenerator::class,
+			\StudioNet\GraphQL\Generator\Mutation\DeleteEloquentGenerator::class,
 		]
 	],
 

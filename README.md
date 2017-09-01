@@ -252,6 +252,18 @@ methods (primary key specified).
   - "{columns}"    : availabled fillable or non-guarded fields (no hidden ones)
 ```
 
+#### `StudioNet\GraphQL\Generator\Mutation\QueryEloquentGenerator`
+
+Generate mutation based on `EloquentObjectType`. It allows delete an entity
+based on the primary key.
+
+```
+- Type      : "EloquentObjectType"
+- Return    : "Illuminate\Database\Eloquent\Model"
+- Arguments :
+  - "id" : model defined primary key
+```
+
 ### Query
 
 Query are used in order to fetch data. Each query has it's own related
@@ -500,6 +512,29 @@ query {
 		_posts_meta {
 			count
 		}
+	}
+}
+```
+
+#### Mutation
+
+```graphql
+mutation {
+	delete : deleteUser(id: 5) {
+		first_name
+		last_name
+	},
+
+	update : user(id: 5, first_name : "toto") {
+		id
+		first_name
+		last_name
+	},
+
+	create : user(first_name : "toto", last_name : "blabla") {
+		id
+		first_name
+		last_name
 	}
 }
 ```
