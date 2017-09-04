@@ -4,6 +4,8 @@ namespace StudioNet\GraphQL\Generator;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
 use StudioNet\GraphQL\Support\Eloquent\ModelAttributes;
+use StudioNet\GraphQL\Generator\Query\Grammar;
+
 
 /**
  * EloquentGenerator
@@ -32,7 +34,6 @@ abstract class EloquentGenerator extends Generator implements EloquentGeneratorI
 					$builder->with($related);
 				}
 			}
-
 			// Retrieve single node
 			if (array_key_exists('id', $args)) {
 				return $builder->findOrFail($args['id']);
@@ -44,10 +45,42 @@ abstract class EloquentGenerator extends Generator implements EloquentGeneratorI
 				case 'before' : $builder = $builder->where($primary, '<', $value) ; break;
 				case 'skip'   : $builder = $builder->skip($value)                 ; break;
 				case 'take'   : $builder = $builder->take($value)                 ; break;
+				case 'filter' : $builder = $this->resolveFilter($builder, $value) ; break;
 				}
 			}
-
 			return $builder->get();
 		};
+	}
+
+	/**
+	 * Resolve filter.
+	 *
+	 * @param  Builder $builder
+	 * @param  array  $filter
+	 * @return Builder
+	 */
+	private function resolveFilter($builder, array $filter) {
+		return $this->getGrammar()->getBuilderForFilter($builder, $filter);
+	}
+
+	/**
+	 * Return corresponding grammar from entity connection driver
+	 *
+	 * @return Grammar
+	 */
+	private function getGrammar() {
+		$driver  = \DB::connection()->getDriverName();
+		$grammar = null;
+
+		switch ($driver) {
+			case 'pgsql' : $grammar = new Grammar\PostgreSQLGrammar ; break;
+			case 'mysql' : $grammar = new Grammar\MySQLGrammar      ; break;
+		}
+
+		// Assert that grammar exists
+		if (is_null($grammar)) {
+			throw new \BadMethodCallException("{$driver} driver is not managed");
+		}
+		return $grammar;
 	}
 }

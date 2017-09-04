@@ -4,6 +4,7 @@ namespace StudioNet\GraphQL\Generator\Query;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use StudioNet\GraphQL\Generator\EloquentGenerator;
 use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Generate singular query from Eloquent object type
@@ -30,7 +31,7 @@ class NodeEloquentGenerator extends EloquentGenerator {
 	 */
 	public function generate($instance) {
 		return [
-			'args'    => $this->getArguments(),
+			'args'    => $this->getArguments($instance->getModel()),
 			'type'    => $instance,
 			'resolve' => $this->getResolver($instance->getModel())
 		];
@@ -39,7 +40,7 @@ class NodeEloquentGenerator extends EloquentGenerator {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function getArguments() {
+	public function getArguments(Model $model) {
 		return [
 			'id' => ['type' => GraphQLType::nonNull(GraphQLType::id()), 'description' => 'Primary key lookup']
 		];
