@@ -54,19 +54,19 @@ abstract class Grammar {
 
 		if (is_array($value)) {
 
-			$whereFunc = strtolower($command) === 'or' ? "whereOr": "where";
-
-			$builder->$whereFunc(function($query) use ($value, $operator) {
+			$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
+			$builder->$whereFunc(function($query) use ($value, $operator, $key) {
 				foreach ($value as $command => $v) {
 					$command = (strtolower($command) === 'or') ? "OR" : $operator;
-					$query = $this->getBuilder($builder, $key, $v, $command);
+					$query = $this->getBuilder($query, $key, $v, $command);
 				}
 			});
 
 		} else {
-			$operator = $this->getOperator($this->getMatch(self::OPERATOR, $value), $value);
+			$comparator = $this->getOperator($this->getMatch(self::OPERATOR, $value), $value);
 			$value = $this->getMatch(self::VALUE, $value);
-			$builder->where($this->getKey($key), $operator, $value);
+			$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
+			$builder->$whereFunc($this->getKey($key), $comparator, $value);
 		}
 		return $builder;
 	}
