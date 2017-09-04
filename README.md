@@ -76,7 +76,7 @@ into an `ObjectType`. By default, we've implemented two transformers :
 
 * `ModelTransformer` transforms an Eloquent model by using reflection from
 database field, hiddens and fillable fields declared within the class. It also
-supports relationships between models ; 
+supports relationships between models ;
 * `TypeTransformer` transforms a custom built class inherit from
 `StudioNet\GraphQL\Support\Type` class ;
 
@@ -237,6 +237,7 @@ Generate pluralized query based on `EloquentObjectType`.
   - "skip"   : offset
   - "before" : cursor-based navigation
   - "after"  : cursor-based navigation
+  - "filter" : filter-based query (see examples)
 ```
 
 #### `StudioNet\GraphQL\Generator\Mutation\NodeEloquentGenerator`
@@ -471,6 +472,27 @@ query {
 		email
 
 		posts {
+			title
+			content
+		}
+	}
+}
+```
+#### Using filters
+
+```graphql
+query {
+	users (take: 2, filter:{
+			'first_name':'%Targaryen',
+			'id': '(gt) 5'
+		})
+	{
+		id
+		first_name
+		last_name
+
+		posts (take: 5) {
+			id
 			title
 			content
 		}
