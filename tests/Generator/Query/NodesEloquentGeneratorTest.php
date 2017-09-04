@@ -28,7 +28,7 @@ class NodesEloquentGeneratorTest extends TestCase {
 	public function testSupports() {
 		$graphql   = $this->app['graphql'];
 		$generator = $this->app->make(NodesEloquentGenerator::class);
-		
+
 		$this->assertTrue($generator->supports($graphql->type('user')));
 		$this->assertFalse($generator->supports('blabla'));
 	}
@@ -41,7 +41,7 @@ class NodesEloquentGeneratorTest extends TestCase {
 	public function testKey() {
 		$graphql   = $this->app['graphql'];
 		$generator = $this->app->make(NodesEloquentGenerator::class);
-	
+
 		$this->assertSame('users', $generator->getKey($graphql->type('user')));
 	}
 
@@ -54,12 +54,13 @@ class NodesEloquentGeneratorTest extends TestCase {
 		$graphql   = $this->app['graphql'];
 		$generator = $this->app->make(NodesEloquentGenerator::class);
 		$query     = $generator->generate($graphql->type('user'));
-	
+
 		$this->assertArrayHasKey('args', $query);
 		$this->assertArrayHasKey('type', $query);
 		$this->assertArrayHasKey('resolve', $query);
 		$this->assertArrayHasKey('before', $query['args']);
 		$this->assertArrayHasKey('after', $query['args']);
+		$this->assertArrayHasKey('filter', $query['args']);
 
 		$this->assertInstanceOf(ListOfType::class, $query['type']);
 	}

@@ -18,7 +18,8 @@ interface EloquentGeneratorInterface {
 	/**
 	 * Return availabled arguments
 	 *
+	 * @param  Illuminate\Database\Eloquent\Model $model
 	 * @return array
 	 */
-	public function getArguments();
+	public function getArguments(Model $model);
 }

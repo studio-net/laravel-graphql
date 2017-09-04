@@ -20,7 +20,7 @@ class GraphQLController extends Controller {
 	 */
 	public function query(Request $request, $schema = null) {
 		$inputs = $request->all();
-	
+
 		// If there's no schema, just use default one
 		if (empty($schema)) {
 			$schema = config('graphql.schema.default', 'default');
