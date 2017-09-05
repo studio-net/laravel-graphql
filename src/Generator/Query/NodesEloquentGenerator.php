@@ -45,11 +45,26 @@ class NodesEloquentGenerator extends EloquentGenerator {
 	 */
 	public function getArguments(Model $model) {
 		return [
-			'after'   => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation'] ,
-			'before'  => ['type' => GraphQLType::id()  , 'description' => 'Based-cursor navigation'] ,
-			'skip'    => ['type' => GraphQLType::int() , 'description' => 'Offset-based navigation'] ,
-			'take'    => ['type' => GraphQLType::int() , 'description' => 'Limit-based navigation' ] ,
-			'filter'  => ['type' => $this->getFilterType($model), 'description' => 'Filters'] ,
+			'after'   => [
+				'type' => GraphQLType::id(),
+				'description' => 'Based-cursor navigation'
+			],
+			'before'  => [
+				'type' => GraphQLType::id(),
+				'description' => 'Based-cursor navigation'
+			],
+			'skip'    => [
+				'type' => GraphQLType::int(),
+				'description' => 'Offset-based navigation'
+			],
+			'take'    => [
+				'type' => GraphQLType::int(),
+				'description' => 'Limit-based navigation'
+			],
+			'filter'  => [
+				'type' => $this->getFilterType($model),
+				'description' => 'Filter for querying this entity'
+			],
 		];
 	}
 
@@ -57,7 +72,7 @@ class NodesEloquentGenerator extends EloquentGenerator {
 	 * Get filter type for given model.
 	 *
 	 * @param  Illuminate\Database\Eloquent\Model $model
-	 * @return [type]           [description]
+	 * @return GraphQLInputObjectType
 	 */
 	private function getFilterType($model) {
 		$table = $model->getTable();
@@ -67,7 +82,7 @@ class NodesEloquentGenerator extends EloquentGenerator {
 			$fields[$column] = GraphQLType::string();
 
 		return new GraphQLInputObjectType([
-			"name"   => $table,
+			"name"   => ucfirst($table) . "Filter",
 			"fields" => $fields,
 		]);
 	}
