@@ -48,7 +48,7 @@ class NodesEloquentGenerator extends EloquentGenerator {
 
 		// Allows user to define custom arguments for single node generation
 		if (method_exists($model, 'getNodesQueryArguments')) {
-			$args = $model->getNodeQueryArguments();
+			$args = $model->getNodesQueryArguments();
 		}
 
 		return $args + [
