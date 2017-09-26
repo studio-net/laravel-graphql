@@ -8,6 +8,7 @@ use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Cache\CachePool;
+use StudioNet\GraphQL\Support\Scalar;
 
 /**
  * GraphQL implementation singleton
@@ -30,6 +31,10 @@ class GraphQL {
 	public function __construct(Application $app, CachePool $cache) {
 		$this->app   = $app;
 		$this->cache = $cache;
+
+		// Register default custom scalars
+		$this->registerScalar('timestamp', Scalar\Timestamp::class);
+		$this->registerScalar('array', Scalar\JsonArray::class);
 	}
 
 	/**

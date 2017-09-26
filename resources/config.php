@@ -27,11 +27,8 @@ return [
 		// \App\User::class
 	],
 
-	// Scalar field definitions
-	'scalar' => [
-		\StudioNet\GraphQL\Support\Scalar\Timestamp::class,
-		\StudioNet\GraphQL\Support\Scalar\JsonArray::class
-	],
+	// Custom scalar field definitions
+	'scalar' => [],
 
 	// A transformer handles a supports and a transform method. I can convert
 	// any type of data in specific content. In order to make work Eloquent
