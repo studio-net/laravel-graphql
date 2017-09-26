@@ -529,11 +529,7 @@ query {
 
 ```graphql
 query {
-	users (take: 2, filter:{
-			'first_name':'%Targaryen',
-			'id': '(gt) 5'
-		})
-	{
+	users (take: 2, filter: {"first_name": ["%Targaryen"], "id": {"or" : ["(gt) 5", "1"]}}) {
 		id
 		first_name
 		last_name
