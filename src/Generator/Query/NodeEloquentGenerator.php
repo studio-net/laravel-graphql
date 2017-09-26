@@ -41,7 +41,14 @@ class NodeEloquentGenerator extends EloquentGenerator {
 	 * {@inheritDoc}
 	 */
 	public function getArguments(Model $model) {
-		return [
+		$args = [];
+
+		// Allows user to define custom arguments for single node generation
+		if (method_exists($model, 'getNodeQueryArguments')) {
+			$args = $model->getNodeQueryArguments();
+		}
+
+		return $args + [
 			'id' => ['type' => GraphQLType::nonNull(GraphQLType::id()), 'description' => 'Primary key lookup']
 		];
 	}

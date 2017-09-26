@@ -44,7 +44,14 @@ class NodesEloquentGenerator extends EloquentGenerator {
 	 * @return array
 	 */
 	public function getArguments(Model $model) {
-		return [
+		$args = [];
+
+		// Allows user to define custom arguments for single node generation
+		if (method_exists($model, 'getNodesQueryArguments')) {
+			$args = $model->getNodeQueryArguments();
+		}
+
+		return $args + [
 			'after'   => [
 				'type' => GraphQLType::id(),
 				'description' => 'Based-cursor navigation'
@@ -75,15 +82,18 @@ class NodesEloquentGenerator extends EloquentGenerator {
 	 * @return GraphQLInputObjectType
 	 */
 	private function getFilterType($model) {
-		$table = $model->getTable();
+		$table  = $model->getTable();
 		$fields = [];
 
-		foreach (\Schema::getColumnListing($table) as $column)
+		// FIXME Implements column listing within the entity. Also, if not
+		// provided, must take care about hidden, fillables and guarded fields
+		foreach (\Schema::getColumnListing($table) as $column) {
 			$fields[$column] = GraphQLType::string();
+		}
 
 		return new GraphQLInputObjectType([
-			"name"   => ucfirst($table) . "Filter",
-			"fields" => $fields,
+			'name'   => ucfirst($table) . 'Filter',
+			'fields' => $fields,
 		]);
 	}
 }
