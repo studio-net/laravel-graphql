@@ -34,6 +34,7 @@ abstract class EloquentGenerator extends Generator implements EloquentGeneratorI
 					$builder->with($related);
 				}
 			}
+
 			// Retrieve single node
 			if (array_key_exists('id', $args)) {
 				return $builder->findOrFail($args['id']);
@@ -48,6 +49,23 @@ abstract class EloquentGenerator extends Generator implements EloquentGeneratorI
 				case 'filter' : $builder = $this->resolveFilter($builder, $value) ; break;
 				}
 			}
+
+			// Resolve builder with custom function passed from the model
+			// instance using method `resolveQuery` method (if exists)
+			//
+			// This part of code allows developers to use a custom resolver
+			// after default one in order to resolve the builder with given
+			// informations like arguments and other thing. That mean, you can
+			// easily implement score-based search or anything else
+			if (method_exists($model, 'resolveQuery')) {
+				$builder = $model->resolveQuery($builder, [
+					'root'    => $root,
+					'args'    => $args,
+					'context' => $context,
+					'info'    => $info
+				]);
+			}
+
 			return $builder->get();
 		};
 	}
@@ -81,6 +99,7 @@ abstract class EloquentGenerator extends Generator implements EloquentGeneratorI
 		if (is_null($grammar)) {
 			throw new \BadMethodCallException("{$driver} driver is not managed");
 		}
+
 		return $grammar;
 	}
 }

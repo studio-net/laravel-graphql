@@ -203,6 +203,34 @@ return [
 ]
 ```
 
+When using `EloquentGenerator`, you can create a model method called
+`resolveQuery` in order to customize the resolve GraphQL method. In order to
+make them all sharing the same custom resolver, we suggest you to create a
+`Trait`.
+
+```php
+use Illuminate\Database\Eloquent\Builder;
+
+/**
+ * GraphQLResolver
+ */
+trait GraphQLResolver {
+	/**
+	 * Custom GraphQL resolver
+	 *
+	 * @param  Builder $builder
+	 * @param  array $args
+	 * @return Builder
+	 */
+	public function resolveQuery(Builder $builder, array $args) {
+		// ...
+		// You cannot resolve twice following keywords because they already used
+		//
+		// `id`, `after`, `before`, `skip`, `take` and `filter`
+	}
+}
+```
+
 #### `StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator`
 
 Generate singular query based on `EloquentObjectType`.
