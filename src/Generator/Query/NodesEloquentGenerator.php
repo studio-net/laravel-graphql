@@ -84,11 +84,10 @@ class NodesEloquentGenerator extends EloquentGenerator {
 	private function getFilterType($model) {
 		$table  = $model->getTable();
 		$fields = [];
+		$type   = $this->app['graphql']->scalar('array');
 
-		// FIXME Implements column listing within the entity. Also, if not
-		// provided, must take care about hidden, fillables and guarded fields
 		foreach (\Schema::getColumnListing($table) as $column) {
-			$fields[$column] = GraphQLType::string();
+			$fields[$column] = $type;
 		}
 
 		return new GraphQLInputObjectType([
