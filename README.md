@@ -527,6 +527,41 @@ query {
 ```
 #### Using filters
 
+In order to use operator, you can refer to example below. Otherwise, this is the
+default syntax to use : `(operator) text`, excepting for `%` and `=` that
+doesn't need to handle an operator case, just the string within like `studio-net`
+will produce `= studio-net` and `studio-net%` will produce `ilike 'studio-net%'`.
+
+| Operator | PostgreSQL | MySQL                          |
+| -------- | ---------- | ------------------------------ |
+| lt       | `<`        | `<`                            |
+| lte      | `<=`       | `<=`                           |
+| gt       | `>`        | `>`                            |
+| gte      | `>=`       | `>=`                           |
+| %        | `ilike`    | `like` (but process a `lower`) |
+| =        | `=`        | `=`                            |
+
+By default, the `AND` operator will be used until find `or` array key. All
+elements in `or` key will be considered as `OR`.
+
+```
+[
+	'field' => [
+		'or' => [
+			'toto',
+			'tata',
+
+			'and' => [
+				'%lolo',
+				'lala%'
+			]
+		]
+	]
+]
+
+'field' = ('toto' OR 'tata' OR ('%lolo' AND 'lala%'))
+```
+
 ```graphql
 query {
 	users (take: 2, filter: {"first_name": ["%Targaryen"], "id": {"or" : ["(gt) 5", "1"]}}) {
