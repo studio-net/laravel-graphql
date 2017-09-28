@@ -63,8 +63,8 @@ class NodeEloquentGeneratorTest extends TestCase {
 		$this->assertArrayHasKey('type', $query);
 		$this->assertArrayHasKey('resolve', $query);
 		$this->assertArrayHasKey('id', $query['args']);
-		$this->assertArrayHasKey('name', $query['args']);
-		$this->assertArrayHasKey('email', $query['args']);
+		$this->assertArrayHasKey('with', $query['args']);
+		$this->assertArrayHasKey('name', $query['args']['with']['type']->getFields());
 		$this->assertSame($graphql->type('user'), $query['type']);
 	}
 
@@ -81,7 +81,7 @@ class NodeEloquentGeneratorTest extends TestCase {
 		$query     = $generator->generate($graphql->type('user'));
 		$resolver  = $query['resolve'];
 
-		$response  = call_user_func_array($resolver, [null, ['id' => 1, 'name' => 'Dupont']]);
+		$response  = call_user_func_array($resolver, [null, ['id' => 1, 'with' => ['name' => 'Dupont']]]);
 		$this->assertSame(User::find(1)->toArray(), $response->toArray());
 	}
 }

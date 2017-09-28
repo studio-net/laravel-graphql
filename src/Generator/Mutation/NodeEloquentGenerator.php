@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use StudioNet\GraphQL\Definition\Type\EloquentObjectType;
 use StudioNet\GraphQL\Generator\Generator;
 use StudioNet\GraphQL\Support\Eloquent\ModelAttributes;
+use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
 
 /**
  * Generate singular query from Eloquent object type
@@ -67,7 +68,7 @@ class NodeEloquentGenerator extends Generator {
 
 		// Append primary key
 		if (!array_key_exists($primary, $columns)) {
-			$columns[$primary] = GraphQLType::id();
+			unset($columns[$primary]);
 		}
 
 		// Parse each column in order to know which is fillable. To allow
@@ -76,7 +77,19 @@ class NodeEloquentGenerator extends Generator {
 			$data[$column] = ['type' => $type];
 		}
 
-		return $data;
+		return [
+			$primary => [
+				'description' => 'Identifier',
+				'type' => GraphQLType::id()
+			],
+			'with' => [
+				'description' => 'Availabled fields',
+				'type' => new GraphQLInputObjectType([
+					'name' => ucfirst($model->getTable()) . 'Arguments',
+					'fields' => $data
+				])
+			]
+		];
 	}
 
 	/**
@@ -90,10 +103,10 @@ class NodeEloquentGenerator extends Generator {
 	protected function getResolver(Model $model) {
 		return function($root, array $args) use ($model) {
 			$primary = $model->getKeyName();
-			$entity  = $model->findOrNew($args[$primary]);
+			$entity  = $model->findOrNew($args[$primary] ?: 0);
 
 			unset($args[$primary]);
-			$entity->fill($args);
+			$entity->fill($args['with']);
 			$entity->save();
 
 			return $entity;

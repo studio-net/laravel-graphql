@@ -96,7 +96,7 @@ class GraphQLTest extends TestCase {
 		$graphql->registerSchema('default', []);
 		$graphql->registerType('user', Entity\User::class);
 
-		$params = ['query' => 'mutation { updateName : user(id: 1, name : "Test") { id, name } }'];
+		$params = ['query' => 'mutation { updateName : user(id: 1, with : { name : "Test" }) { id, name } }'];
 		$this->json('POST', '/graphql', $params);
 		$entity = Entity\User::find(1);
 

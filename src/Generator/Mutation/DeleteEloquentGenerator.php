@@ -57,7 +57,8 @@ class DeleteEloquentGenerator extends Generator {
 	 */
 	protected function getResolver(Model $model) {
 		return function($root, array $args) use ($model) {
-			$entity = $model->findOrFail($args['id']);
+			$primary = $model->getKeyName();
+			$entity  = $model->findOrFail($args[$primary] ?: 0);
 			$entity->delete();
 
 			return $entity;

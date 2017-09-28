@@ -297,7 +297,7 @@ methods (primary key specified).
 - Return    : "Illuminate\Database\Eloquent\Model"
 - Arguments :
   - "{primaryKey}" : model defined primary key
-  - "{columns}"    : availabled fillable or non-guarded fields (no hidden ones)
+  - "with"         : availabled fillable or non-guarded fields (no hidden ones)
 ```
 
 #### `StudioNet\GraphQL\Generator\Mutation\QueryEloquentGenerator`
@@ -625,13 +625,13 @@ mutation {
 		last_name
 	},
 
-	update : user(id: 5, first_name : "toto") {
+	update : user(id: 5, with : { first_name : "toto" }) {
 		id
 		first_name
 		last_name
 	},
 
-	create : user(first_name : "toto", last_name : "blabla") {
+	create : user(with : { first_name : "toto", last_name : "blabla" }) {
 		id
 		first_name
 		last_name
