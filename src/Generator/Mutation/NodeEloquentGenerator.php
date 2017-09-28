@@ -53,6 +53,7 @@ class NodeEloquentGenerator extends Generator {
 		$guarded    = array_flip($model->getGuarded());
 		$hidden     = array_flip($model->getHidden());
 		$primary    = $model->getKeyName();
+		$relations  = array_keys($attributes->getRelations($model));
 
 		if (!empty($fillable)) {
 			$columns = array_intersect_key($columns, $fillable);
@@ -75,6 +76,13 @@ class NodeEloquentGenerator extends Generator {
 		// model to be updated, we have to use a uniq id : the id
 		foreach ($columns as $column => $type) {
 			$data[$column] = ['type' => $type];
+		}
+
+		foreach ($relations as $column) {
+			$data[$column] = [
+				'type' => $this->app['graphql']->scalar('array'),
+				'description' => $column . ' relationship'
+			];
 		}
 
 		return [
@@ -101,14 +109,26 @@ class NodeEloquentGenerator extends Generator {
 	 * @SuppressWarnings(PHPMD.UnusedLocalVariable)
 	 */
 	protected function getResolver(Model $model) {
-		return function($root, array $args) use ($model) {
+		$attributes = $this->app->make(ModelAttributes::class);
+		$relations  = array_flip(array_keys($attributes->getRelations($model)));
+		$columns    = array_flip(array_keys($attributes->getColumns($model)));
+
+		return function($root, array $args) use ($model, $relations, $columns) {
 			$primary = $model->getKeyName();
 			$primary = isset($args[$primary]) ? $args[$primary] : 0;
 			$entity  = $model->findOrNew($primary);
+			$related = array_intersect_key($args['with'], $relations);
+			$data    = array_diff_key(
+				array_intersect_key($args['with'], $columns),
+				$relations
+			);
 
-			unset($args[$primary]);
-			$entity->fill($args['with']);
+			$entity->fill($data);
 			$entity->save();
+
+			foreach ($related as $column => $values) {
+				$entity->{$column}()->sync($values);
+			}
 
 			return $entity;
 		};
