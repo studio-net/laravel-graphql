@@ -42,15 +42,6 @@ class ModelAttributes extends Cachable {
 		if (!$this->has($key)) {
 			$relations  = [];
 			$reflection = new ReflectionClass($model);
-			$traits     = $reflection->getTraits();
-			$exclude    = [];
-
-			// Get traits methods and append them to the excluded methods
-			foreach ($traits as $trait) {
-				foreach ($trait->getMethods() as $method) {
-					$exclude[$method->getName()] = true;
-				}
-			}
 
 			// Parse each public methods (a relationship must be defined as
 			// public) in order to reduce list of possibilites
@@ -66,8 +57,8 @@ class ModelAttributes extends Cachable {
 					continue;
 				}
 
-				// We don't want parsing this current method
-				if (array_key_exists($method->getName(), $exclude)) {
+				// Relationships are named a lower method names
+				if (!preg_match("/^[a-z]+$/", $method->getName())) {
 					continue;
 				}
 
@@ -86,7 +77,7 @@ class ModelAttributes extends Cachable {
 							'model' => $related->getName()
 						];
 					}
-				} catch (ErrorException $e) {}
+				} catch (\Exception $e) {}
 			}
 
 			$this->save($key, $relations);
