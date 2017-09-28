@@ -103,7 +103,8 @@ class NodeEloquentGenerator extends Generator {
 	protected function getResolver(Model $model) {
 		return function($root, array $args) use ($model) {
 			$primary = $model->getKeyName();
-			$entity  = $model->findOrNew($args[$primary] ?: 0);
+			$primary = isset($args[$primary]) ? $args[$primary] : 0;
+			$entity  = $model->findOrNew($primary);
 
 			unset($args[$primary]);
 			$entity->fill($args['with']);
