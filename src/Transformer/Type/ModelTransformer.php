@@ -111,7 +111,8 @@ class ModelTransformer extends Transformer {
 					// we're able to know that we have to return many type
 					// at once
 					switch ($relation['type']) {
-						case 'HasMany' : $many = true; break;
+						case 'BelongsToMany' :
+						case 'HasMany'       : $many = true; break;
 					}
 
 					// Only append arguments if not empty. Some relations
