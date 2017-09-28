@@ -27,7 +27,7 @@ class JsonArray extends ScalarType {
 	 * @return integer
 	 */
 	public function parseValue($value) {
-		return json_decode($value);
+		return (array) $value;
 	}
 
 	/**
