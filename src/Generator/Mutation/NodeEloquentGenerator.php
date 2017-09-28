@@ -85,7 +85,7 @@ class NodeEloquentGenerator extends Generator {
 			'with' => [
 				'description' => 'Availabled fields',
 				'type' => new GraphQLInputObjectType([
-					'name' => ucfirst($model->getTable()) . 'Arguments',
+					'name' => ucfirst(str_singular($model->getTable())) . 'Arguments',
 					'fields' => $data
 				])
 			]
