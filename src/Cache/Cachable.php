@@ -41,7 +41,7 @@ abstract class Cachable implements CachableInterface {
 		$namespace = $this->getCacheNamespace();
 		$item      = $this->cache->getItem(strtolower($namespace));
 		$content   = (is_null($item->get())) ? [] : $item->get();
-		$content   = $content + [strtolower($key) => $data];
+		$content   = $content + [$key => $data];
 		$item->set($content);
 
 		return $this->cache->save($item);

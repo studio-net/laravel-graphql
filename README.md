@@ -1,7 +1,7 @@
 Laravel GraphQL
 ===============
 
-Use Facebook GraphQL with Laravel 5.2>=. It is based on the PHP
+Use Facebook GraphQL with Laravel 5.2 >=. It is based on the PHP
 implementation [here](https://github.com/webonyx/graphql-php). You can find more
 information about GraphQL in the [GraphQL Introduction](http://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html)
 on the [React](http://facebook.github.io/react) blog or you can read the
@@ -15,315 +15,145 @@ on the [React](http://facebook.github.io/react) blog or you can read the
 [![License](https://poser.pugx.org/studio-net/laravel-graphql/license)](https://packagist.org/packages/studio-net/laravel-graphql)
 [![Build Status](https://api.travis-ci.org/studio-net/laravel-graphql.svg?branch=master)](https://travis-ci.org/studio-net/laravel-graphql)
 
-This is a work in progress.
-> Warning : this package is not abled to run in production yet
-
 ## Installation
 
-This package is only able to work with Laravel (at now).
-
-### Laravel 5.2>=
-
-Simply run
-
 ```bash
-composer require 'studio-net/laravel-graphql:dev-master'
+composer require studio-net/laravel-graphql @dev
 ```
 
-... and add service provider to `config/app.php` :
-
-```php
-<?php
-return [
-	// ...
-
-	'providers' => [
-		// ...
-		StudioNet\GraphQL\ServiceProvider::class
-		// ...
-	],
-
-	'aliases'   => [
-		// ...
-		'GraphQL' => StudioNet\GraphQL\Support\Facades\GraphQL::class
-		// ...
-	]
-];
-```
-
-Now, you can run the following command and review the `config/graphql.php` file
+If you're not using Laravel 5.5, don't forget to append facade and service
+provider to you `config/app.php` file. Next, you have to publish vendor.
 
 ```bash
-$ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
+php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 ```
 
 ## Usage
 
-- [Transformer](#transformer)
-- [Type](#type)
-- [Generator](#generator)
+- [Definition](#definition)
 - [Query](#query)
 - [Mutation](#mutation)
 - [Self documentation](#self-documentation)
-- [Example](#example)
+- [Examples](#examples)
 
-### Transformer
+### Definition
 
-In order to make you understand how this package works, we have to start with
-transformer. A transformer is a simple way to transform any kind of source-data
-into an `ObjectType`. By default, we've implemented two transformers :
-`ModelTransformer` and `TypeTransformer`.
+Each source of data must have a corresponding definition in order to retrieve
+fetchable and mutable fields.
 
-* `ModelTransformer` transforms an Eloquent model by using reflection from
-database field, hiddens and fillable fields declared within the class. It also
-supports relationships between models ;
-* `TypeTransformer` transforms a custom built class inherit from
-`StudioNet\GraphQL\Support\Type` class ;
+```
+# app/GraphQL/Definition/UserDefinition.php
 
-Each transformer must have a `supports` method. If a transformer can handle a
-given type of data, it will be converted. Otherwise, an exception will be
-thrown. All transformers are registered within the configuration file. If you
-want create you're custom one, just append it.
+namespace App\GraphQL\Definition;
 
-### Type
-
-You can register any source of data that you want into the configuration file
-(if a transformer can handle it).
-
-```php
-# app/User.php
-
-namespace App;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
+use StudioNet\GraphQL\Definition\Type;
+use StudioNet\GraphQL\Support\Definition\Definition;
+use App\User;
 
 /**
- * User
+ * Specify user GraphQL definition
  *
- * @see Model
+ * @see Definition
  */
-class User extends Model {
-	use Notifiable;
+class UserDefinition extends Definition {
+	/**
+	 * Set a name to the definition. The name will be lowercase in order to
+	   retrieve it with `\GraphQL::type` or `\GraphQL::listOf` methods
+	 *
+	 * @return string
+	 */
+	public function getName() {
+		return 'User';
+	}
 
-	/** @var array $hidden */
-	protected $hidden = ['password'];
+	/**
+	 * Set a description to the definition
+	 *
+	 * @return string
+	 */
+	public function getDescription() {
+		return 'Represents a User';
+	}
+
+	/**
+	 * Represents the source of the data. Here, Eloquent model
+	 *
+	 * @return string
+	 */
+	public function getSource() {
+		return User::class;
+	}
+
+	/**
+	 * Which fields are queryable ?
+	 *
+	 * @return array
+	 */
+	public function getFetchable() {
+		return [
+			'id'          => Type::id(),
+			'name'        => Type::string(),
+			'last_login'  => Type::datetime(),
+			'is_admin'    => Type::bool(),
+			'permissions' => Type::array(),
+
+			// Relationship between user and posts
+			'posts'       => \GraphQL::listOf('post')
+		];
+	}
+
+	/**
+	 * Which fields are mutable ?
+	 *
+	 * @return array
+	 */
+	public function getMutable() {
+		return [
+			'id'          => Type::id(),
+			'name'        => Type::string(),
+			'is_admin'    => Type::bool(),
+			'permissions' => Type::array(),
+			'password'    => Type::string()
+		];
+	}
 }
 
 # config/graphql.php
 
 return [
-    'type' => [
-        \App\User::class,
-    ]
+	// ...
+	'definitions' => [
+		\App\GraphQL\Definition\UserDefinition::class,
+		\App\GraphQL\Definition\PostDefinition::class
+	],
+	// ...
 ]
 ```
 
-You can use two kind of syntax : the first one is shown above. The second one
-using alias like `'user' => \App\User::class`.
+The definition is an essential part in the process. It defines queryable and
+mutable fields. Also, it allows you to apply transformers for only some data
+with the `getTransformers` methods. There's 5 kind of transformers to apply on :
 
-#### Overide default name and description
+* `list`  : create a query to fetch many objects (`User => users`)
+* `view`  : create a query to retrieve one object (`User => user`)
+* `drop`  : create a mutation to delete an object (`User => deleteUser`)
+* `store` : create a mutation to update an object (`User => user`)
+* `batch` : create a mutation to update many object at once (`User => users`)
 
-Each model can implements `StudioNet\GraphQL\Support\Interfaces\ModelAttributes`
-interface in order to override default name and descriptions. By default,
-they're built based on generic sentence and singularize table name.
-
-#### `StudioNet\GraphQL\Transformer\Type\ModelTransformer`
-
-Transform given `Illuminate\Database\Eloquent\Model` to `EloquentObjectType`. It
-lists all availabled fetchable columns and resolve each relationships fields
-with following configuration (`hasMany`) :
-
-```
-- Type      : List of "EloquentObjectType"
-- Return    : "Illuminate\Support\Collection"
-- Arguments :
-  - "take"   : limit
-  - "skip"   : offset
-  - "before" : cursor-based navigation
-  - "after"  : cursor-based navigation
-```
-
-I case of relationships and if `StudioNet\GraphQL\Support\Type\Meta` type is
-registered, you'll be granted to use field like `_posts_meta { count }` in order
-to retrieve global count.
-
-You could also override default name and description for each entity by
-implementing `getObjectDescription` and `getObjectName` within each of them.
-Methods must return a string.
-
-This transformer also converts [mutated fields from model](https://laravel.com/docs/5.4/eloquent-mutators).
-Let's show you the convertion mapping (based on supported model cast) :
-
-```
-+------------------+--------+---------+------------+---------+
-| integer          | float  | boolean | array      | string  |
-+------------------+--------+---------+------------+---------+
-| real             | double | boolean | object     | default |
-| int              | float  |         | array      |         |
-| integer          |        |         | collection |         |
-| date (epoch)     |        |         |            |         |
-| datetime (epoch) |        |         |            |         |
-+------------------+--------+---------+------------+---------+
-```
-
-#### `StudioNet\GraphQL\Transformer\TypeTransformer`
-
-Transform user-specified type. It handles the following methods :
-
-```
-- getName()        : Return type name
-- getDescription() : Return type description
-- getAttributes()  : Return type attributes
-- getFields()      : Return type fields
-- getInterfaces()  : Return type interfaces
-```
-
-### Generator
-
-Generators are used to make life easier : for example, it's very useful when a
-`EloquentObjectType` is passed throw : it can generate a singular and a
-pluralize query for us. A generator is similar to a transformer : it handles a
-`supports` methods but return an array (it doesn't convert any data, just use
-existing one).
-
-```php
-# config/graphql.php
-
-return [
-	'generator' => [
-		'query'    => [
-			\StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator::class,
-			\StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator::class
-		],
-		'mutation' => [
-			\StudioNet\GraphQL\Generator\Mutation\NodeEloquentGenerator::class,
-		]
-	]
-]
-```
-
-When using `EloquentGenerator`, you can create a model method called
-`resolveQuery` in order to customize the resolve GraphQL method. In order to
-make them all sharing the same custom resolver, we suggest you to create a
-`Trait`. As resolver can be extended, you can also append newer arguments using
-`getNodeQueryArguments` and `getNodesQueryArguments` methods within entity.
-
-```php
-use Illuminate\Database\Eloquent\Builder;
-
-/**
- * GraphQLResolver
- */
-trait GraphQLResolver {
-	/**
-	 * Custom GraphQL resolver
-	 *
-	 * @param  Builder $builder
-	 * @param  array $args
-	 * @return Builder
-	 */
-	public function resolveQuery(Builder $builder, array $args) {
-		// ...
-		// You cannot resolve twice following keywords because they already used
-		//
-		// `id`, `after`, `before`, `skip`, `take` and `filter`
-	}
-
-	/**
-	 * Return single node arguments
-	 *
-	 * @return array
-	 */
-	public function getNodeQueryArguments() {
-		return [];
-	}
-
-	/**
-	 * Return nodes arguments
-	 *
-	 * @return array
-	 */
-	public function getNodesQueryArguments() {
-		return [];
-	}
-}
-```
-
-#### `StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator`
-
-Generate singular query based on `EloquentObjectType`.
-
-```
-- Type      : "EloquentObjectType"
-- Return    : "Illuminate\Database\Eloquent\Model"
-- Arguments :
-  - "id" : id-based navigation
-```
-
-#### `StudioNet\GraphQL\Generator\Query\MetaEloquentGenerator`
-
-Generate meta query based on `EloquentObjectType`.
-
-```
-- Type      : "EloquentObjectType"
-- Return    : [
-   - "count" : count of objects
-]
-```
-
-#### `StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator`
-
-Generate pluralized query based on `EloquentObjectType`.
-
-```
-- Type      : List of "EloquentObjectType"
-- Return    : "Illuminate\Database\Eloquent\Collection"
-- Arguments :
-  - "take"   : limit
-  - "skip"   : offset
-  - "before" : cursor-based navigation
-  - "after"  : cursor-based navigation
-  - "filter" : filter-based query (see examples)
-```
-
-#### `StudioNet\GraphQL\Generator\Mutation\NodeEloquentGenerator`
-
-Generate mutation based on `EloquentObjectType`. It allows create or update
-methods (primary key specified).
-
-```
-- Type      : "EloquentObjectType"
-- Return    : "Illuminate\Database\Eloquent\Model"
-- Arguments :
-  - "{primaryKey}" : model defined primary key
-  - "with"         : availabled fillable or non-guarded fields (no hidden ones)
-```
-
-#### `StudioNet\GraphQL\Generator\Mutation\QueryEloquentGenerator`
-
-Generate mutation based on `EloquentObjectType`. It allows delete an entity
-based on the primary key.
-
-```
-- Type      : "EloquentObjectType"
-- Return    : "Illuminate\Database\Eloquent\Model"
-- Arguments :
-  - "id" : model defined primary key
-```
+By the default, the definition abstract class handles Eloquent model
+transformation.
 
 ### Query
 
-Query are used in order to fetch data. Each query has it's own related
-[type](#type).
+If you want create a query by hand, it's possible.
 
 ```php
 # app/GraphQL/Query/Viewer.php
 
 namespace App\GraphQL\Query;
 
-use StudioNet\GraphQL\Support\Query;
-use App\User;
+use StudioNet\GraphQL\Support\Definition\Query;
+use Illuminate\Support\Facades\Auth;
 
 class Viewer extends Query {
 	/**
@@ -334,12 +164,12 @@ class Viewer extends Query {
 	}
 
 	/**
-	 * Return first user in database
+	 * Return logged user
 	 *
-	 * @return \App\User
+	 * @return \App\User|null
 	 */
-	public function resolve() {
-		return User::first();
+	public function getResolver() {
+		return Auth::user();
 	}
 }
 
@@ -356,23 +186,23 @@ return [
 		]
 	],
 
-	'type' => [
-		\App\User::class
+	'definitions' => [
+		\App\GraphQL\Definition\UserDefinition::class
 	]
 ];
 ```
 
 ### Mutation
 
-Mutation are used to update or create data :
+Mutation are used to update or create data.
 
 ```php
 # app/GraphQL/Mutation/Profile.php
 
 namespace App\GraphQL\Mutation;
 
-use StudioNet\GraphQL\Support\Mutation;
-use GraphQL\Type\Definition\Type as GraphQLType;
+use StudioNet\GraphQL\Support\Definition\Mutation;
+use StudioNet\GraphQL\Definition\Type;
 use App\User;
 
 class Profile extends Mutation {
@@ -390,21 +220,21 @@ class Profile extends Mutation {
 	 */
 	public function getArguments() {
 		return [
-			'id'      => ['type' => GraphQLType::nonNull(GraphQLType::id())],
-			'blocked' => ['type' => GraphQLType::string()]
+			'id'      => ['type' => Type::nonNull(Type::id())],
+			'blocked' => ['type' => Type::string()]
 		];
 	};
 
 	/**
-	 * Return current logged user
+	 * Update user
 	 *
 	 * @param  mixed $root
 	 * @param  array $args
 	 *
-	 * @return \App\User
+	 * @return User
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
-	public function resolve($root, array $args) {
+	public function getResolver($root, array $args) {
 		$user = User::findOrFail($args['id']);
 		$user->update($args);
 
@@ -428,75 +258,17 @@ return [
 		]
 	],
 
-	'type' => [
-		\App\User::class
+	'definitions' => [
+		\App\GraphQL\Definition\UserDefinition::class
 	]
 ];
 ```
-
-Mutation's aliases are not dependent of query's one
 
 ### Self documentation
 
 A documentation generator is implemented with the package. By default, you can access it by navigate to `/doc/graphql`. You can change this behavior within the configuration file. The built-in documentation is implemented from [this repository](https://github.com/mhallin/graphql-docs).
 
-### Example
-
-To run the following example, we assumed that you have two existing models :
-`User` and `Post`. A `User` model has a method `posts` that will return a
-`HasMany` relationship with `Post` model.
-
-We'll simply create a query that represents the first user in the database
-(there's no really use case but it's only for the example). We just have to
-register models and created query.
-
-```php
-# app/GraphQL/Query/Viewer.php
-
-namespace App\GraphQL\Query;
-
-use GraphQL;
-use StudioNet\GraphQL\Support\Query;
-
-/**
- * Viewer
- *
- * @see Query
- */
-class Viewer extends Query {
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getRelatedType() {
-		return \GraphQL::type('user');
-	}
-
-	/**
-	 * Return first user in database
-	 *
-	 * @return \App\User
-	 */
-	public function getResolver() {
-		return \App\User::first();
-	}
-}
-
-# config/graphql.php
-
-return [
-	'schema' => [
-		'default' => 'default',
-		'definitions' => [
-			'default' => [
-				'query'    => [\App\GraphQL\Query\Viewer::class],
-				'mutation' => []
-			]
-		]
-	],
-
-	'type' => [\App\User::class, \App\Post::class]
-];
-```
+### Examples
 
 ```graphql
 query {
@@ -525,6 +297,7 @@ query {
 	}
 }
 ```
+
 #### Using filters
 
 In order to use operator, you can refer to example below. Otherwise, this is the
@@ -578,63 +351,34 @@ query {
 }
 ```
 
-#### Using metadata
-
-```php
-# config/graphql.php
-
-return [
-	'type' => [
-		\StudioNet\GraphQL\Support\Type\Meta::class,
-		\App\User::class,
-		\App\Post::class
-	]
-];
-```
-
-```graphql
-query {
-	_users_meta {
-		count
-	}
-
-	users (take: 2) {
-		id
-		first_name
-		last_name
-
-		posts (take: 5) {
-			id
-			title
-			content
-		}
-
-		_posts_meta {
-			count
-		}
-	}
-}
-```
-
 #### Mutation
 
 ```graphql
 mutation {
+	# Delete object
 	delete : deleteUser(id: 5) {
 		first_name
 		last_name
 	},
 
+	# Update object
 	update : user(id: 5, with : { first_name : "toto" }) {
 		id
 		first_name
 		last_name
 	},
 
+	# Create object
 	create : user(with : { first_name : "toto", last_name : "blabla" }) {
 		id
 		first_name
 		last_name
+	},
+
+	# Update or create many objects at once
+	batch  : users(objects: [{with: {first_name: 'studio'}}, {with: {first_name: 'net'}}]) {
+		id
+		first_name
 	}
 }
 ```

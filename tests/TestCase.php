@@ -18,6 +18,8 @@ if (!class_exists('PHPUnit_Framework_TestCase')) {
  * @abstract
  */
 abstract class TestCase extends BaseTestCase {
+	use \Codeception\Specify;
+
 	/**
 	 * {@inheritDoc}
 	 */

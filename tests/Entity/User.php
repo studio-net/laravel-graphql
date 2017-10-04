@@ -34,14 +34,4 @@ class User extends Model {
 	public function posts() {
 		return $this->hasMany(Post::class);
 	}
-
-	/**
-	 * Override name
-	 *
-	 * @param  string $value
-	 * @return string
-	 */
-	public function getNameAttribute($value) {
-		return strtoupper($value);
-	}
 }

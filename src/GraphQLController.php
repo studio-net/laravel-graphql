@@ -3,6 +3,7 @@ namespace StudioNet\GraphQL;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
+use GraphQL\Utils;
 
 /**
  * GraphQLController
@@ -20,31 +21,45 @@ class GraphQLController extends Controller {
 	 */
 	public function query(Request $request, $schema = null) {
 		$inputs = $request->all();
+		$data   = [];
 
 		// If there's no schema, just use default one
 		if (empty($schema)) {
 			$schema = config('graphql.schema.default', 'default');
 		}
 
-		// If we're working on batch queries, we have to parse and execute each
-		// of them separatly
-		if (array_keys($inputs) === range(0, count($inputs) - 1)) {
-			$data = [];
+		// Execute statements in transaction in order to prevent error during
+		// creation, update or drop
+		\DB::beginTransaction();
 
-			foreach ($inputs as $input) {
-				$data[] = $this->executeQuery($schema, $input);
+		try {
+			// If we're working on batch queries, we have to parse and execute each
+			// of them separatly
+			if (array_keys($inputs) === range(0, count($inputs) - 1)) {
+				foreach ($inputs as $input) {
+					$data[] = $this->executeQuery($schema, $input);
+				}
 			}
-		}
 
-		// Otherwise, we just have to handle given query
-		else {
-			$data = $this->executeQuery($schema, $inputs);
+			// Otherwise, we just have to handle given query
+			else {
+				$data = $this->executeQuery($schema, $inputs);
+			}
+
+			// If everything is okay, just commit the transaction
+			\DB::commit();
+		} catch (\Exception $exception) {
+			$data['error'] = $exception->getMessage();
+
+			// Rollback transaction is any error occurred
+			\DB::rollback();
 		}
 
 		$headers = config('graphql.response.headers', []);
 		$options = config('graphql.response.json_encoding_options', 0);
+		$status  = (array_key_exists('errors', $data)) ? 500 : 200;
 
-		return response()->json($data, 200, $headers, $options);
+		return response()->json($data, $status, $headers, $options);
 	}
 
 	/**

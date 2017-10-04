@@ -6,7 +6,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
-use StudioNet\GraphQL\Transformer\Transformer;
 
 /**
  * Singleton tests
@@ -25,29 +24,21 @@ class GraphQLTest extends TestCase {
 	}
 
 	/**
-	 * testRegistertTypeException
-	 *
-	 * @return void
-	 * @expectedException \StudioNet\GraphQL\Exception\TypeNotFoundException
-	 */
-	public function testRegisterTypeException() {
-		app(GraphQL::class)->registerType(null, '\\Test\\Class\\Type');
-	}
-
-	/**
 	 * testRegisterType
 	 *
 	 * @return void
 	 */
-	public function testRegisterType() {
+	public function testRegisterDefinition() {
 		$graphql = app(GraphQL::class);
-		$graphql->registerType('user', Entity\User::class);
-		$graphql->registerType('post', Entity\Post::class);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->assertInstanceOf(ObjectType::class, $graphql->type('user'));
-		$this->assertInstanceOf(ObjectType::class, $graphql->type('post'));
-		$this->assertInstanceOf(ListOfType::class, $graphql->listOf('user'));
-		$this->assertInstanceOf(ListOfType::class, $graphql->listOf('post'));
+		$this->specify('ensure that we can call registered type', function() use ($graphql) {
+			$this->assertInstanceOf(ObjectType::class, $graphql->type('user'));
+			$this->assertInstanceOf(ObjectType::class, $graphql->type('post'));
+			$this->assertInstanceOf(ListOfType::class, $graphql->listOf('user'));
+			$this->assertInstanceOf(ListOfType::class, $graphql->listOf('post'));
+		});
 	}
 
 	/**
@@ -62,82 +53,151 @@ class GraphQLTest extends TestCase {
 
 		$graphql = app(GraphQL::class);
 		$graphql->registerSchema('default', []);
-		$graphql->registerType('user', Entity\User::class);
-		$graphql->registerType('post', Entity\Post::class);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$params   = ['query' => 'query { user(id: 1) { name, posts { title } }}'];
-		$user     = Entity\User::with('posts')->find(1);
-		$posts    = [];
+		$this->specify('test querying a single row', function() {
+			$params = ['query' => 'query { user(id: 1) { name, posts { title } }}'];
+			$user   = Entity\User::with('posts')->find(1);
+			$posts  = [];
 
-		foreach ($user->posts as $post) {
-			$posts[]['title'] = $post->title;
-		}
+			foreach ($user->posts as $post) {
+				$posts[]['title'] = $post->title;
+			}
 
-		$this->call('GET', '/graphql', $params);
-		$this->seeJsonEquals([
-			'data' => [
-				'user' => [
-					'name' => $user->name,
-					'posts' => $posts
+			$this->call('GET', '/graphql', $params);
+			$this->seeJsonEquals([
+				'data' => [
+					'user' => [
+						'name' => $user->name,
+						'posts' => $posts
+					]
 				]
-			]
-		]);
+			]);
+		});
 	}
 
 	/**
-	 * testMutation
+	 * Test mutation
 	 *
 	 * @return void
 	 */
 	public function testMutation() {
-		factory(Entity\User::class, 1)->create();
-
+		factory(Entity\User::class, 5)->create();
+		
 		$graphql = app(GraphQL::class);
 		$graphql->registerSchema('default', []);
-		$graphql->registerType('user', Entity\User::class);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$params = ['query' => 'mutation { updateName : user(id: 1, with : { name : "Test" }) { id, name } }'];
-		$this->json('POST', '/graphql', $params);
-		$entity = Entity\User::find(1);
+		$this->specify('tests mutation on user', function() {
+			$query = 'mutation { user(id: 1, with: { name: "toto" }) { id, name } }';
+			$this->call('GET', '/graphql', ['query' => $query]);
 
-		$this->seeJsonEquals([
-			'data' => [
-				'updateName' => [
-					'id'   => (string) $entity->getKey(),
-					'name' => $entity->name
+			$this->seeJsonEquals([
+				'data' => [
+					'user' => [
+						'id'   => '1',
+						'name' => 'toto',
+					]
 				]
-			]
-		]);
+			]);
+
+			$user = Entity\User::first();
+			$this->assertSame('toto', $user->name);
+		});
+
+		$this->specify('tests drop on user', function() {
+			$query = 'mutation { deleteUser(id: 1) { name }}';
+			$this->call('GET', '/graphql', ['query' => $query]);
+
+			$this->seeJsonEquals([
+				'data' => [
+					'deleteUser' => [
+						'name' => 'toto',
+					]
+				]
+			]);
+
+			$user = Entity\User::find(1);
+			$this->assertEmpty($user);
+		});
+
+		$this->specify('tests batch update on user', function() {
+			$query = 'mutation { users(objects: [{id: 4, with: {name: "test"}}, {id: 5, with: {name: "toto"}}]) { id, name }}';
+
+			$this->call('GET', '/graphql', ['query' => $query]);
+			$this->seeJsonEquals([
+				'data' => [
+					'users' => [
+						['id' => '4', 'name' => 'test'],
+						['id' => '5', 'name' => 'toto'],
+					]
+				]
+			]);
+		});
 	}
 
 	/**
-	 * testTypeResponse
+	 * Test implemented scalar
 	 *
 	 * @return void
 	 */
-	public function testTypeResponse() {
-		factory(Entity\User::class, 1)->create();
+	public function testScalar() {
+		factory(Entity\User::class)->create();
 
 		$graphql = app(GraphQL::class);
 		$graphql->registerSchema('default', []);
-		$graphql->registerType('user', Entity\User::class);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$params = ['query' => 'query { user (id: 1) { last_login, is_admin, permissions }}'];
-		$this->json('POST', '/graphql', $params);
-		$data   = $this->response->getData(true);
+		$this->specify('tests datetime scalar type', function() {
+			$query  = 'query { user(id: 1) { last_login } }';
+			$this->call('GET', '/graphql', ['query' => $query]);
 
-		$this->assertArrayHasKey('data', $data);
-		$this->assertArrayHasKey('user', $data['data']);
+			$result = $this->decodeResponseJson();
+			$this->assertInternalType('int', $result['data']['user']['last_login']);
+		});
 
-		$data = $data['data']['user'];
-		$user = Entity\User::find(1);
+		$this->specify('tests array scalar type', function() {
+			$query  = 'query { user(id: 1) { permissions } }';
+			$this->call('GET', '/graphql', ['query' => $query]);
 
-		$this->assertTrue(is_bool($data['is_admin']));
-		$this->assertTrue(is_array($data['permissions']));
-		$this->assertTrue(is_int($data['last_login']));
+			$result = $this->decodeResponseJson();
+			$this->assertInternalType('array', $result['data']['user']['permissions']);
+		});
+	}
 
-		$this->assertSame($user->last_login->timestamp, $data['last_login']);
-		$this->assertSame($user->permissions, $data['permissions']);
-		$this->assertSame($user->is_admin, $data['is_admin']);
+	/**
+	 * Test custom query
+	 *
+	 * @return void
+	 */
+	public function testCustomQuery() {
+		factory(Entity\User::class)->create();
+
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', [
+			'query' => [
+				\StudioNet\GraphQL\Tests\GraphQL\Query\Viewer::class
+			]
+		]);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+
+		$this->specify('tests custom query (viewer)', function() {
+			$query = 'query { viewer { id, name }}';
+			$user  = Entity\User::first();
+
+			$this->call('GET', '/graphql', ['query' => $query]);
+			$this->seeJsonEquals([
+				'data' => [
+					'viewer' => [
+						'id'   => (string) $user->id,
+						'name' => $user->name,
+					]
+				]
+			]);
+		});
 	}
 }

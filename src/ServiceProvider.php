@@ -27,11 +27,8 @@ class ServiceProvider extends BaseServiceProvider {
 		require $routes;
 
 		// Call external methods to load defined schemas and others things
-		$this->registerScalars();
-		$this->registerTransformers();
 		$this->registerSchemas();
-		$this->registerTypes();
-		$this->registerGenerators();
+		$this->registerDefinitions();
 	}
 
 	/**
@@ -39,7 +36,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 *
 	 * @return void
 	 */
-	public function registerSchemas() {
+	private function registerSchemas() {
 		$schemas = config('graphql.schema.definitions', []);
 
 		foreach ($schemas as $name => $data) {
@@ -48,58 +45,15 @@ class ServiceProvider extends BaseServiceProvider {
 	}
 
 	/**
-	 * Register types
+	 * Register definitions
 	 *
 	 * @return void
 	 */
-	public function registerTypes() {
-		$types = config('graphql.type', []);
+	private function registerDefinitions() {
+		$definitions = config('graphql.definitions', []);
 
-		foreach ($types as $name => $type) {
-			$this->app['graphql']->registerType($name, $type);
-		}
-	}
-
-	/**
-	 * Register scalar
-	 *
-	 * @return void
-	 */
-	public function registerScalars() {
-		$scalars = config('graphql.scalar', []);
-
-		foreach ($scalars as $name => $scalar) {
-			$this->app['graphql']->registerScalar($name, $scalar);
-		}
-	}
-
-	/**
-	 * Register transformers
-	 *
-	 * @return void
-	 */
-	public function registerTransformers() {
-		$transformers = config('graphql.transformer', []);
-
-		foreach ($transformers as $key => $many) {
-			foreach ($many as $transformer) {
-				$this->app['graphql']->registerTransformer($key, $transformer);
-			}
-		}
-	}
-
-	/**
-	 * Register generators
-	 *
-	 * @return void
-	 */
-	public function registerGenerators() {
-		$generators = config('graphql.generator', []);
-
-		foreach ($generators as $key => $many) {
-			foreach ($many as $generator) {
-				$this->app['graphql']->registerGenerator($key, $generator);
-			}
+		foreach ($definitions as $definition) {
+			$this->app['graphql']->registerDefinition($definition);
 		}
 	}
 
@@ -110,7 +64,6 @@ class ServiceProvider extends BaseServiceProvider {
 	 */
 	public function register() {
 		$this->app->singleton(CachePool::class, function() { return new CachePool; });
-		$this->app->singleton(ModelAttributes::class);
 		$this->app->singleton(GraphQL::class);
 		$this->app->bind('graphql', GraphQL::class);
 	}

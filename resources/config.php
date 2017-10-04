@@ -19,55 +19,8 @@ return [
 
 	// Type configuration. You can append any data : a transformer will handle
 	// them (if exists). Order matter
-	'type' => [
-		// Mandatory in order to make working meta data
-		\StudioNet\GraphQL\Support\Type\Meta::class
-
-		// Custom types
-		// \App\User::class
-	],
-
-	// Custom scalar field definitions
-	'scalar' => [],
-
-	// A transformer handles a supports and a transform method. I can convert
-	// any type of data in specific content. In order to make work Eloquent
-	// models, a transformer convert it into specific ObjectType.
-	//
-	// Take care about order : the first supported transformer will handle the
-	// transformation ; others will simply not be called. I you want make
-	// modifications about a specific transformer, you'll have to extend
-	// existing one and replace it below
-	//
-	// There's 3 types of transformers : type, query and mutation
-	'transformer' => [
-		'type'     => [
-			\StudioNet\GraphQL\Transformer\Type\ModelTransformer::class,
-			\StudioNet\GraphQL\Transformer\TypeTransformer::class,
-		],
-		'query'    => [
-			\StudioNet\GraphQL\Transformer\FieldTransformer::class,
-		],
-		'mutation' => [
-			\StudioNet\GraphQL\Transformer\FieldTransformer::class,
-		]
-	],
-
-	// A generator can be applied with each ObjectType. You can register any
-	// generator you want.
-	//
-	// Instead of transformers, generators will not stopping at first match :
-	// all will be called
-	'generator' => [
-		'query'    => [
-			\StudioNet\GraphQL\Generator\Query\MetaEloquentGenerator::class,
-			\StudioNet\GraphQL\Generator\Query\NodeEloquentGenerator::class,
-			\StudioNet\GraphQL\Generator\Query\NodesEloquentGenerator::class
-		],
-		'mutation' => [
-			\StudioNet\GraphQL\Generator\Mutation\NodeEloquentGenerator::class,
-			\StudioNet\GraphQL\Generator\Mutation\DeleteEloquentGenerator::class,
-		]
+	'definitions' => [
+		// ...
 	],
 
 	// Response configuration
