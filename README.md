@@ -41,7 +41,7 @@ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 Each source of data must have a corresponding definition in order to retrieve
 fetchable and mutable fields.
 
-```
+```php
 # app/GraphQL/Definition/UserDefinition.php
 
 namespace App\GraphQL\Definition;
@@ -58,7 +58,7 @@ use App\User;
 class UserDefinition extends Definition {
 	/**
 	 * Set a name to the definition. The name will be lowercase in order to
-	   retrieve it with `\GraphQL::type` or `\GraphQL::listOf` methods
+	 * retrieve it with `\GraphQL::type` or `\GraphQL::listOf` methods
 	 *
 	 * @return string
 	 */
