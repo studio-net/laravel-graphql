@@ -95,7 +95,7 @@ class UserDefinition extends Definition {
 			'name'        => Type::string(),
 			'last_login'  => Type::datetime(),
 			'is_admin'    => Type::bool(),
-			'permissions' => Type::array(),
+			'permissions' => Type::json(),
 
 			// Relationship between user and posts
 			'posts'       => \GraphQL::listOf('post')
@@ -142,6 +142,10 @@ with the `getTransformers` methods. There's 5 kind of transformers to apply on :
 
 By the default, the definition abstract class handles Eloquent model
 transformation.
+
+A definition is composed from types. Our custom class extend the default
+`GraphQL\Type\Definition\Type` class in order to implement `json` and `datetime`
+availabled types.
 
 ### Query
 

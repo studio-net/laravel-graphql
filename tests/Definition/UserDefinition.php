@@ -49,7 +49,7 @@ class UserDefinition extends Definition {
 			'name'        => Type::string(),
 			'last_login'  => Type::datetime(),
 			'is_admin'    => Type::bool(),
-			'permissions' => Type::array(),
+			'permissions' => Type::json(),
 			'posts'       => \GraphQL::listOf('post')
 		];
 	}
@@ -64,7 +64,7 @@ class UserDefinition extends Definition {
 			'id'          => Type::id(),
 			'name'        => Type::string(),
 			'is_admin'    => Type::bool(),
-			'permissions' => Type::array(),
+			'permissions' => Type::json(),
 			'password'    => Type::string()
 		];
 	}

@@ -11,7 +11,7 @@ use GraphQL\Type\Definition\Type as GraphQLType;
  */
 abstract class Type extends GraphQLType {
 	/** ARRAY */
-	const ARRAY    = 'Array';
+	const JSON = 'Json';
 
 	/** DATETIME */
 	const DATETIME = 'Datetime';
@@ -35,12 +35,12 @@ abstract class Type extends GraphQLType {
 	}
 
 	/**
-	 * Return array type
+	 * Return json type
 	 *
-	 * @return ArrayType
+	 * @return JsonType
 	 */
-	static public function array() {
-		return self::getCache(self::ARRAY);
+	static public function json() {
+		return self::getCache(self::JSON);
 	}
 
 	/**
@@ -70,7 +70,7 @@ abstract class Type extends GraphQLType {
 	static protected function getCache($name = null) {
 		if (is_null(self::$cache)) {
 			self::$cache = [
-				self::ARRAY    => new ArrayType,
+				self::JSON => new JsonType,
 				self::DATETIME => new DatetimeType,
 			];
 		}

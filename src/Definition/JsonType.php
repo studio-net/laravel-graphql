@@ -9,12 +9,12 @@ use GraphQL\Language\AST\ObjectValueNode;
  *
  * @see ScalarType
  */
-class ArrayType extends ScalarType {
+class JsonType extends ScalarType {
 	/** @var string $name */
-	public $name = Type::ARRAY;
+	public $name = Type::JSON;
 
 	/** @var string $description */
-	public $description = 'The `array` scalar type represents a JS object';
+	public $description = 'The `json` scalar type represents a JS object';
 
 	/**
 	 * {@inheritDoc}

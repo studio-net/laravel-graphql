@@ -159,7 +159,7 @@ class GraphQLTest extends TestCase {
 			$this->assertInternalType('int', $result['data']['user']['last_login']);
 		});
 
-		$this->specify('tests array scalar type', function() {
+		$this->specify('tests json scalar type', function() {
 			$query  = 'query { user(id: 1) { permissions } }';
 			$this->call('GET', '/graphql', ['query' => $query]);
 

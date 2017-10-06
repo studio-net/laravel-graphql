@@ -64,9 +64,9 @@ class ListTransformer extends Transformer {
 			'name'   => sprintf('%sFilter', ucfirst($definition->getName())),
 			'fields' => array_map(function($field) {
 				if (is_array($field)) {
-					$field['type'] = Type::array();
+					$field['type'] = Type::json();
 				} else {
-					$field = Type::array();
+					$field = Type::json();
 				}
 
 				return $field;
