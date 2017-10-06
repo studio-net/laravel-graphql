@@ -2,6 +2,7 @@
 namespace StudioNet\GraphQL\Tests;
 
 use Orchestra\Testbench\BrowserKit\TestCase as BaseTestCase;
+use StudioNet\GraphQL\GraphQL;
 
 // Assert class exists. Otherwise, create simple aliases in order to make tests
 // working on newer PHPUnit version
@@ -84,5 +85,34 @@ abstract class TestCase extends BaseTestCase {
 	 */
 	public function assertGraphQLSchema($schema) {
 		$this->assertInstanceOf(\GraphQL\Schema::class, $schema);
+	}
+
+	/**
+	 * Execute GraphQL helper and return result
+	 *
+	 * @param  string $query
+	 * @param  array $opts
+	 * @return array
+	 */
+	public function executeGraphQL($query, array $opts = []) {
+		$opts = $opts + [
+			'schema' => array_get($opts, 'schema', 'default')
+		];
+		
+		return app(GraphQL::class)->execute($query, [], $opts);
+	}
+
+	/**
+	 * Assert GraphQL response is equals to $assert
+	 *
+	 * @param  GraphQL $graphql
+	 * @param  string  $query
+	 * @param  array   $assert
+	 * @param  array   $opts
+	 *
+	 * @return void
+	 */
+	public function assertGraphQLEquals($query, array $assert, array $opts = []) {
+		$this->assertSame($assert, $this->executeGraphQL($query, $opts));
 	}
 }

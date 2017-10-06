@@ -57,16 +57,15 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
 		$this->specify('test querying a single row', function() {
-			$params = ['query' => 'query { user(id: 1) { name, posts { title } }}'];
-			$user   = Entity\User::with('posts')->find(1);
-			$posts  = [];
+			$query = 'query { user(id: 1) { name, posts { title } }}';
+			$user  = Entity\User::with('posts')->find(1);
+			$posts = [];
 
 			foreach ($user->posts as $post) {
 				$posts[]['title'] = $post->title;
 			}
 
-			$this->call('GET', '/graphql', $params);
-			$this->seeJsonEquals([
+			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
 						'name' => $user->name,
@@ -92,9 +91,7 @@ class GraphQLTest extends TestCase {
 
 		$this->specify('tests mutation on user', function() {
 			$query = 'mutation { user(id: 1, with: { name: "toto" }) { id, name } }';
-			$this->call('GET', '/graphql', ['query' => $query]);
-
-			$this->seeJsonEquals([
+			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
 						'id'   => '1',
@@ -109,9 +106,7 @@ class GraphQLTest extends TestCase {
 
 		$this->specify('tests drop on user', function() {
 			$query = 'mutation { deleteUser(id: 1) { name }}';
-			$this->call('GET', '/graphql', ['query' => $query]);
-
-			$this->seeJsonEquals([
+			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'deleteUser' => [
 						'name' => 'toto',
@@ -125,9 +120,7 @@ class GraphQLTest extends TestCase {
 
 		$this->specify('tests batch update on user', function() {
 			$query = 'mutation { users(objects: [{id: 4, with: {name: "test"}}, {id: 5, with: {name: "toto"}}]) { id, name }}';
-
-			$this->call('GET', '/graphql', ['query' => $query]);
-			$this->seeJsonEquals([
+			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'users' => [
 						['id' => '4', 'name' => 'test'],
@@ -152,19 +145,17 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
 		$this->specify('tests datetime scalar type', function() {
-			$query  = 'query { user(id: 1) { last_login } }';
-			$this->call('GET', '/graphql', ['query' => $query]);
+			$query = 'query { user(id: 1) { last_login } }';
+			$data  = $this->executeGraphQL($query);
 
-			$result = $this->decodeResponseJson();
-			$this->assertInternalType('int', $result['data']['user']['last_login']);
+			$this->assertInternalType('int', $data['data']['user']['last_login']);
 		});
 
 		$this->specify('tests json scalar type', function() {
-			$query  = 'query { user(id: 1) { permissions } }';
-			$this->call('GET', '/graphql', ['query' => $query]);
+			$query = 'query { user(id: 1) { permissions } }';
+			$data  = $this->executeGraphQL($query);
 
-			$result = $this->decodeResponseJson();
-			$this->assertInternalType('array', $result['data']['user']['permissions']);
+			$this->assertInternalType('array', $data['data']['user']['permissions']);
 		});
 	}
 
@@ -189,8 +180,7 @@ class GraphQLTest extends TestCase {
 			$query = 'query { viewer { id, name }}';
 			$user  = Entity\User::first();
 
-			$this->call('GET', '/graphql', ['query' => $query]);
-			$this->seeJsonEquals([
+			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'viewer' => [
 						'id'   => (string) $user->id,
