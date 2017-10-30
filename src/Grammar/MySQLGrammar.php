@@ -1,5 +1,5 @@
 <?php
-namespace StudioNet\GraphQL\Generator\Query\Grammar;
+namespace StudioNet\GraphQL\Grammar;
 
 /**
  * Decode filter grammar.

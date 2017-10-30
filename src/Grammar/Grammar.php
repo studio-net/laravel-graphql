@@ -1,5 +1,5 @@
 <?php
-namespace StudioNet\GraphQL\Generator\Query\Grammar;
+namespace StudioNet\GraphQL\Grammar;
 
 use Illuminate\Database\Eloquent\Builder;
 
