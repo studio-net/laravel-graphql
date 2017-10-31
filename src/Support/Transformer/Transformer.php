@@ -110,7 +110,7 @@ abstract class Transformer extends Cachable {
 		if (!$this->has($key)) {
 			$input = new InputObjectType([
 				'name'   => sprintf('%sArguments', ucfirst($definition->getName())),
-				'fields' => $definition->getMutable()
+				'fields' => [$definition, 'getMutable']
 			]);
 
 			$this->save($key, $input);
