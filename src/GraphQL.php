@@ -50,8 +50,6 @@ class GraphQL {
 		//    'mutation' => []
 		// ]
 		$schema = $this->get('schema', $name);
-
-		// Compute query and mutation fields
 		$schema['query']    = $this->manageQuery($schema['query']);
 		$schema['mutation'] = $this->manageMutation($schema['mutation']);
 
@@ -99,14 +97,8 @@ class GraphQL {
 		$schemaName = array_get($opts, 'schema', null);
 		$operation  = array_get($opts, 'operationName', null);
 		$schema     = $this->getSchema($schemaName);
-		$result     = GraphQLBase::executeAndReturnResult($schema, $query, $root, $context, $variables, $operation);
-		$data       = ['data' => $result->data];
 
-		if (!empty($result->errors)) {
-			$data['errors'] = $result->errors;
-		}
-
-		return $data;
+		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation)->toArray(true);
 	}
 
 	/**
