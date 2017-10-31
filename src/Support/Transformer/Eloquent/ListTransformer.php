@@ -60,6 +60,11 @@ class ListTransformer extends Transformer {
 	 * @return array
 	 */
 	private function getFilterType(Definition $definition) {
+		// TODO We have to manage this case
+		$fields = array_filter($definition->getFetchable(), function($field) {
+			return !is_array($field) or !array_key_exists('args', $field);
+		});
+
 		return new InputObjectType([
 			'name'   => sprintf('%sFilter', ucfirst($definition->getName())),
 			'fields' => array_map(function($field) {
@@ -70,7 +75,7 @@ class ListTransformer extends Transformer {
 				}
 
 				return $field;
-			}, $definition->getFetchable())
+			}, $fields)
 		]);
 	}
 
