@@ -66,7 +66,30 @@ abstract class Definition implements DefinitionInterface {
 			$this->setCache('resolveFetchableType', new ObjectType([
 				'name'        => $this->getName(),
 				'description' => $this->getDescription(),
-				'fields'      => [$this, 'getFetchable']
+				'fields'      => function() {
+					$fields = [];
+
+					foreach ($this->getFetchable() as $key => $data) {
+						$resolved = false;
+						$name = $key;
+
+						if (is_array($data) and array_key_exists('name', $data)) {
+							$name = $data['name'];
+							$resolved = array_key_exists('resolve', $data);
+						}
+
+						$method = sprintf('resolve%sField', ucfirst(camel_case($name)));
+						$fields[$key] = $data;
+
+						if (!$resolved and method_exists($this, $method)) {
+							$fields[$key] = array_merge($fields[$key], [
+								'resolve' => [$this, $method]
+							]);
+						}
+					}
+
+					return $fields;
+				}
 			]));
 		}
 

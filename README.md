@@ -103,6 +103,16 @@ class UserDefinition extends Definition {
 	}
 
 	/**
+	 * Resolve field `permissions`
+	 *
+	 * @param  User $user
+	 * @return array
+	 */
+	public function resolvePermissionsField(User $user) {
+		return $user->getPermissions();
+	}
+
+	/**
 	 * Which fields are mutable ?
 	 *
 	 * @return array
