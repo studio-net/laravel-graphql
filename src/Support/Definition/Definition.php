@@ -78,6 +78,11 @@ abstract class Definition implements DefinitionInterface {
 							$resolved = array_key_exists('resolve', $data);
 						}
 
+						else if (!is_array($data)) {
+							$data = ['type' => $data];
+							$resolved = false;
+						}
+
 						$method = sprintf('resolve%sField', ucfirst(camel_case($name)));
 						$fields[$key] = $data;
 

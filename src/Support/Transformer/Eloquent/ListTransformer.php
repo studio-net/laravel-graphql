@@ -62,7 +62,7 @@ class ListTransformer extends Transformer {
 	private function getFilterType(Definition $definition) {
 		// TODO We have to manage this case
 		$fields = array_filter($definition->getFetchable(), function($field) {
-			return !is_array($field) or !array_key_exists('args', $field);
+			return !is_array($field) or array_get($field, 'inputable', false);
 		});
 
 		return new InputObjectType([

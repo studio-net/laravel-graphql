@@ -85,12 +85,14 @@ abstract class Transformer extends Cachable {
 	 */
 	public function guessWithRelations(Definition $definition, array $fields) {
 		$relations = [];
+		$source    = $this->app->make($definition->getSource());
 
 		// Parse each field in order to retrieve relationship elements on root
 		// of array (as relationship are based upon multiple resolvers, we just
 		// have to handle the root fields here)
 		foreach ($fields as $key => $field) {
-			if (is_array($field)) {
+			// TODO Improve this checker
+			if (is_array($field) and method_exists($source, $key)) {
 				array_push($relations, $key);
 			}
 		}
