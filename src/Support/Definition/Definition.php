@@ -16,11 +16,11 @@ abstract class Definition implements DefinitionInterface {
 
 	/** @var List of transformers to apply when needed $transformers */
 	public $transformers = [
-		'list'  => \StudioNet\GraphQL\Support\Transformer\Eloquent\ListTransformer::class,
-		'view'  => \StudioNet\GraphQL\Support\Transformer\Eloquent\ViewTransformer::class,
-		'drop'  => \StudioNet\GraphQL\Support\Transformer\Eloquent\DropTransformer::class,
-		'store' => \StudioNet\GraphQL\Support\Transformer\Eloquent\StoreTransformer::class,
-		'batch' => \StudioNet\GraphQL\Support\Transformer\Eloquent\BatchTransformer::class
+		'list'  => false,
+		'view'  => false,
+		'drop'  => false,
+		'store' => false,
+		'batch' => false
 	];
 
 	/**
@@ -48,11 +48,11 @@ abstract class Definition implements DefinitionInterface {
 	 */
 	public function getTransformers() {
 		return [
-			'list'  => true,
-			'view'  => true,
-			'drop'  => true,
-			'store' => true,
-			'batch' => true
+			'list'  => false,
+			'view'  => false,
+			'drop'  => false,
+			'store' => false,
+			'batch' => false
 		];
 	}
 
@@ -67,38 +67,47 @@ abstract class Definition implements DefinitionInterface {
 				'name'        => $this->getName(),
 				'description' => $this->getDescription(),
 				'fields'      => function() {
-					$fields = [];
-
-					foreach ($this->getFetchable() as $key => $data) {
-						$resolved = false;
-						$name = $key;
-
-						if (is_array($data) and array_key_exists('name', $data)) {
-							$name = $data['name'];
-							$resolved = array_key_exists('resolve', $data);
-						}
-
-						else if (!is_array($data)) {
-							$data = ['type' => $data];
-							$resolved = false;
-						}
-
-						$method = sprintf('resolve%sField', ucfirst(camel_case($name)));
-						$fields[$key] = $data;
-
-						if (!$resolved and method_exists($this, $method)) {
-							$fields[$key] = array_merge($fields[$key], [
-								'resolve' => [$this, $method]
-							]);
-						}
-					}
-
-					return $fields;
+					return $this->resolveFields();
 				}
 			]));
 		}
 
 		return $this->getCache('resolveFetchableType');
+	}
+
+	/**
+	 * Resolve fields
+	 *
+	 * @return array
+	 */
+	protected function resolveFields() {
+		$fields = [];
+
+		foreach ($this->getFetchable() as $key => $data) {
+			$resolved = false;
+			$name = $key;
+
+			if (is_array($data) and array_key_exists('name', $data)) {
+				$name = $data['name'];
+				$resolved = array_key_exists('resolve', $data);
+			}
+
+			else if (!is_array($data)) {
+				$data = ['type' => $data];
+				$resolved = false;
+			}
+
+			$method = sprintf('resolve%sField', ucfirst(camel_case($name)));
+			$fields[$key] = $data;
+
+			if (!$resolved and method_exists($this, $method)) {
+				$fields[$key] = array_merge($fields[$key], [
+					'resolve' => [$this, $method]
+				]);
+			}
+		}
+
+		return $fields;
 	}
 
 	/**

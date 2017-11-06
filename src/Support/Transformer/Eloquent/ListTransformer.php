@@ -7,6 +7,7 @@ use StudioNet\GraphQL\Grammar;
 use Illuminate\Database\Eloquent\Builder;
 use GraphQL\Type\Definition\InputObjectType;
 use StudioNet\GraphQL\Definition\Type;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Transform a Definition into query listing
@@ -41,7 +42,19 @@ class ListTransformer extends Transformer {
 	 * @return array
 	 */
 	public function getArguments(Definition $definition) {
-		return [
+		$args   = [];
+		$traits = class_uses($definition->getSource());
+
+		// If the source uses soft deletion, we have to append one arg to fetch
+		// hidden ones and other to only fetch hidden
+		if (in_array(SoftDeletes::class, $traits)) {
+			$args = [
+				'trashed'      => ['type' => Type::bool(), 'description' => 'Show deleted'],
+				'only_trashed' => ['type' => Type::bool(), 'description' => 'Show only deleted'],
+			];
+		}
+
+		return $args + [
 			'after'  => [ 'type' => Type::id()  , 'description' => 'Based-cursor navigation' ] ,
 			'before' => [ 'type' => Type::id()  , 'description' => 'Based-cursor navigation' ] ,
 			'skip'   => [ 'type' => Type::int() , 'description' => 'Offset-based navigation' ] ,
@@ -91,11 +104,13 @@ class ListTransformer extends Transformer {
 		// Parse each arguments in order to affect the query builder
 		foreach ($opts['args'] as $key => $value) {
 			switch ($key) {
-			case 'after'  : $builder->where($primary, '>', $value)         ; break;
-			case 'before' : $builder->where($primary, '<', $value)         ; break;
-			case 'skip'   : $builder->skip($value)                         ; break;
-			case 'take'   : $builder->take($value)                         ; break;
-			case 'filter' : $this->resolveFilterArgument($builder, $value) ; break;
+			case 'after'        : $builder->where($primary, '>', $value)         ; break;
+			case 'before'       : $builder->where($primary, '<', $value)         ; break;
+			case 'skip'         : $builder->skip($value)                         ; break;
+			case 'take'         : $builder->take($value)                         ; break;
+			case 'trashed'      : $builder->withTrashed()                        ; break;
+			case 'only_trashed' : $builder->onlyTrashed()                        ; break;
+			case 'filter'       : $this->resolveFilterArgument($builder, $value) ; break;
 			}
 		}
 

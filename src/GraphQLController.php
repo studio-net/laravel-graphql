@@ -53,6 +53,7 @@ class GraphQLController extends Controller {
 
 			// Rollback transaction is any error occurred
 			\DB::rollback();
+			\Log::debug($exception);
 		}
 
 		$headers = config('graphql.response.headers', []);

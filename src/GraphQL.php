@@ -185,15 +185,17 @@ class GraphQL {
 		$definitions = $this->get('definition');
 
 		foreach ($definitions as $definition) {
-			$transformers = $definition->transformers;
+			$transformers = array_filter($definition->transformers);
 			$appliers     = array_filter($definition->getTransformers());
 			$appliers     = array_intersect(array_keys($appliers), $kinds);
 
 			foreach ($appliers as $transformer) {
-				$transformer = $this->make($transformers[$transformer]);
-				$name = $transformer->getName($definition);
+				if (array_key_exists($transformer, $transformers)) {
+					$transformer = $this->make($transformers[$transformer]);
+					$name = $transformer->getName($definition);
 
-				$default[$name] = $transformer->transform($definition);
+					$default[$name] = $transformer->transform($definition);
+				}
 			}
 		}
 
