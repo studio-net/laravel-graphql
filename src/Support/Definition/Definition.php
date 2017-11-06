@@ -16,11 +16,12 @@ abstract class Definition implements DefinitionInterface {
 
 	/** @var List of transformers to apply when needed $transformers */
 	public $transformers = [
-		'list'  => false,
-		'view'  => false,
-		'drop'  => false,
-		'store' => false,
-		'batch' => false
+		'list'    => false,
+		'view'    => false,
+		'drop'    => false,
+		'store'   => false,
+		'batch'   => false,
+		'restore' => false
 	];
 
 	/**
@@ -48,11 +49,12 @@ abstract class Definition implements DefinitionInterface {
 	 */
 	public function getTransformers() {
 		return [
-			'list'  => false,
-			'view'  => false,
-			'drop'  => false,
-			'store' => false,
-			'batch' => false
+			'list'     => false,
+			'view'     => false,
+			'drop'     => false,
+			'store'    => false,
+			'batch'    => false,
+			'restaure' => false
 		];
 	}
 

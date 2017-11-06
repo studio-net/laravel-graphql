@@ -149,6 +149,7 @@ with the `getTransformers` methods. There's 5 kind of transformers to apply on :
 * `drop`  : create a mutation to delete an object (`User => deleteUser`)
 * `store` : create a mutation to update an object (`User => user`)
 * `batch` : create a mutation to update many object at once (`User => users`)
+* `restore` : create a mutation to restore an object (`User => restoreUser`)
 
 By the default, the definition abstract class handles Eloquent model
 transformation.

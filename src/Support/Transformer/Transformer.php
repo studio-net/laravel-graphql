@@ -63,7 +63,7 @@ abstract class Transformer extends Cachable {
 			$fields = $info->getFieldSelection(3);
 			$opts   = [
 				'root'    => $root,
-				'args'    => $args,
+				'args'    => array_filter($args),
 				'fields'  => $fields,
 				'context' => $context,
 				'info'    => $info,

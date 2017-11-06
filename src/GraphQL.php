@@ -139,7 +139,7 @@ class GraphQL {
 
 		return new ObjectType([
 			'name'   => 'Mutation',
-			'fields' => $this->applyTransformers(['store', 'drop', 'batch'], $data)
+			'fields' => $this->applyTransformers(['store', 'drop', 'batch', 'restore'], $data)
 		]);
 	}
 
