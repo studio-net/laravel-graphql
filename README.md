@@ -47,15 +47,15 @@ fetchable and mutable fields.
 namespace App\GraphQL\Definition;
 
 use StudioNet\GraphQL\Definition\Type;
-use StudioNet\GraphQL\Support\Definition\Definition;
+use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
 use App\User;
 
 /**
  * Specify user GraphQL definition
  *
- * @see Definition
+ * @see EloquentDefinition
  */
-class UserDefinition extends Definition {
+class UserDefinition extends EloquentDefinition {
 	/**
 	 * Set a name to the definition. The name will be lowercase in order to
 	 * retrieve it with `\GraphQL::type` or `\GraphQL::listOf` methods
