@@ -49,12 +49,12 @@ abstract class Definition implements DefinitionInterface {
 	 */
 	public function getTransformers() {
 		return [
-			'list'     => false,
-			'view'     => false,
-			'drop'     => false,
-			'store'    => false,
-			'batch'    => false,
-			'restaure' => false
+			'list'    => false,
+			'view'    => false,
+			'drop'    => false,
+			'store'   => false,
+			'batch'   => false,
+			'restore' => false
 		];
 	}
 

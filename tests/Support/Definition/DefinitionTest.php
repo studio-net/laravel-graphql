@@ -66,8 +66,8 @@ class DefinitionTest extends TestCase {
 			$this->assertSame('User', $object->name);
 			$this->assertSame('a User description', $object->description);
 			$this->assertArraySubset([
-				'id'   => Type::nonNull(Type::id()),
-				'name' => Type::string()
+				'id'   => ['type' => Type::nonNull(Type::id())],
+				'name' => ['type' => Type::string()]
 			], $fields);
 		});
 	}
