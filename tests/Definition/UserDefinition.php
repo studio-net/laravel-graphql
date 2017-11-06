@@ -2,15 +2,15 @@
 namespace StudioNet\GraphQL\Tests\Definition;
 
 use StudioNet\GraphQL\Definition\Type;
-use StudioNet\GraphQL\Support\Definition\Definition;
+use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
 use StudioNet\GraphQL\Tests\Entity\User;
 
 /**
  * Specify user GraphQL definition
  *
- * @see Definition
+ * @see EloquentDefinition
  */
-class UserDefinition extends Definition {
+class UserDefinition extends EloquentDefinition {
 	/**
 	 * {@inheritDoc}
 	 *
