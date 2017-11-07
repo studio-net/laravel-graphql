@@ -4,6 +4,7 @@ namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 use StudioNet\GraphQL\Support\Transformer\Transformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Transform a Definition into query view
@@ -30,7 +31,7 @@ class ViewTransformer extends Transformer {
 	 */
 	public function getArguments(Definition $definition) {
 		return [
-			'id' => ['type' => Type::nonNull(Type::id()), 'description' => 'Primary key lookup']
+			'id' => ['type' => Type::nonNull(Type::id()), 'description' => 'Primary key lookup'],
 		];
 	}
 
@@ -51,9 +52,12 @@ class ViewTransformer extends Transformer {
 	 * @return Model
 	 */
 	public function getResolver(array $opts) {
-		return $opts['source']
-			->newQuery()
-			->with($opts['with'])
-			->findOrFail(array_get($opts['args'], 'id', 0));
+		$builder = $opts['source']->newQuery()->with($opts['with']);
+
+		if (in_array(SoftDeletes::class, class_uses($opts['source']))) {
+			$builder = $builder->withTrashed();
+		}
+
+		return $builder->findOrFail(array_get($opts['args'], 'id', 0));
 	}
 }
