@@ -35,7 +35,7 @@ class DatetimeType extends ScalarType {
 	 * @return array|null
 	 */
 	public function parseValue($value) {
-		return $this->toTimestamp($value);
+		return Carbon::createFromTimestamp($value);
 	}
 
 	/**
