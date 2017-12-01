@@ -101,27 +101,6 @@ abstract class Transformer extends Cachable {
 	}
 
 	/**
-	 * Return GraphQL\Type\Definition\InputObjectType for given definition
-	 *
-	 * @param  Definition $definition
-	 * @return InputObjectType
-	 */
-	protected function getInputType(Definition $definition) {
-		$key = sprintf('%sArguments', ucfirst($definition->getName()));
-
-		if (!$this->has($key)) {
-			$input = new InputObjectType([
-				'name'   => sprintf('%sArguments', ucfirst($definition->getName())),
-				'fields' => [$definition, 'getMutable']
-			]);
-
-			$this->save($key, $input);
-		}
-
-		return $this->get($key);
-	}
-
-	/**
 	 * Return availabled arguments
 	 *
 	 * @param  Definition $definition

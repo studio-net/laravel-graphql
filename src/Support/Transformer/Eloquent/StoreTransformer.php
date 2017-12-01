@@ -41,7 +41,7 @@ class StoreTransformer extends Transformer {
 		return [
 			'id'   => ['type' => Type::id(), 'description' => 'Primary key lookup' ],
 			'with' => [
-				'type' => $this->getInputType($definition),
+				'type' => $definition->resolveInputType(),
 				'description' => 'Contains updated fields'
 			]
 		];

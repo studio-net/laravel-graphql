@@ -73,6 +73,22 @@ class GraphQL {
 	}
 
 	/**
+	 * Return input
+	 *
+	 * @param  string $name
+	 * @return InputObjectType
+	 */
+	public function input($name) {
+		$name = strtolower($name);
+
+		if ($this->has('definition', $name)) {
+			return $this->get('definition', $name)->resolveInputType();
+		}
+
+		throw new Exception\TypeNotFoundException('Cannot find type ' . $name);
+	}
+
+	/**
 	 * Return existing type as lifeOf
 	 *
 	 * @param  string $name

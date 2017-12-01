@@ -2,6 +2,8 @@
 namespace StudioNet\GraphQL\Support\Definition;
 
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\InputObjectType;
+use StudioNet\GraphQL\Definition\Type;
 
 /**
  * Define some useful methods to perform a Type creation without creating many
@@ -75,6 +77,24 @@ abstract class Definition implements DefinitionInterface {
 		}
 
 		return $this->getCache('resolveFetchableType');
+	}
+
+	/**
+	 * Return resolve type
+	 *
+	 * @return array
+	 */
+	public function resolveInputType() {
+		if (!array_key_exists('resolveInputType', $this->cache)) {
+			$this->setCache('resolveInputType', new InputObjectType([
+				'name'   => sprintf('%sInput', ucfirst($this->getName())),
+				'fields' => function() {
+					return array_merge(['id' => Type::id()], $this->getMutable());
+				}
+			]));
+		}
+
+		return $this->getCache('resolveInputType');
 	}
 
 	/**
