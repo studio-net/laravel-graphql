@@ -81,7 +81,7 @@ class StoreTransformer extends Transformer {
 
 				// For each relationship, find or new by id and fill with data
 				foreach ($values as $value) {
-					$relation->findOrNew(array_get($values, 'id', null))->fill($value)->save();
+					$relation->findOrNew(array_get($value, 'id', null))->fill($value)->save();
 				}
 			}
 		}
