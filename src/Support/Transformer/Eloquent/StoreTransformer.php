@@ -64,17 +64,36 @@ class StoreTransformer extends Transformer {
 		$model->save();
 
 		foreach (array_diff_key($opts['args']['with'], $data) as $column => $values) {
+			if (empty($values)) {
+				// TODO: check if it's pertinent
+				// empty values are ignored because, currently, nothing is deleted through nested update
+				// it can be problematic because empty top level fields are emptied.
+				continue;
+			}
+			
 			$relation = $model->{$column}();
 
 			// If we are on a hasOne or belongsTo relationship, we have to
 			// manage the firstOrNew case
 			//
 			// https://laracasts.com/discuss/channels/general-discussion/hasone-create-duplicates
-			if (in_array(get_class($relation), [Relations\HasOne::class, Relations\BelongsTo::class])) {
-				$relation->firstOrNew([])->fill($values)->save();
-			}
-
-			else {
+			$relationType = get_class($relation);
+			if (in_array($relationType, [Relations\HasOne::class, Relations\BelongsTo::class])) {
+				$dep = $relation->getRelated()->findOrNew(array_get($values, 'id', null));
+				
+				if (empty($dep->id)) {
+					$dep = $relation->firstOrNew([]);
+				}
+				$dep->fill($values)->save();
+				
+				switch ($relationType) {
+					case Relations\BelongsTo::class:
+						$relation->associate($dep);
+						break;
+					default:
+						$relation->save($dep);
+				}
+			} else {
 				if (!is_array(array_first($values))) {
 					$values = [$values];
 				}
