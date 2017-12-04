@@ -4,7 +4,7 @@ namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 use StudioNet\GraphQL\Support\Transformer\Transformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations;
 
 /**
  * Transform a Definition into create/update mutation
@@ -66,11 +66,11 @@ class StoreTransformer extends Transformer {
 		foreach (array_diff_key($opts['args']['with'], $data) as $column => $values) {
 			$relation = $model->{$column}();
 
-			// If we are on a hasOne relationship, we have to manage the
-			// firstOrNew case
+			// If we are on a hasOne or belongsTo relationship, we have to
+			// manage the firstOrNew case
 			//
 			// https://laracasts.com/discuss/channels/general-discussion/hasone-create-duplicates
-			if (get_class($relation) === HasOne::class) {
+			if (in_array(get_class($relation), [Relations\HasOne::class, Relations\BelongsTo::class])) {
 				$relation->firstOrNew([])->fill($values)->save();
 			}
 
