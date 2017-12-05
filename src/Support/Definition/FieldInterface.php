@@ -8,7 +8,7 @@ interface FieldInterface {
 	/**
 	 * Return represented type
 	 *
-	 * @return Type
+	 * @return \GraphQL\Type\Definition\ObjectType
 	 */
 	public function getRelatedType();
 

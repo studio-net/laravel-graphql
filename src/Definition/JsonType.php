@@ -2,7 +2,7 @@
 namespace StudioNet\GraphQL\Definition;
 
 use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Language\AST\ObjectValueNode;
+use GraphQL\Language\AST;
 
 /**
  * Represent an array
@@ -39,12 +39,25 @@ class JsonType extends ScalarType {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * @param  GraphQL\Language\AST\Node $ast
+	 * @param  GraphQL\Language\AST $valueNode
 	 * @return array|null
 	 */
-	public function parseLiteral($ast) {
-		if ($ast instanceof ObjectValueNode) {
-			return (array) $ast->value;
+	public function parseLiteral($valueNode) {
+		switch ($valueNode) {
+		case ($valueNode instanceof AST\StringValueNode)  :
+		case ($valueNode instanceof AST\BooleanValueNode) : return $valueNode->value;
+		case ($valueNode instanceof AST\IntValueNode)     :
+		case ($valueNode instanceof AST\FloatValueNode)   : return floatval($valueNode->value);
+		case ($valueNode instanceof AST\ListValueNode)    : return array_map([$this, 'parseLiteral'], $valueNode->values);
+		case ($valueNode instanceof AST\ObjectValueNode)  : {
+			$value = [];
+
+			foreach ($valueNode->fields as $field) {
+				$value[$field->name->value] = $this->parseLiteral($field->value);
+			}
+
+			return $value;
+		}
 		}
 
 		return null;

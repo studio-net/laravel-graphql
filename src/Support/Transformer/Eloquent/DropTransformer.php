@@ -47,7 +47,7 @@ class DropTransformer extends Transformer {
 	 * {@overide}
 	 *
 	 * @param  Definition $definition
-	 * @return ListOf
+	 * @return \GraphQL\Type\Definition\ObjectType
 	 */
 	public function resolveType(Definition $definition) {
 		return $definition->resolveType();
@@ -57,7 +57,7 @@ class DropTransformer extends Transformer {
 	 * Return fetchable node resolver
 	 *
 	 * @param  array $opts
-	 * @return Model
+	 * @return \Illuminate\Database\Eloquent\Model
 	 */
 	public function getResolver(array $opts) {
 		$model = $opts['source']->findOrFail(array_get($opts['args'], 'id', 0));

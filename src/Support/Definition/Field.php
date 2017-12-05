@@ -43,9 +43,9 @@ abstract class Field implements FieldInterface {
 	}
 
 	/**
-	 * Resolve as GraphQL\Type\Definition\ObjectType
+	 * Resolve as array
 	 *
-	 * @return ObjectType
+	 * @return array
 	 */
 	public function resolveType() {
 		$attributes = $this->getAttributes() + [

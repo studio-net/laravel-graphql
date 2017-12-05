@@ -76,7 +76,7 @@ class GraphQL {
 	 * Return input
 	 *
 	 * @param  string $name
-	 * @return InputObjectType
+	 * @return \GraphQL\Type\Definition\InputObjectType
 	 */
 	public function input($name) {
 		$name = strtolower($name);
@@ -92,7 +92,7 @@ class GraphQL {
 	 * Return existing type as lifeOf
 	 *
 	 * @param  string $name
-	 * @return ListOf
+	 * @return \GraphQL\Type\Definition\ListOfType
 	 */
 	public function listOf($name) {
 		return Type::listOf($this->type($name));
@@ -121,7 +121,7 @@ class GraphQL {
 	 * Manage query
 	 *
 	 * @param  string[] $queries
-	 * @return array
+	 * @return ObjectType
 	 */
 	private function manageQuery(array $queries) {
 		$data = [];
@@ -142,7 +142,7 @@ class GraphQL {
 	 * Manage mutation
 	 *
 	 * @param  array $mutations
-	 * @return array
+	 * @return ObjectType
 	 */
 	private function manageMutation(array $mutations) {
 		$data = [];
@@ -177,7 +177,7 @@ class GraphQL {
 	/**
 	 * Register a definition
 	 *
-	 * @param  string $type
+	 * @param  string $definition
 	 * @return void
 	 */
 	public function registerDefinition($definition) {

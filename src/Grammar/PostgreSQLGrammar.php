@@ -7,14 +7,9 @@ namespace StudioNet\GraphQL\Grammar;
 class PostgreSQLGrammar extends Grammar {
 	/**
 	 * @override
-	 *
-	 * @param  string $operator
-	 * @param  mixed  $value
-	 *
-	 * @return mixed
 	 */
 	public function getOperator($operator, $value) {
-		if (is_null($operator) and strpos($value, '%') !== false) {
+		if ($operator === null and strpos($value, '%') !== false) {
 			return 'ilike';
 		}
 

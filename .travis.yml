@@ -5,6 +5,10 @@ install       : composer update --no-interaction --prefer-dist
 notifications :
     email : false
 
+stages :
+    - test
+    - lint
+
 env :
     - TESTBENCH_VERSION=3.2.* LARAVEL_VERSION=5.2.*
     - TESTBENCH_VERSION=3.3.* LARAVEL_VERSION=5.3.*
@@ -17,13 +21,25 @@ matrix :
           env : TESTBENCH_VERSION=3.5.* LARAVEL_VERSION=5.5.*
 
 script :
-    - vendor/bin/phpmd src xml phpmd.xml
-    - vendor/bin/phpmd tests xml phpmd.xml
     - vendor/bin/phpunit
 
 before_install :
-    # Install dependencies
     - composer global require hirak/prestissimo --update-no-dev
-    - composer require phpmd/phpmd --no-update --prefer-dist
     - composer require "laravel/framework:${LARAVEL_VERSION}" --no-update --prefer-dist
     - composer require "orchestra/testbench-browser-kit:${TESTBENCH_VERSION}" --no-update --prefer-dist
+
+jobs :
+    include :
+        - stage : lint
+          php   : 7.1
+          env   : TESTBENCH_VERSION=3.5.* LARAVEL_VERSION=5.5.*
+          before_install :
+            - composer global require hirak/prestissimo --update-no-dev
+            - composer require "laravel/framework:${LARAVEL_VERSION}" --no-update --prefer-dist
+            - composer require "orchestra/testbench-browser-kit:${TESTBENCH_VERSION}" --no-update --prefer-dist
+            - composer require phpmd/phpmd --no-update --prefer-dist
+            - composer require phpstan/phpstan --no-update --prefer-dist
+          script :
+              - vendor/bin/phpmd src text phpmd.xml
+              - vendor/bin/phpmd tests text phpmd.xml
+              - vendor/bin/phpstan analyse --autoload-file=_ide_helper.php --level 7 src

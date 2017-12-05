@@ -16,7 +16,7 @@ abstract class Definition implements DefinitionInterface {
 	/** @var array $cache */
 	protected $cache = [];
 
-	/** @var List of transformers to apply when needed $transformers */
+	/** @var array $transformers List of transformers to apply when needed */
 	public $transformers = [
 		'list'    => false,
 		'view'    => false,
@@ -63,7 +63,7 @@ abstract class Definition implements DefinitionInterface {
 	/**
 	 * Resolve fetchable type
 	 *
-	 * @return array
+	 * @return ObjectType
 	 */
 	public function resolveType() {
 		if (!array_key_exists('resolveFetchableType', $this->cache)) {

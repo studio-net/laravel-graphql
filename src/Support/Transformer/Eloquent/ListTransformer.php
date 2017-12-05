@@ -29,7 +29,7 @@ class ListTransformer extends Transformer {
 	 * {@overide}
 	 *
 	 * @param  Definition $definition
-	 * @return ListOf
+	 * @return \GraphQL\Type\Definition\ListOfType
 	 */
 	public function resolveType(Definition $definition) {
 		return Type::listOf($definition->resolveType());
@@ -70,7 +70,7 @@ class ListTransformer extends Transformer {
 	 * Return filter type object
 	 *
 	 * @param  Definition $definition
-	 * @return array
+	 * @return InputObjectType
 	 */
 	private function getFilterType(Definition $definition) {
 		// TODO We have to manage this case
@@ -96,10 +96,11 @@ class ListTransformer extends Transformer {
 	 * Return fetchable node resolver
 	 *
 	 * @param  array $opts
-	 * @return Illuminate\Database\Eloquent\Collection
+	 * @return \Illuminate\Database\Eloquent\Collection
 	 */
 	public function getResolver(array $opts) {
 		$builder = $opts['source']->newQuery()->with($opts['with']);
+		$primary = $opts['source']->getKeyName();
 
 		// Parse each arguments in order to affect the query builder
 		foreach ($opts['args'] as $key => $value) {

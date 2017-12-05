@@ -13,7 +13,7 @@ abstract class Grammar {
 	/**
 	 * Return SQL operator for given string operator
 	 *
-	 * @param  string $operator
+	 * @param  string|null $operator
 	 * @param  string $value
 	 * @return string
 	 */
@@ -52,7 +52,7 @@ abstract class Grammar {
 	 * @param  string|array $value
 	 * @param  string $operator
 	 *
-	 * @return string
+	 * @return Builder
 	 * @SuppressWarnings(PHPMD.ExcessiveParameterList)
 	 */
 	private function getBuilder(Builder $builder, $key, $value, $operator = "AND") {
@@ -87,13 +87,15 @@ abstract class Grammar {
 	 */
 	protected function getMatch($matcher, $data) {
 		if (preg_match($matcher, $data, $matches)) {
+			$key = null;
+
 			switch ($matcher) {
 				case self::OPERATOR : $key = 'operator' ; break;
 				case self::VALUE    : $key = 'value'    ; break;
 			}
 
 			// Assert key is defined and exists in matches
-			if (isset($key) and array_key_exists($key, $matches)) {
+			if (!empty($key) and array_key_exists($key, $matches)) {
 				return $matches[$key];
 			}
 		}

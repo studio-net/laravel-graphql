@@ -1,8 +1,6 @@
 <?php
 namespace StudioNet\GraphQL\Cache;
 
-use Cache\Namespaced\NamespacedCachePool;
-
 /**
  * Cachable
  *
@@ -10,7 +8,7 @@ use Cache\Namespaced\NamespacedCachePool;
  * @abstract
  */
 abstract class Cachable implements CachableInterface {
-	/** @var NamespacedCachePool $cache */
+	/** @var CachePool $cache */
 	protected $cache;
 
 	/**
