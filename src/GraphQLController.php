@@ -3,7 +3,6 @@ namespace StudioNet\GraphQL;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
-use GraphQL\Utils;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
