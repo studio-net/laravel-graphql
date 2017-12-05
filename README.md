@@ -397,3 +397,15 @@ mutation {
 	}
 }
 ```
+
+## Contribution
+
+If you want participate to the project, thank you ! In order to work properly,
+you should install all dev dependencies and run the following commands before
+pushing in order to prevent bad PR :
+
+```bash
+$> ./vendor/bin/phpmd src text phpmd.xml
+$> ./vendor/bin/phpmd tests text phpmd.xml
+$> ./vendor/bin/phpstan analyse --autoload-file=_ide_helper.php --level 7 src
+```
