@@ -1,8 +1,7 @@
 language      : php
 php           : [5.6, 7.0, 7.1]
-cache         : [directories : [$COMPOSER_CACHE_DIR, $HOME/.composer/cache, vendor]]
+cache         : { directories : [$COMPOSER_CACHE_DIR, $HOME/.composer/cache, vendor] }
 install       : composer update --no-interaction --prefer-dist
-script        : vendor/bin/phpunit
 notifications :
     email : false
 
@@ -17,7 +16,14 @@ matrix :
         - php : 5.6
           env : TESTBENCH_VERSION=3.5.* LARAVEL_VERSION=5.5.*
 
+script :
+    - vendor/bin/phpmd src xml phpmd.xml
+    - vendor/bin/phpmd tests xml phpmd.xml
+    - vendor/bin/phpunit
+
 before_install :
+    # Install dependencies
     - composer global require hirak/prestissimo --update-no-dev
+    - composer require phpmd/phpmd --no-update --prefer-dist
     - composer require "laravel/framework:${LARAVEL_VERSION}" --no-update --prefer-dist
     - composer require "orchestra/testbench-browser-kit:${TESTBENCH_VERSION}" --no-update --prefer-dist
