@@ -14,15 +14,19 @@ use GraphQL\Type\Definition\InputObjectType;
  * @abstract
  */
 abstract class Transformer extends Cachable {
+	/** @var Application $app */
+	protected $app;
+
 	/**
 	 * __construct
 	 *
 	 * @param  Application $app
+	 * @param  CachePool $cache
 	 * @return void
 	 */
 	public function __construct(Application $app, CachePool $cache) {
-		$this->cache = $cache;
-		$this->app   = $app;
+		parent::__construct($cache);
+		$this->app = $app;
 	}
 
 	/**
@@ -49,6 +53,14 @@ abstract class Transformer extends Cachable {
 			'type'    => $this->resolveType($definition),
 		];
 	}
+
+	/**
+	 * Resolve type
+	 *
+	 * @param  Definition $definition
+	 * @return \GraphQL\Type\Definition\ObjectType|\GraphQL\Type\Definition\ListOfType
+	 */
+	abstract function resolveType(Definition $definition);
 
 	/**
 	 * Return resolver callable

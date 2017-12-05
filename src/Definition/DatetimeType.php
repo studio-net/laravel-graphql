@@ -48,7 +48,7 @@ class DatetimeType extends ScalarType {
 		if ($ast instanceof IntValueNode) {
 			$val = (int) $ast->value;
 
-			if ($ast->value === (string) $val && self::MIN_INT <= $val && $val <= self::MAX_INT) {
+			if ($ast->value === (string) $val && PHP_INT_MIN <= $val && $val <= PHP_INT_MAX) {
 				return Carbon::createFromTimestamp($val);
 			}
 		}
@@ -63,6 +63,6 @@ class DatetimeType extends ScalarType {
 	 * @return int
 	 */
 	private function toTimestamp($value) {
-		return with(new Carbon($value))->getTimestamp();
+		return with(new Carbon((string) $value))->getTimestamp();
 	}
 }

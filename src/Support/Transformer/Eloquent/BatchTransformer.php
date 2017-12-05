@@ -50,7 +50,7 @@ class BatchTransformer extends Transformer {
 	 * {@overide}
 	 *
 	 * @param  Definition $definition
-	 * @return ListOf
+	 * @return \GraphQL\Type\Definition\ListOfType
 	 */
 	public function resolveType(Definition $definition) {
 		return Type::listOf($definition->resolveType());
@@ -60,7 +60,7 @@ class BatchTransformer extends Transformer {
 	 * Return fetchable node resolver
 	 *
 	 * @param  array $opts
-	 * @return Model
+	 * @return \Illuminate\Database\Eloquent\Model
 	 */
 	public function getResolver(array $opts) {
 		$models = [];

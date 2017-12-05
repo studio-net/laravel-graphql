@@ -4,6 +4,9 @@ namespace StudioNet\GraphQL;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use GraphQL\Utils;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 
 /**
  * GraphQLController
@@ -17,7 +20,7 @@ class GraphQLController extends Controller {
 	 * @param  Request $request
 	 * @param  null|string $schema
 	 *
-	 * @return JsonResponse
+	 * @return \Illuminate\Http\JsonResponse
 	 */
 	public function query(Request $request, $schema = null) {
 		$inputs = $request->all();
@@ -30,7 +33,7 @@ class GraphQLController extends Controller {
 
 		// Execute statements in transaction in order to prevent error during
 		// creation, update or drop
-		\DB::beginTransaction();
+		DB::beginTransaction();
 
 		try {
 			// If we're working on batch queries, we have to parse and execute each
@@ -47,20 +50,20 @@ class GraphQLController extends Controller {
 			}
 
 			// If everything is okay, just commit the transaction
-			\DB::commit();
+			DB::commit();
 		} catch (\Exception $exception) {
 			$data['error'] = $exception->getMessage();
 
 			// Rollback transaction is any error occurred
-			\DB::rollback();
-			\Log::debug($exception);
+			DB::rollBack();
+			Log::debug($exception);
 		}
 
 		$headers = config('graphql.response.headers', []);
 		$options = config('graphql.response.json_encoding_options', 0);
 		$status  = (array_key_exists('errors', $data)) ? 500 : 200;
 
-		return response()->json($data, $status, $headers, $options);
+		return Response::json($data, $status, $headers, $options);
 	}
 
 	/**

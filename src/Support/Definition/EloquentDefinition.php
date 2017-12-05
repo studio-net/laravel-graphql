@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @abstract
  */
 abstract class EloquentDefinition extends Definition {
-	/** @var List of transformers to apply when needed $transformers */
+	/** @var array $transformers List of transformers to apply when needed */
 	public $transformers = [
 		'list'    => \StudioNet\GraphQL\Support\Transformer\Eloquent\ListTransformer::class,
 		'view'    => \StudioNet\GraphQL\Support\Transformer\Eloquent\ViewTransformer::class,
