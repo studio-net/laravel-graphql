@@ -77,61 +77,6 @@ class GraphQLTest extends TestCase {
 	}
 
 	/**
-	 * Test mutation
-	 *
-	 * @return void
-	 */
-	public function testMutation() {
-		factory(Entity\User::class, 5)->create();
-		
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-
-		$this->specify('tests mutation on user', function() {
-			$query = 'mutation { user(id: 1, with: { name: "toto" }) { id, name } }';
-			$this->assertGraphQLEquals($query, [
-				'data' => [
-					'user' => [
-						'id'   => '1',
-						'name' => 'toto',
-					]
-				]
-			]);
-
-			$user = Entity\User::first();
-			$this->assertSame('toto', $user->name);
-		});
-
-		$this->specify('tests drop on user', function() {
-			$query = 'mutation { deleteUser(id: 1) { name }}';
-			$this->assertGraphQLEquals($query, [
-				'data' => [
-					'deleteUser' => [
-						'name' => 'toto',
-					]
-				]
-			]);
-
-			$user = Entity\User::find(1);
-			$this->assertEmpty($user);
-		});
-
-		$this->specify('tests batch update on user', function() {
-			$query = 'mutation { users(objects: [{id: 4, with: {name: "test"}}, {id: 5, with: {name: "toto"}}]) { id, name }}';
-			$this->assertGraphQLEquals($query, [
-				'data' => [
-					'users' => [
-						['id' => '4', 'name' => 'test'],
-						['id' => '5', 'name' => 'toto'],
-					]
-				]
-			]);
-		});
-	}
-
-	/**
 	 * Test implemented scalar
 	 *
 	 * @return void

@@ -65,7 +65,8 @@ class UserDefinition extends EloquentDefinition {
 			'name'        => Type::string(),
 			'is_admin'    => Type::bool(),
 			'permissions' => Type::json(),
-			'password'    => Type::string()
+			'password'    => Type::string(),
+			'posts'       => Type::listOf(\GraphQL::input('post'))
 		];
 	}
 }
