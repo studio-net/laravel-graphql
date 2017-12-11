@@ -57,7 +57,7 @@ class StoreTransformer extends Transformer {
 	public function getResolver(array $opts) {
 		$model = $opts['source']->findOrNew(array_get($opts['args'], 'id', 0));
 		$data  = array_filter($opts['args']['with'], function ($value, $key) use ($model) {
-			return !(is_array($value) and method_exists($model, $key));
+			return !((is_array($value) or is_null($value)) and method_exists($model, $key));
 		}, ARRAY_FILTER_USE_BOTH);
 
 		$model->fill($data);
