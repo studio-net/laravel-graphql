@@ -125,7 +125,7 @@ class GraphQL {
             return $result;
         };
 
-        return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $$fieldResolver)->toArray(true);
+        return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)->toArray(true);
 	}
 
 	/**
