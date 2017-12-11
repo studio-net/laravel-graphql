@@ -118,7 +118,7 @@ class GraphQL {
         $fieldResolver = function ($source, $args, $context, $info) {
             $result = Executor::defaultFieldResolver($source, $args, $context, $info);
 
-            if ($result === null && property_exists($source, snake_case($info->fieldName))) {
+            if ($result === null && isset($source->{snake_case($info->fieldName)})) {
                 $result = data_get($source, snake_case($info->fieldName));
             }
 

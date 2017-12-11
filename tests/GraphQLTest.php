@@ -190,4 +190,32 @@ class GraphQLTest extends TestCase {
 			]);
 		});
 	}
+
+    public function testCamelCaseQuery()
+	{
+        factory(Entity\User::class)->create();
+
+        $graphql = app(GraphQL::class);
+        $graphql->registerSchema('default', [
+            'query' => [
+                \StudioNet\GraphQL\Tests\GraphQL\Query\Viewer::class
+            ]
+        ]);
+        $graphql->registerDefinition(Definition\CamelCaseUserDefinition::class);
+        $graphql->registerDefinition(Definition\PostDefinition::class);
+
+        $this->specify('test querying a single row with camel case fields', function() {
+            $query = 'query { user(id: 1) { name, isAdmin }}';
+            $user  = Entity\User::find(1);
+
+            $this->assertGraphQLEquals($query, [
+                'data' => [
+                    'user' => [
+                        'name' => $user->name,
+                        'isAdmin' => $user->is_admin,
+                    ]
+                ]
+            ]);
+        });
+	}
 }
