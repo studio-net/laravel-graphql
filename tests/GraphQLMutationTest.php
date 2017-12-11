@@ -223,4 +223,79 @@ GQL;
 
 	}
 
+		/**
+	 * Test nested add null mutation
+	 *
+	 * @return void
+	 */
+	public function testNestedEditNullMutation() {
+		factory(Entity\User::class, 5)->create();
+		
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+
+		$this->specify('tests nested mutation on user', function() {
+			$query = <<<'GQL'
+mutation MutateUser {
+	user(id: 1, with: { name: "toto", posts: [{title:"aa", content:"bb"}] }) {
+		id,
+		name,
+		posts {
+			title,
+			content
+		}
+	}
+}
+GQL;
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'user' => [
+						'id'    => '1',
+						'name'  => 'toto',
+						'posts' => [
+							[
+								'title'   => 'aa',
+								'content' => 'bb'
+							]
+						]
+					]
+				]
+			]);
+
+			$query = <<<'GQL'
+mutation MutateUser {
+	user(id: 1, with: { name: "toto", posts: null }) {
+		id,
+		name,
+		posts {
+			title,
+			content
+		}
+	}
+}
+GQL;
+
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'user' => [
+						'id'    => '1',
+						'name'  => 'toto',
+						'posts' => [
+							[
+								'title'   => 'aa',
+								'content' => 'bb'
+							]
+						]
+					]
+				]
+			]);
+
+			$user = Entity\User::first();
+			$this->assertSame('toto', $user->name);
+		});
+
+	}
+
 }
