@@ -110,12 +110,12 @@ class GraphQL {
 	 * @return array
 	 */
 	public function execute($query, $variables = [], $opts = []) {
-		$root       = array_get($opts, 'root', null);
-		$context    = array_get($opts, 'context', null);
-		$schemaName = array_get($opts, 'schema', null);
-		$operation  = array_get($opts, 'operationName', null);
-		$schema     = $this->getSchema($schemaName);
-        $fieldResolver   = function ($source, $args, $context, $info) {
+		$root          = array_get($opts, 'root', null);
+		$context       = array_get($opts, 'context', null);
+		$schemaName    = array_get($opts, 'schema', null);
+		$operation     = array_get($opts, 'operationName', null);
+		$schema        = $this->getSchema($schemaName);
+        $fieldResolver = function ($source, $args, $context, $info) {
             $result = Executor::defaultFieldResolver($source, $args, $context, $info);
 
             if ($result === null && property_exists($source, snake_case($info->fieldName))) {
