@@ -115,17 +115,19 @@ class GraphQL {
 		$schemaName    = array_get($opts, 'schema', null);
 		$operation     = array_get($opts, 'operationName', null);
 		$schema        = $this->getSchema($schemaName);
-        $fieldResolver = function ($source, $args, $context, $info) {
-            $result = Executor::defaultFieldResolver($source, $args, $context, $info);
+		$fieldResolver = function ($source, $args, $context, $info) {
+			$result = Executor::defaultFieldResolver($source, $args, $context, $info);
 
-            if ($result === null && isset($source->{snake_case($info->fieldName)})) {
-                $result = data_get($source, snake_case($info->fieldName));
-            }
+			$snakeCase = snake_case($info->fieldName);
 
-            return $result;
-        };
+			if ($result === null && isset($source->{$snakeCase})) {
+				$result = $source->{$snakeCase};
+			}
 
-        return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)->toArray(true);
+			return $result;
+		};
+
+		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)->toArray(true);
 	}
 
 	/**
