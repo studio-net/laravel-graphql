@@ -136,7 +136,12 @@ class GraphQLTest extends TestCase {
 		});
 	}
 
-    public function testCamelCaseQuery() {
+	/**
+	 * Test camel case query converter
+	 *
+	 * @return void
+	 */
+	public function testCamelCaseQuery() {
 		factory(Entity\User::class)->create();
 
 		$graphql = app(GraphQL::class);

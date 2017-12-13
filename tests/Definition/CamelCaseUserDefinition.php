@@ -47,8 +47,8 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 		return [
 			'id'          => Type::id(),
 			'name'        => Type::string(),
-			'lastLogin'  => Type::datetime(),
-			'isAdmin'    => Type::bool(),
+			'lastLogin'   => Type::datetime(),
+			'isAdmin'     => Type::bool(),
 			'permissions' => Type::json(),
 			'posts'       => \GraphQL::listOf('post')
 		];
