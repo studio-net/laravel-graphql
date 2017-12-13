@@ -61,7 +61,6 @@ class StoreTransformer extends Transformer {
 		}, ARRAY_FILTER_USE_BOTH);
 
 		$model->fill($data);
-		$model->save();
 
 		foreach (array_diff_key($opts['args']['with'], $data) as $column => $values) {
 			if (empty($values)) {
@@ -104,6 +103,7 @@ class StoreTransformer extends Transformer {
 				}
 			}
 		}
+		$model->save();
 
 		return $model;
 	}
