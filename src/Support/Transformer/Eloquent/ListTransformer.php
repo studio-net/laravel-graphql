@@ -55,8 +55,8 @@ class ListTransformer extends Transformer {
 		}
 
 		return $args + [
-			'after'  => [ 'type' => Type::id()  , 'description' => 'Based-cursor navigation' ] ,
-			'before' => [ 'type' => Type::id()  , 'description' => 'Based-cursor navigation' ] ,
+			'after'  => [ 'type' => Type::id()  , 'description' => 'Cursor-based navigation' ] ,
+			'before' => [ 'type' => Type::id()  , 'description' => 'Cursor-based navigation' ] ,
 			'skip'   => [ 'type' => Type::int() , 'description' => 'Offset-based navigation' ] ,
 			'take'   => [ 'type' => Type::int() , 'description' => 'Limit-based navigation'  ] ,
 			'filter' => [
