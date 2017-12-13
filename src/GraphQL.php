@@ -1,10 +1,12 @@
 <?php
 namespace StudioNet\GraphQL;
 
+use GraphQL\Executor\Executor;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as Type;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Cache\CachePool;
 use StudioNet\GraphQL\Support\Definition\Definition;
@@ -108,13 +110,22 @@ class GraphQL {
 	 * @return array
 	 */
 	public function execute($query, $variables = [], $opts = []) {
-		$root       = array_get($opts, 'root', null);
-		$context    = array_get($opts, 'context', null);
-		$schemaName = array_get($opts, 'schema', null);
-		$operation  = array_get($opts, 'operationName', null);
-		$schema     = $this->getSchema($schemaName);
+		$root          = array_get($opts, 'root', null);
+		$context       = array_get($opts, 'context', null);
+		$schemaName    = array_get($opts, 'schema', null);
+		$operation     = array_get($opts, 'operationName', null);
+		$schema        = $this->getSchema($schemaName);
+		$fieldResolver = function ($source, $args, $context, $info) {
+			$result = Executor::defaultFieldResolver($source, $args, $context, $info);
 
-		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation)->toArray(true);
+			if (is_null($result)) {
+				$result = data_get($source, snake_case($info->fieldName));
+			}
+
+			return $result;
+		};
+
+		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)->toArray(true);
 	}
 
 	/**
