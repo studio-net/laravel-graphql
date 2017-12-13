@@ -37,9 +37,9 @@ abstract class Cachable implements CachableInterface {
 	 */
 	public function save($key, $data) {
 		$namespace = $this->getCacheNamespace();
-		$item      = $this->cache->getItem(strtolower($namespace));
-		$content   = (is_null($item->get())) ? [] : $item->get();
-		$content   = $content + [$key => $data];
+		$item = $this->cache->getItem(strtolower($namespace));
+		$content = (is_null($item->get())) ? [] : $item->get();
+		$content = $content + [$key => $data];
 		$item->set($content);
 
 		return $this->cache->save($item);
@@ -54,8 +54,8 @@ abstract class Cachable implements CachableInterface {
 	 */
 	public function push($namespace, $key, $data) {
 		$namespace = $this->getCacheNamespace();
-		$item      = $this->cache->getItem(strtolower($namespace));
-		$content   = (is_null($item->get())) ? [] : $item->get();
+		$item = $this->cache->getItem(strtolower($namespace));
+		$content = (is_null($item->get())) ? [] : $item->get();
 
 		if (!array_key_exists($key, $content)) {
 			$content[$key] = [];
@@ -85,8 +85,8 @@ abstract class Cachable implements CachableInterface {
 	 */
 	public function get($key = null) {
 		$namespace = $this->getCacheNamespace();
-		$data      = $this->cache->getItem(strtolower($namespace))->get();
-		$data      = empty($data) ? [] : $data;
+		$data = $this->cache->getItem(strtolower($namespace))->get();
+		$data = empty($data) ? [] : $data;
 
 		return (is_null($key)) ? $data : $data[$key];
 	}

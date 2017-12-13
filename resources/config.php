@@ -8,10 +8,10 @@ return [
 	//       - `query`    : list of custom queries
 	//       - `mutation` : list of custom mutations
 	'schema' => [
-		'default'     => 'default',
+		'default' => 'default',
 		'definitions' => [
 			'default' => [
-				'query'    => [],
+				'query' => [],
 				'mutation' => [],
 			]
 		]
@@ -43,7 +43,7 @@ return [
 	// which extend from original
 	'route' => [
 		'input_name' => 'variables',
-		'prefix'     => 'graphql',
+		'prefix' => 'graphql',
 		'middleware' => [],
 		'controller' => '\\StudioNet\\GraphQL\\GraphQLController@query'
 	],
@@ -57,6 +57,6 @@ return [
 	'documentation' => [
 		'active' => true,
 		'prefix' => 'doc',
-		'route'  => 'graphql/{schema?}'
+		'route' => 'graphql/{schema?}'
 	]
 ];

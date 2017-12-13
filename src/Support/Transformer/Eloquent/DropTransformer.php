@@ -29,7 +29,7 @@ class DropTransformer extends Transformer {
 	 * @return array
 	 */
 	public function getArguments(Definition $definition) {
-		$args   = [];
+		$args = [];
 		$traits = class_uses($definition->getSource());
 
 		if (in_array(SoftDeletes::class, $traits)) {

@@ -7,9 +7,9 @@ use StudioNet\GraphQL\GraphQL;
 // Assert class exists. Otherwise, create simple aliases in order to make tests
 // working on newer PHPUnit version
 if (!class_exists('PHPUnit_Framework_TestCase')) {
-	class_alias(\PHPUnit\Framework\TestCase::class              , 'PHPUnit_Framework_TestCase');
-	class_alias(\PHPUnit\Framework\Assert::class                , 'PHPUnit_Framework_Assert');
-	class_alias(\PHPUnit\Framework\Constraint\Constraint::class , 'PHPUnit_Framework_Constraint');
+	class_alias(\PHPUnit\Framework\TestCase::class, 'PHPUnit_Framework_TestCase');
+	class_alias(\PHPUnit\Framework\Assert::class, 'PHPUnit_Framework_Assert');
+	class_alias(\PHPUnit\Framework\Constraint\Constraint::class, 'PHPUnit_Framework_Constraint');
 }
 
 /**
@@ -31,7 +31,9 @@ abstract class TestCase extends BaseTestCase {
 		// `loadMigrationsFrom' method and removes the --realpath migrate
 		// option. So, we need to handle unit test for either version
 		if ($this->app->version() < '5.4') {
-			$this->artisan('migrate', [
+			$this->artisan(
+				'migrate',
+				[
 				'--realpath' => realpath(__DIR__ . '/' . '../database/migrations'),
 				'--database' => 'testing']
 			);
@@ -71,9 +73,9 @@ abstract class TestCase extends BaseTestCase {
 	protected function getEnvironmentSetUp($app) {
 		$app['config']->set('database.default', 'testing');
 		$app['config']->set('database.connections.testing', [
-			'driver'   => 'sqlite',
+			'driver' => 'sqlite',
 			'database' => ':memory:',
-			'prefix'   => ''
+			'prefix' => ''
 		]);
 	}
 

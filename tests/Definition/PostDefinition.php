@@ -45,8 +45,8 @@ class PostDefinition extends EloquentDefinition {
 	 */
 	public function getFetchable() {
 		return [
-			'id'      => Type::id(),
-			'title'   => Type::string(),
+			'id' => Type::id(),
+			'title' => Type::string(),
 			'content' => Type::string()
 		];
 	}
@@ -58,7 +58,7 @@ class PostDefinition extends EloquentDefinition {
 	 */
 	public function getMutable() {
 		return [
-			'title'   => Type::string(),
+			'title' => Type::string(),
 			'content' => Type::string()
 		];
 	}

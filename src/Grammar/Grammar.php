@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 abstract class Grammar {
 	const OPERATOR = '/^(\((?<operator>(.*))\))?.*$/';
-	const VALUE  = '/^(\(.*\))?(\s+)?(?<value>(.*))$/';
+	const VALUE = '/^(\(.*\))?(\s+)?(?<value>(.*))$/';
 
 	/**
 	 * Return SQL operator for given string operator
@@ -19,11 +19,11 @@ abstract class Grammar {
 	 */
 	public function getOperator($operator, $value) {
 		switch ($operator) {
-			case 'lte' : $operator = '<=' ; break;
-			case 'lt'  : $operator = '<'  ; break;
-			case 'gt'  : $operator = '>'  ; break;
-			case 'gte' : $operator = '>=' ; break;
-			default    : $operator = (strpos($value, '%') !== false) ? 'like' : '='; break;
+			case 'lte': $operator = '<=' ; break;
+			case 'lt': $operator = '<'  ; break;
+			case 'gt': $operator = '>'  ; break;
+			case 'gte': $operator = '>=' ; break;
+			default: $operator = (strpos($value, '%') !== false) ? 'like' : '='; break;
 		}
 
 		return $operator;
@@ -59,18 +59,16 @@ abstract class Grammar {
 		if (is_array($value)) {
 			$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
 
-			$builder->$whereFunc(function($query) use ($value, $operator, $key) {
+			$builder->$whereFunc(function ($query) use ($value, $operator, $key) {
 				foreach ($value as $command => $v) {
 					$command = (strtolower($command) === 'or') ? "OR" : $operator;
-					$query   = $this->getBuilder($query, $key, $v, $command);
+					$query = $this->getBuilder($query, $key, $v, $command);
 				}
 			});
-		}
-		
-		else {
+		} else {
 			$comparator = $this->getOperator($this->getMatch(self::OPERATOR, $value), $value);
-			$value      = $this->getMatch(self::VALUE, $value);
-			$whereFunc  = strtolower($operator) === 'or' ? "orWhere": "where";
+			$value = $this->getMatch(self::VALUE, $value);
+			$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
 
 			$builder->$whereFunc($this->getKey($key), $comparator, $value);
 		}
@@ -90,8 +88,8 @@ abstract class Grammar {
 			$key = null;
 
 			switch ($matcher) {
-				case self::OPERATOR : $key = 'operator' ; break;
-				case self::VALUE    : $key = 'value'    ; break;
+				case self::OPERATOR: $key = 'operator' ; break;
+				case self::VALUE: $key = 'value'    ; break;
 			}
 
 			// Assert key is defined and exists in matches
@@ -112,5 +110,4 @@ abstract class Grammar {
 	public function getKey($key) {
 		return sprintf('LOWER(%s)', $key);
 	}
-
 }

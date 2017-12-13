@@ -33,7 +33,7 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('ensure that we can call registered type', function() use ($graphql) {
+		$this->specify('ensure that we can call registered type', function () use ($graphql) {
 			$this->assertInstanceOf(ObjectType::class, $graphql->type('user'));
 			$this->assertInstanceOf(ObjectType::class, $graphql->type('post'));
 			$this->assertInstanceOf(ListOfType::class, $graphql->listOf('user'));
@@ -47,7 +47,7 @@ class GraphQLTest extends TestCase {
 	 * @return void
 	 */
 	public function testQuery() {
-		factory(Entity\User::class, 5)->create()->each(function($user) {
+		factory(Entity\User::class, 5)->create()->each(function ($user) {
 			$user->posts()->saveMany(factory(Entity\Post::class, 5)->make());
 		});
 
@@ -56,9 +56,9 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('test querying a single row', function() {
+		$this->specify('test querying a single row', function () {
 			$query = 'query { user(id: 1) { name, posts { title } }}';
-			$user  = Entity\User::with('posts')->find(1);
+			$user = Entity\User::with('posts')->find(1);
 			$posts = [];
 
 			foreach ($user->posts as $post) {
@@ -89,16 +89,16 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('tests datetime scalar type', function() {
+		$this->specify('tests datetime scalar type', function () {
 			$query = 'query { user(id: 1) { last_login } }';
-			$data  = $this->executeGraphQL($query);
+			$data = $this->executeGraphQL($query);
 
 			$this->assertInternalType('int', $data['data']['user']['last_login']);
 		});
 
-		$this->specify('tests json scalar type', function() {
+		$this->specify('tests json scalar type', function () {
 			$query = 'query { user(id: 1) { permissions } }';
-			$data  = $this->executeGraphQL($query);
+			$data = $this->executeGraphQL($query);
 
 			$this->assertInternalType('array', $data['data']['user']['permissions']);
 		});
@@ -121,14 +121,14 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('tests custom query (viewer)', function() {
+		$this->specify('tests custom query (viewer)', function () {
 			$query = 'query { viewer { id, name }}';
-			$user  = Entity\User::first();
+			$user = Entity\User::first();
 
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'viewer' => [
-						'id'   => (string) $user->id,
+						'id' => (string) $user->id,
 						'name' => $user->name,
 					]
 				]
@@ -153,9 +153,9 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\CamelCaseUserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('test querying a single row with camel case fields', function() {
+		$this->specify('test querying a single row with camel case fields', function () {
 			$query = 'query { user(id: 1) { name, isAdmin }}';
-			$user  = Entity\User::find(1);
+			$user = Entity\User::find(1);
 
 			$this->assertGraphQLEquals($query, [
 				'data' => [

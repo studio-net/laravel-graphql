@@ -6,4 +6,5 @@ namespace StudioNet\GraphQL\Exception;
  *
  * @see \Exception
  */
-class TransformerNotFoundException extends \Exception {}
+class TransformerNotFoundException extends \Exception {
+}

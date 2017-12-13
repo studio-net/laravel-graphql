@@ -30,7 +30,7 @@ class GraphQL {
 	 * @return void
 	 */
 	public function __construct(Application $app, CachePool $cache) {
-		$this->app   = $app;
+		$this->app = $app;
 		$this->cache = $cache;
 	}
 
@@ -52,7 +52,7 @@ class GraphQL {
 		//    'mutation' => []
 		// ]
 		$schema = $this->get('schema', $name);
-		$schema['query']    = $this->manageQuery($schema['query']);
+		$schema['query'] = $this->manageQuery($schema['query']);
 		$schema['mutation'] = $this->manageMutation($schema['mutation']);
 
 		return new Schema($schema);
@@ -110,11 +110,11 @@ class GraphQL {
 	 * @return array
 	 */
 	public function execute($query, $variables = [], $opts = []) {
-		$root          = array_get($opts, 'root', null);
-		$context       = array_get($opts, 'context', null);
-		$schemaName    = array_get($opts, 'schema', null);
-		$operation     = array_get($opts, 'operationName', null);
-		$schema        = $this->getSchema($schemaName);
+		$root = array_get($opts, 'root', null);
+		$context = array_get($opts, 'context', null);
+		$schemaName = array_get($opts, 'schema', null);
+		$operation = array_get($opts, 'operationName', null);
+		$schema = $this->getSchema($schemaName);
 		$fieldResolver = function ($source, $args, $context, $info) {
 			$result = Executor::defaultFieldResolver($source, $args, $context, $info);
 
@@ -139,12 +139,12 @@ class GraphQL {
 
 		foreach ($queries as $query) {
 			$query = $this->make($query);
-			$name  = $query->getName();
+			$name = $query->getName();
 			$data[$name] = $query->resolveType();
 		}
 
 		return new ObjectType([
-			'name'   => 'Query',
+			'name' => 'Query',
 			'fields' => $this->applyTransformers(['list', 'view'], $data)
 		]);
 	}
@@ -160,12 +160,12 @@ class GraphQL {
 
 		foreach ($mutations as $mutation) {
 			$mutation = $this->make($mutation);
-			$name     = $mutation->getName();
+			$name = $mutation->getName();
 			$data[$name] = $mutation->resolveType();
 		}
 
 		return new ObjectType([
-			'name'   => 'Mutation',
+			'name' => 'Mutation',
 			'fields' => $this->applyTransformers(['store', 'drop', 'batch', 'restore'], $data)
 		]);
 	}
@@ -180,7 +180,7 @@ class GraphQL {
 	 */
 	public function registerSchema($name, array $data) {
 		$this->save('schema', $name, array_merge([
-			'query'    => [],
+			'query' => [],
 			'mutation' => [],
 		], $data));
 	}
@@ -213,8 +213,8 @@ class GraphQL {
 
 		foreach ($definitions as $definition) {
 			$transformers = array_filter($definition->transformers);
-			$appliers     = array_filter($definition->getTransformers());
-			$appliers     = array_intersect(array_keys($appliers), $kinds);
+			$appliers = array_filter($definition->getTransformers());
+			$appliers = array_intersect(array_keys($appliers), $kinds);
 
 			foreach ($appliers as $transformer) {
 				if (array_key_exists($transformer, $transformers)) {
@@ -248,8 +248,8 @@ class GraphQL {
 	 * @return bool
 	 */
 	private function save($namespace, $key, $data) {
-		$item    = $this->cache->getItem(strtolower($namespace));
-		$key     = strtolower($key);
+		$item = $this->cache->getItem(strtolower($namespace));
+		$key = strtolower($key);
 		$content = (is_null($item->get())) ? [$key => []] : $item->get();
 		$content[$key] = $data;
 

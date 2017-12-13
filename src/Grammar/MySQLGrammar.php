@@ -4,4 +4,5 @@ namespace StudioNet\GraphQL\Grammar;
 /**
  * Decode filter grammar.
  */
-class MySQLGrammar extends Grammar {}
+class MySQLGrammar extends Grammar {
+}

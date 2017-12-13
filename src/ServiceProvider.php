@@ -19,7 +19,7 @@ class ServiceProvider extends BaseServiceProvider {
 	public function boot() {
 		$config = $this->getConfigurationPath() . '/' . 'resources/config.php';
 		$routes = $this->getConfigurationPath() . '/' . 'resources/routes.php';
-		$views  = $this->getConfigurationPath() . '/' . 'resources/views';
+		$views = $this->getConfigurationPath() . '/' . 'resources/views';
 
 		$this->mergeConfigFrom($config, 'graphql');
 		$this->loadViewsFrom($views, 'graphql');
@@ -63,7 +63,7 @@ class ServiceProvider extends BaseServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->app->singleton(CachePool::class, function() { return new CachePool; });
+		$this->app->singleton(CachePool::class, function () { return new CachePool; });
 		$this->app->singleton(GraphQL::class);
 		$this->app->bind('graphql', GraphQL::class);
 	}

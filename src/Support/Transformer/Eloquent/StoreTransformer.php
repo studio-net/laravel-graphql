@@ -40,7 +40,7 @@ class StoreTransformer extends Transformer {
 	 */
 	public function getArguments(Definition $definition) {
 		return [
-			'id'   => ['type' => Type::id(), 'description' => 'Primary key lookup' ],
+			'id' => ['type' => Type::id(), 'description' => 'Primary key lookup' ],
 			'with' => [
 				'type' => $definition->resolveInputType(),
 				'description' => 'Contains updated fields'
@@ -56,7 +56,7 @@ class StoreTransformer extends Transformer {
 	 */
 	public function getResolver(array $opts) {
 		$model = $opts['source']->findOrNew(array_get($opts['args'], 'id', 0));
-		$data  = array_filter($opts['args']['with'], function ($value, $key) use ($model) {
+		$data = array_filter($opts['args']['with'], function ($value, $key) use ($model) {
 			return !((is_array($value) or is_null($value)) and method_exists($model, $key));
 		}, ARRAY_FILTER_USE_BOTH);
 

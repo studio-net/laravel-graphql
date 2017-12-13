@@ -49,8 +49,8 @@ abstract class Field implements FieldInterface {
 	 */
 	public function resolveType() {
 		$attributes = $this->getAttributes() + [
-			'type'        => $this->getRelatedType(),
-			'args'        => $this->getArguments(),
+			'type' => $this->getRelatedType(),
+			'args' => $this->getArguments(),
 			'description' => $this->getDescription()
 		];
 

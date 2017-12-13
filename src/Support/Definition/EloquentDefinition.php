@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 abstract class EloquentDefinition extends Definition {
 	/** @var array $transformers List of transformers to apply when needed */
 	public $transformers = [
-		'list'    => \StudioNet\GraphQL\Support\Transformer\Eloquent\ListTransformer::class,
-		'view'    => \StudioNet\GraphQL\Support\Transformer\Eloquent\ViewTransformer::class,
-		'drop'    => \StudioNet\GraphQL\Support\Transformer\Eloquent\DropTransformer::class,
-		'store'   => \StudioNet\GraphQL\Support\Transformer\Eloquent\StoreTransformer::class,
-		'batch'   => \StudioNet\GraphQL\Support\Transformer\Eloquent\BatchTransformer::class,
+		'list' => \StudioNet\GraphQL\Support\Transformer\Eloquent\ListTransformer::class,
+		'view' => \StudioNet\GraphQL\Support\Transformer\Eloquent\ViewTransformer::class,
+		'drop' => \StudioNet\GraphQL\Support\Transformer\Eloquent\DropTransformer::class,
+		'store' => \StudioNet\GraphQL\Support\Transformer\Eloquent\StoreTransformer::class,
+		'batch' => \StudioNet\GraphQL\Support\Transformer\Eloquent\BatchTransformer::class,
 		'restore' => \StudioNet\GraphQL\Support\Transformer\Eloquent\RestoreTransformer::class,
 	];
 
@@ -30,11 +30,11 @@ abstract class EloquentDefinition extends Definition {
 	 */
 	public function getTransformers() {
 		return [
-			'list'    => true,
-			'view'    => true,
-			'drop'    => true,
-			'store'   => true,
-			'batch'   => true,
+			'list' => true,
+			'view' => true,
+			'drop' => true,
+			'store' => true,
+			'batch' => true,
 			'restore' => in_array(SoftDeletes::class, class_uses($this->getSource()))
 		];
 	}
@@ -50,10 +50,10 @@ abstract class EloquentDefinition extends Definition {
 
 		if (in_array(SoftDeletes::class, $traits)) {
 			$fields['trashed'] = [
-				'type'        => Type::bool(),
+				'type' => Type::bool(),
 				'description' => 'Is model deleted ?',
-				'inputable'   => false,
-				'resolve'     => function($root) { return $root->trashed(); }
+				'inputable' => false,
+				'resolve' => function ($root) { return $root->trashed(); }
 			];
 		}
 

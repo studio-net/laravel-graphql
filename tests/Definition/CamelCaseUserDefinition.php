@@ -45,12 +45,12 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 	 */
 	public function getFetchable() {
 		return [
-			'id'          => Type::id(),
-			'name'        => Type::string(),
-			'lastLogin'   => Type::datetime(),
-			'isAdmin'     => Type::bool(),
+			'id' => Type::id(),
+			'name' => Type::string(),
+			'lastLogin' => Type::datetime(),
+			'isAdmin' => Type::bool(),
 			'permissions' => Type::json(),
-			'posts'       => \GraphQL::listOf('post')
+			'posts' => \GraphQL::listOf('post')
 		];
 	}
 
@@ -61,11 +61,11 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 	 */
 	public function getMutable() {
 		return [
-			'id'          => Type::id(),
-			'name'        => Type::string(),
-			'is_admin'    => Type::bool(),
+			'id' => Type::id(),
+			'name' => Type::string(),
+			'is_admin' => Type::bool(),
 			'permissions' => Type::json(),
-			'password'    => Type::string()
+			'password' => Type::string()
 		];
 	}
 }

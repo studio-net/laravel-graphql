@@ -23,7 +23,7 @@ class GraphQLController extends Controller {
 	 */
 	public function query(Request $request, $schema = null) {
 		$inputs = $request->all();
-		$data   = [];
+		$data = [];
 
 		// If there's no schema, just use default one
 		if (empty($schema)) {
@@ -60,7 +60,7 @@ class GraphQLController extends Controller {
 
 		$headers = config('graphql.response.headers', []);
 		$options = config('graphql.response.json_encoding_options', 0);
-		$status  = (array_key_exists('errors', $data)) ? 500 : 200;
+		$status = (array_key_exists('errors', $data)) ? 500 : 200;
 
 		return Response::json($data, $status, $headers, $options);
 	}
@@ -75,8 +75,8 @@ class GraphQLController extends Controller {
 	 */
 	private function executeQuery($schema, array $inputs) {
 		$query = array_get($inputs, 'query');
-		$name  = array_get($inputs, 'operationName');
-		$args  = array_get($inputs, config('graphql.route.input_name', 'variables'));
+		$name = array_get($inputs, 'operationName');
+		$args = array_get($inputs, config('graphql.route.input_name', 'variables'));
 
 		if (is_string($args)) {
 			$args = json_decode($args, true);
@@ -84,7 +84,7 @@ class GraphQLController extends Controller {
 
 		return app(GraphQL::class)->execute($query, $args, [
 			'context' => $this->getContext(),
-			'schema'  => $schema,
+			'schema' => $schema,
 			'operationName' => $name
 		]);
 	}
@@ -97,7 +97,8 @@ class GraphQLController extends Controller {
 	protected function getContext() {
 		try {
 			return app('auth')->user();
-		} catch (\Exception $e) {}
+		} catch (\Exception $e) {
+		}
 
 		return null;
 	}

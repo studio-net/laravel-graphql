@@ -18,11 +18,11 @@ abstract class Definition implements DefinitionInterface {
 
 	/** @var array $transformers List of transformers to apply when needed */
 	public $transformers = [
-		'list'    => false,
-		'view'    => false,
-		'drop'    => false,
-		'store'   => false,
-		'batch'   => false,
+		'list' => false,
+		'view' => false,
+		'drop' => false,
+		'store' => false,
+		'batch' => false,
 		'restore' => false
 	];
 
@@ -51,11 +51,11 @@ abstract class Definition implements DefinitionInterface {
 	 */
 	public function getTransformers() {
 		return [
-			'list'    => false,
-			'view'    => false,
-			'drop'    => false,
-			'store'   => false,
-			'batch'   => false,
+			'list' => false,
+			'view' => false,
+			'drop' => false,
+			'store' => false,
+			'batch' => false,
 			'restore' => false
 		];
 	}
@@ -68,9 +68,9 @@ abstract class Definition implements DefinitionInterface {
 	public function resolveType() {
 		if (!array_key_exists('resolveFetchableType', $this->cache)) {
 			$this->setCache('resolveFetchableType', new ObjectType([
-				'name'        => $this->getName(),
+				'name' => $this->getName(),
 				'description' => $this->getDescription(),
-				'fields'      => function() {
+				'fields' => function () {
 					return $this->resolveFields();
 				}
 			]));
@@ -87,8 +87,8 @@ abstract class Definition implements DefinitionInterface {
 	public function resolveInputType() {
 		if (!array_key_exists('resolveInputType', $this->cache)) {
 			$this->setCache('resolveInputType', new InputObjectType([
-				'name'   => sprintf('%sInput', ucfirst($this->getName())),
-				'fields' => function() {
+				'name' => sprintf('%sInput', ucfirst($this->getName())),
+				'fields' => function () {
 					return array_merge(['id' => Type::id()], $this->getMutable());
 				}
 			]));
@@ -112,9 +112,7 @@ abstract class Definition implements DefinitionInterface {
 			if (is_array($data) and array_key_exists('name', $data)) {
 				$name = $data['name'];
 				$resolved = array_key_exists('resolve', $data);
-			}
-
-			else if (!is_array($data)) {
+			} elseif (!is_array($data)) {
 				$data = ['type' => $data];
 				$resolved = false;
 			}

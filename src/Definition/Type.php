@@ -17,7 +17,7 @@ abstract class Type extends GraphQLType {
 	const DATETIME = 'Datetime';
 
 	/** @var array $cache */
-	static protected $cache = null;
+	protected static $cache = null;
 
 	/**
 	 * Assign a comment to scalar type without creating array
@@ -26,7 +26,7 @@ abstract class Type extends GraphQLType {
 	 * @param  string $description
 	 * @return array
 	 */
-	static public function assign(GraphQLType $type, $description) {
+	public static function assign(GraphQLType $type, $description) {
 		return [
 			'type' => $type,
 			'description' => $description
@@ -38,7 +38,7 @@ abstract class Type extends GraphQLType {
 	 *
 	 * @return JsonType
 	 */
-	static public function json() {
+	public static function json() {
 		return self::getCache(self::JSON);
 	}
 
@@ -47,7 +47,7 @@ abstract class Type extends GraphQLType {
 	 *
 	 * @return DatetimeType
 	 */
-	static public function datetime() {
+	public static function datetime() {
 		return self::getCache(self::DATETIME);
 	}
 
@@ -56,7 +56,7 @@ abstract class Type extends GraphQLType {
 	 *
 	 * @return \GraphQL\Type\Definition\BooleanType
 	 */
-	static public function bool() {
+	public static function bool() {
 		return self::boolean();
 	}
 
@@ -66,7 +66,7 @@ abstract class Type extends GraphQLType {
 	 * @param  string $name
 	 * @return mixed
 	 */
-	static protected function getCache($name = null) {
+	protected static function getCache($name = null) {
 		if (self::$cache === null) {
 			self::$cache = [
 				self::JSON => new JsonType,

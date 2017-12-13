@@ -7,4 +7,5 @@ namespace StudioNet\GraphQL\Support\Definition;
  * @see Field
  * @abstract
  */
-abstract class Mutation extends Field {}
+abstract class Mutation extends Field {
+}

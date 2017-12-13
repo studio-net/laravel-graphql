@@ -44,12 +44,12 @@ class JsonType extends ScalarType {
 	 */
 	public function parseLiteral($valueNode) {
 		switch ($valueNode) {
-		case ($valueNode instanceof AST\StringValueNode)  :
-		case ($valueNode instanceof AST\BooleanValueNode) : return $valueNode->value;
-		case ($valueNode instanceof AST\IntValueNode)     :
-		case ($valueNode instanceof AST\FloatValueNode)   : return floatval($valueNode->value);
-		case ($valueNode instanceof AST\ListValueNode)    : return array_map([$this, 'parseLiteral'], $valueNode->values);
-		case ($valueNode instanceof AST\ObjectValueNode)  : {
+		case ($valueNode instanceof AST\StringValueNode):
+		case ($valueNode instanceof AST\BooleanValueNode): return $valueNode->value;
+		case ($valueNode instanceof AST\IntValueNode):
+		case ($valueNode instanceof AST\FloatValueNode): return floatval($valueNode->value);
+		case ($valueNode instanceof AST\ListValueNode): return array_map([$this, 'parseLiteral'], $valueNode->values);
+		case ($valueNode instanceof AST\ObjectValueNode): {
 			$value = [];
 
 			foreach ($valueNode->fields as $field) {

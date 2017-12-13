@@ -6,4 +6,5 @@ namespace StudioNet\GraphQL\Exception;
  *
  * @see \Exception
  */
-class SchemaNotFoundException extends \Exception {}
+class SchemaNotFoundException extends \Exception {
+}

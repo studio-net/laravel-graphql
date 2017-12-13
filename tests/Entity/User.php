@@ -22,7 +22,7 @@ class User extends Model {
 
 	/** @var array $casts */
 	protected $casts = [
-		'is_admin'    => 'boolean',
+		'is_admin' => 'boolean',
 		'permissions' => 'array'
 	];
 

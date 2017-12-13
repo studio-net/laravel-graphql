@@ -7,4 +7,5 @@ namespace StudioNet\GraphQL\Support\Definition;
  * @see Field
  * @abstract
  */
-abstract class Query extends Field {}
+abstract class Query extends Field {
+}

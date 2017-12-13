@@ -33,9 +33,9 @@ class BatchTransformer extends Transformer {
 			'objects' => [
 				'description' => 'Contains all objects to update or create',
 				'type' => Type::nonNull(Type::listOf(new InputObjectType([
-					'name'   => sprintf('%sBatch', ucfirst($definition->getName())),
+					'name' => sprintf('%sBatch', ucfirst($definition->getName())),
 					'fields' => [
-						'id'   => ['type' => Type::id(), 'description' => 'Primary key lookup' ],
+						'id' => ['type' => Type::id(), 'description' => 'Primary key lookup' ],
 						'with' => [
 							'type' => $definition->resolveInputType(),
 							'description' => 'Contains updated fields'
@@ -67,7 +67,7 @@ class BatchTransformer extends Transformer {
 
 		foreach ($opts['args']['objects'] as $args) {
 			$model = $opts['source']->findOrNew(array_get($args, 'id', 0));
-			$data  = array_filter($args['with'], function($key) use ($model) {
+			$data = array_filter($args['with'], function ($key) use ($model) {
 				return !method_exists($model, $key);
 			}, ARRAY_FILTER_USE_KEY);
 

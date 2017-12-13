@@ -27,12 +27,12 @@ class GraphQLMutationTest extends TestCase {
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('tests mutation on user', function() {
+		$this->specify('tests mutation on user', function () {
 			$query = 'mutation { user(id: 1, with: { name: "toto" }) { id, name } }';
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
-						'id'   => '1',
+						'id' => '1',
 						'name' => 'toto',
 					]
 				]
@@ -42,7 +42,7 @@ class GraphQLMutationTest extends TestCase {
 			$this->assertSame('toto', $user->name);
 		});
 
-		$this->specify('tests drop on user', function() {
+		$this->specify('tests drop on user', function () {
 			$query = 'mutation { deleteUser(id: 1) { name }}';
 			$this->assertGraphQLEquals($query, [
 				'data' => [
@@ -56,7 +56,7 @@ class GraphQLMutationTest extends TestCase {
 			$this->assertEmpty($user);
 		});
 
-		$this->specify('tests batch update on user', function() {
+		$this->specify('tests batch update on user', function () {
 			$query = 'mutation { users(objects: [{id: 4, with: {name: "test"}}, {id: 5, with: {name: "toto"}}]) { id, name }}';
 			$this->assertGraphQLEquals($query, [
 				'data' => [
@@ -82,7 +82,7 @@ class GraphQLMutationTest extends TestCase {
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('tests nested mutation on user', function() {
+		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
 mutation MutateUser {
 	user(id: 1, with: { name: "toto", posts: [{title:"aa", content:"bb"}] }) {
@@ -98,11 +98,11 @@ GQL;
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
-						'id'    => '1',
-						'name'  => 'toto',
+						'id' => '1',
+						'name' => 'toto',
 						'posts' => [
 							[
-								'title'   => 'aa',
+								'title' => 'aa',
 								'content' => 'bb'
 							]
 						]
@@ -126,15 +126,15 @@ GQL;
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
-						'id'    => '1',
-						'name'  => 'toto',
+						'id' => '1',
+						'name' => 'toto',
 						'posts' => [
 							[
-								'title'   => 'aa',
+								'title' => 'aa',
 								'content' => 'bb'
 							],
 							[
-								'title'   => 'cc',
+								'title' => 'cc',
 								'content' => 'dd'
 							]
 						]
@@ -145,7 +145,6 @@ GQL;
 			$user = Entity\User::first();
 			$this->assertSame('toto', $user->name);
 		});
-
 	}
 
 	/**
@@ -161,7 +160,7 @@ GQL;
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('tests nested mutation on user', function() {
+		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
 mutation MutateUser {
 	user(id: 1, with: { name: "toto", posts: [{title:"aa", content:"bb"}] }) {
@@ -177,11 +176,11 @@ GQL;
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
-						'id'    => '1',
-						'name'  => 'toto',
+						'id' => '1',
+						'name' => 'toto',
 						'posts' => [
 							[
-								'title'   => 'aa',
+								'title' => 'aa',
 								'content' => 'bb'
 							]
 						]
@@ -205,11 +204,11 @@ GQL;
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
-						'id'    => '1',
-						'name'  => 'toto',
+						'id' => '1',
+						'name' => 'toto',
 						'posts' => [
 							[
-								'title'   => 'cc',
+								'title' => 'cc',
 								'content' => 'dd'
 							]
 						]
@@ -220,10 +219,9 @@ GQL;
 			$user = Entity\User::first();
 			$this->assertSame('toto', $user->name);
 		});
-
 	}
 
-		/**
+	/**
 	 * Test nested add null mutation
 	 *
 	 * @return void
@@ -236,7 +234,7 @@ GQL;
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('tests nested mutation on user', function() {
+		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
 mutation MutateUser {
 	user(id: 1, with: { name: "toto", posts: [{title:"aa", content:"bb"}] }) {
@@ -252,11 +250,11 @@ GQL;
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
-						'id'    => '1',
-						'name'  => 'toto',
+						'id' => '1',
+						'name' => 'toto',
 						'posts' => [
 							[
-								'title'   => 'aa',
+								'title' => 'aa',
 								'content' => 'bb'
 							]
 						]
@@ -280,11 +278,11 @@ GQL;
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'user' => [
-						'id'    => '1',
-						'name'  => 'toto',
+						'id' => '1',
+						'name' => 'toto',
 						'posts' => [
 							[
-								'title'   => 'aa',
+								'title' => 'aa',
 								'content' => 'bb'
 							]
 						]
@@ -295,7 +293,5 @@ GQL;
 			$user = Entity\User::first();
 			$this->assertSame('toto', $user->name);
 		});
-
 	}
-
 }

@@ -42,23 +42,23 @@ class ListTransformer extends Transformer {
 	 * @return array
 	 */
 	public function getArguments(Definition $definition) {
-		$args   = [];
+		$args = [];
 		$traits = class_uses($definition->getSource());
 
 		// If the source uses soft deletion, we have to append one arg to fetch
 		// hidden ones and other to only fetch hidden
 		if (in_array(SoftDeletes::class, $traits)) {
 			$args = [
-				'trashed'      => ['type' => Type::bool(), 'description' => 'Show deleted'],
+				'trashed' => ['type' => Type::bool(), 'description' => 'Show deleted'],
 				'only_trashed' => ['type' => Type::bool(), 'description' => 'Show only deleted'],
 			];
 		}
 
 		return $args + [
-			'after'  => [ 'type' => Type::id()  , 'description' => 'Cursor-based navigation' ] ,
+			'after' => [ 'type' => Type::id()  , 'description' => 'Cursor-based navigation' ] ,
 			'before' => [ 'type' => Type::id()  , 'description' => 'Cursor-based navigation' ] ,
-			'skip'   => [ 'type' => Type::int() , 'description' => 'Offset-based navigation' ] ,
-			'take'   => [ 'type' => Type::int() , 'description' => 'Limit-based navigation'  ] ,
+			'skip' => [ 'type' => Type::int() , 'description' => 'Offset-based navigation' ] ,
+			'take' => [ 'type' => Type::int() , 'description' => 'Limit-based navigation'  ] ,
 			'filter' => [
 				'type' => $this->getFilterType($definition),
 				'description' => 'Performs search'
@@ -74,13 +74,13 @@ class ListTransformer extends Transformer {
 	 */
 	private function getFilterType(Definition $definition) {
 		// TODO We have to manage this case
-		$fields = array_filter($definition->getFetchable(), function($field) {
+		$fields = array_filter($definition->getFetchable(), function ($field) {
 			return !is_array($field) or array_get($field, 'inputable', false);
 		});
 
 		return new InputObjectType([
-			'name'   => sprintf('%sFilter', ucfirst($definition->getName())),
-			'fields' => array_map(function($field) {
+			'name' => sprintf('%sFilter', ucfirst($definition->getName())),
+			'fields' => array_map(function ($field) {
 				if (is_array($field)) {
 					$field['type'] = Type::json();
 				} else {
@@ -105,13 +105,13 @@ class ListTransformer extends Transformer {
 		// Parse each arguments in order to affect the query builder
 		foreach ($opts['args'] as $key => $value) {
 			switch ($key) {
-			case 'after'        : $builder->where($primary, '>', $value)         ; break;
-			case 'before'       : $builder->where($primary, '<', $value)         ; break;
-			case 'skip'         : $builder->skip($value)                         ; break;
-			case 'take'         : $builder->take($value)                         ; break;
-			case 'trashed'      : $builder->withTrashed()                        ; break;
-			case 'only_trashed' : $builder->onlyTrashed()                        ; break;
-			case 'filter'       : $this->resolveFilterArgument($builder, $value) ; break;
+			case 'after': $builder->where($primary, '>', $value)         ; break;
+			case 'before': $builder->where($primary, '<', $value)         ; break;
+			case 'skip': $builder->skip($value)                         ; break;
+			case 'take': $builder->take($value)                         ; break;
+			case 'trashed': $builder->withTrashed()                        ; break;
+			case 'only_trashed': $builder->onlyTrashed()                        ; break;
+			case 'filter': $this->resolveFilterArgument($builder, $value) ; break;
 			}
 		}
 
@@ -126,12 +126,12 @@ class ListTransformer extends Transformer {
 	 * @return Builder
 	 */
 	private function resolveFilterArgument(Builder $builder, array $filter) {
-		$driver  = \DB::connection()->getDriverName();
+		$driver = \DB::connection()->getDriverName();
 		$grammar = null;
 
 		switch ($driver) {
-			case 'pgsql' : $grammar = new Grammar\PostgreSQLGrammar ; break;
-			case 'mysql' : $grammar = new Grammar\MySQLGrammar      ; break;
+			case 'pgsql': $grammar = new Grammar\PostgreSQLGrammar ; break;
+			case 'mysql': $grammar = new Grammar\MySQLGrammar      ; break;
 		}
 
 		// Assert that grammar exists

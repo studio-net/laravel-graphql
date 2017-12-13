@@ -8,4 +8,5 @@ use Cache\Adapter\PHPArray\ArrayCachePool;
  *
  * @see ArrayCachePool
  */
-class CachePool extends ArrayCachePool {}
+class CachePool extends ArrayCachePool {
+}

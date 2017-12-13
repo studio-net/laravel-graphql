@@ -45,12 +45,12 @@ class UserDefinition extends EloquentDefinition {
 	 */
 	public function getFetchable() {
 		return [
-			'id'          => Type::id(),
-			'name'        => Type::string(),
-			'last_login'  => Type::datetime(),
-			'is_admin'    => Type::bool(),
+			'id' => Type::id(),
+			'name' => Type::string(),
+			'last_login' => Type::datetime(),
+			'is_admin' => Type::bool(),
 			'permissions' => Type::json(),
-			'posts'       => \GraphQL::listOf('post')
+			'posts' => \GraphQL::listOf('post')
 		];
 	}
 
@@ -61,12 +61,12 @@ class UserDefinition extends EloquentDefinition {
 	 */
 	public function getMutable() {
 		return [
-			'id'          => Type::id(),
-			'name'        => Type::string(),
-			'is_admin'    => Type::bool(),
+			'id' => Type::id(),
+			'name' => Type::string(),
+			'is_admin' => Type::bool(),
 			'permissions' => Type::json(),
-			'password'    => Type::string(),
-			'posts'       => Type::listOf(\GraphQL::input('post'))
+			'password' => Type::string(),
+			'posts' => Type::listOf(\GraphQL::input('post'))
 		];
 	}
 }

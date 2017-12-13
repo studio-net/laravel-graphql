@@ -48,9 +48,9 @@ abstract class Transformer extends Cachable {
 	 */
 	public function transform(Definition $definition) {
 		return [
-			'args'    => $this->getArguments($definition),
+			'args' => $this->getArguments($definition),
 			'resolve' => $this->getResolverCallable($definition),
-			'type'    => $this->resolveType($definition),
+			'type' => $this->resolveType($definition),
 		];
 	}
 
@@ -60,7 +60,7 @@ abstract class Transformer extends Cachable {
 	 * @param  Definition $definition
 	 * @return \GraphQL\Type\Definition\ObjectType|\GraphQL\Type\Definition\ListOfType
 	 */
-	abstract function resolveType(Definition $definition);
+	abstract public function resolveType(Definition $definition);
 
 	/**
 	 * Return resolver callable
@@ -71,16 +71,16 @@ abstract class Transformer extends Cachable {
 	public function getResolverCallable(Definition $definition) {
 		$app = $this->app;
 
-		return function($root, array $args, $context, ResolveInfo $info) use ($definition, $app) {
+		return function ($root, array $args, $context, ResolveInfo $info) use ($definition, $app) {
 			$fields = $info->getFieldSelection(3);
-			$opts   = [
-				'root'    => $root,
-				'args'    => array_filter($args),
-				'fields'  => $fields,
+			$opts = [
+				'root' => $root,
+				'args' => array_filter($args),
+				'fields' => $fields,
 				'context' => $context,
-				'info'    => $info,
-				'with'    => $this->guessWithRelations($definition, $fields),
-				'source'  => $app->make($definition->getSource())
+				'info' => $info,
+				'with' => $this->guessWithRelations($definition, $fields),
+				'source' => $app->make($definition->getSource())
 			];
 
 			return call_user_func_array([$this, 'getResolver'], [$opts]);
@@ -97,7 +97,7 @@ abstract class Transformer extends Cachable {
 	 */
 	public function guessWithRelations(Definition $definition, array $fields) {
 		$relations = [];
-		$source    = $this->app->make($definition->getSource());
+		$source = $this->app->make($definition->getSource());
 
 		// Parse each field in order to retrieve relationship elements on root
 		// of array (as relationship are based upon multiple resolvers, we just
