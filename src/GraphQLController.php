@@ -51,7 +51,7 @@ class GraphQLController extends Controller {
 			// If everything is okay, just commit the transaction
 			DB::commit();
 		} catch (\Exception $exception) {
-			$data['error'] = $exception->getMessage();
+			$data['errors'] = $exception->getMessage();
 
 			// Rollback transaction is any error occurred
 			DB::rollBack();

@@ -69,4 +69,15 @@ class UserDefinition extends EloquentDefinition {
 			'posts' => Type::listOf(\GraphQL::input('post'))
 		];
 	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return array
+	 */
+	public function getRules() {
+		return [
+			'name' => 'between:3,10'
+		];
+	}
 }

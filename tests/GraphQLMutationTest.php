@@ -42,6 +42,31 @@ class GraphQLMutationTest extends TestCase {
 			$this->assertSame('toto', $user->name);
 		});
 
+		$this->specify('tests validation', function () {
+			$query = 'mutation { user(id: 1, with: { name: "la" }) { id, name } }';
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'user' => null
+				],
+				'errors' => [
+					[
+						'message' => 'validation',
+						'locations' => [
+							[
+								'line' => 1,
+								'column' => 12,
+							],
+						],
+						'validation' => [
+							'name' => [
+								'The name must be between 3 and 10 characters.'
+							]
+						]
+					]
+				]
+			]);
+		});
+
 		$this->specify('tests drop on user', function () {
 			$query = 'mutation { deleteUser(id: 1) { name }}';
 			$this->assertGraphQLEquals($query, [

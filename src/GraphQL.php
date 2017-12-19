@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Cache\CachePool;
 use StudioNet\GraphQL\Support\Definition\Definition;
+use GraphQL\Error\Error;
+use StudioNet\GraphQL\Error\ValidationError;
 
 /**
  * GraphQL implementation singleton
@@ -125,7 +127,40 @@ class GraphQL {
 			return $result;
 		};
 
-		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)->toArray(true);
+		$data = GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver);
+
+		if (!empty($data->errors)) {
+			return [
+				'data' => $data->data,
+				'errors' => array_map([$this, 'formatError'], $data->errors)
+			];
+		}
+
+		return $data->toArray(true);
+	}
+
+	/**
+	 * Format error
+	 *
+	 * @param  Error $e
+	 * @return array
+	 */
+	protected function formatError(Error $e) {
+		$error = ['message' => $e->getMessage()];
+		$locs = $e->getLocations();
+		$prev = $e->getPrevious();
+
+		if (!empty($locs)) {
+			$error['locations'] = array_map(function ($loc) { return $loc->toArray(); }, $locs);
+		}
+
+		if (!empty($prev)) {
+			if ($prev instanceof ValidationError) {
+				$error['validation'] = $prev->getValidatorMessages()->toArray();
+			}
+		}
+
+		return $error;
 	}
 
 	/**

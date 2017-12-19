@@ -45,6 +45,15 @@ abstract class Definition implements DefinitionInterface {
 	}
 
 	/**
+	 * Return mutation fields rules
+	 *
+	 * @return array
+	 */
+	public function getRules() {
+		return [];
+	}
+
+	/**
 	 * Return wanted transformers
 	 *
 	 * @return array

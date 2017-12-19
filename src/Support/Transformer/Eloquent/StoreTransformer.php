@@ -5,6 +5,8 @@ use StudioNet\GraphQL\Support\Transformer\Transformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
 use Illuminate\Database\Eloquent\Relations;
+use Illuminate\Support\Facades\Validator;
+use StudioNet\GraphQL\Error\ValidationError;
 
 /**
  * Transform a Definition into create/update mutation
@@ -49,6 +51,21 @@ class StoreTransformer extends Transformer {
 	}
 
 	/**
+	 * Validate data
+	 *
+	 * @param  array $data
+	 * @param  array $rules
+	 * @return void
+	 */
+	protected function validate(array $data, array $rules) {
+		$validator = Validator::make($data, $rules);
+
+		if ($validator->fails()) {
+			throw with(new ValidationError('validation'))->setValidator($validator);
+		}
+	}
+
+	/**
 	 * Return fetchable node resolver
 	 *
 	 * @param  array $opts
@@ -60,6 +77,7 @@ class StoreTransformer extends Transformer {
 			return !((is_array($value) or is_null($value)) and method_exists($model, $key));
 		}, ARRAY_FILTER_USE_BOTH);
 
+		$this->validate($data, $opts['rules']);
 		$model->fill($data);
 
 		foreach (array_diff_key($opts['args']['with'], $data) as $column => $values) {
