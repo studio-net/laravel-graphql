@@ -68,9 +68,9 @@ abstract class Grammar {
 		} else {
 			$comparator = $this->getOperator($this->getMatch(self::OPERATOR, $value), $value);
 			$value = $this->getMatch(self::VALUE, $value);
-			$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
+			$whereFunc = strtolower($operator) === 'or' ? "orWhereRaw": "whereRaw";
 
-			$builder->$whereFunc($this->getKey($key), $comparator, $value);
+			$builder->$whereFunc("{$this->getKey($key)} {$comparator} ?", [$value]);
 		}
 
 		return $builder;
