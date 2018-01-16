@@ -407,6 +407,6 @@ pushing in order to prevent bad PR :
 ```bash
 $> ./vendor/bin/phpmd src text phpmd.xml
 $> ./vendor/bin/phpmd tests text phpmd.xml
-$> ./vendor/bin/phpstan analyse --autoload-file=_ide_helper.php --level 7 src
+$> ./vendor/bin/phpstan analyse --autoload-file=_ide_helper.php --level 1 src
 $> ./vendor/bin/php-cs-fixer fix
 ```
