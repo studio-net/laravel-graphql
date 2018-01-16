@@ -117,7 +117,12 @@ class StoreTransformer extends Transformer {
 
 				// For each relationship, find or new by id and fill with data
 				foreach ($values as $value) {
-					$relation->findOrNew(array_get($value, 'id', null))->fill($value)->save();
+					// TODO: refactor
+					// $relation is reset because findOrNew updates it and where
+					// clauses are stacked.
+					$relation = $model->{$column}();
+					$relation->findOrNew(array_get($value, 'id', null))
+						->fill($value)->save();
 				}
 			}
 		}
