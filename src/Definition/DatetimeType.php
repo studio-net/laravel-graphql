@@ -3,7 +3,7 @@ namespace StudioNet\GraphQL\Definition;
 
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\IntValueNode;
+use GraphQL\Language\AST\StringValueNode;
 use Carbon\Carbon;
 
 /**
