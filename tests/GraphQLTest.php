@@ -89,11 +89,13 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 
-		$this->specify('tests datetime scalar type', function () {
+		$this->specify('tests datetime rfc3339 type', function () {
 			$query = 'query { user(id: 1) { last_login } }';
 			$data = $this->executeGraphQL($query);
 
-			$this->assertInternalType('int', $data['data']['user']['last_login']);
+			$this->assertRegExp(
+				'/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+|-]\d{2}:\d{2}$/',
+				$data['data']['user']['last_login']);
 		});
 
 		$this->specify('tests json scalar type', function () {
