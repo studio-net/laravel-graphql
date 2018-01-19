@@ -35,7 +35,7 @@ class DatetimeType extends ScalarType {
 	 * @return array|null
 	 */
 	public function parseValue($value) {
-		return Carbon::createFromTimestamp($value);
+		return new Carbon($value);
 	}
 
 	/**
@@ -45,14 +45,9 @@ class DatetimeType extends ScalarType {
 	 * @return Carbon|null
 	 */
 	public function parseLiteral($ast) {
-		if ($ast instanceof IntValueNode) {
-			$val = (int) $ast->value;
-
-			if ($ast->value === (string) $val && PHP_INT_MIN <= $val && $val <= PHP_INT_MAX) {
-				return Carbon::createFromTimestamp($val);
-			}
+		if ($ast instanceof StringValueNode) {
+			return new Carbon($ast->value);
 		}
-
 		return null;
 	}
 
@@ -63,6 +58,6 @@ class DatetimeType extends ScalarType {
 	 * @return int
 	 */
 	private function toTimestamp($value) {
-		return with(new Carbon((string) $value))->getTimestamp();
+		return (new Carbon($value))->toRfc3339String();
 	}
 }
