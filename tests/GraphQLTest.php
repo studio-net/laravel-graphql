@@ -95,7 +95,8 @@ class GraphQLTest extends TestCase {
 
 			$this->assertRegExp(
 				'/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+|-]\d{2}:\d{2}$/',
-				$data['data']['user']['last_login']);
+				$data['data']['user']['last_login']
+			);
 		});
 
 		$this->specify('tests json scalar type', function () {
