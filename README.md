@@ -21,7 +21,7 @@ on the [React](http://facebook.github.io/react) blog or you can read the
 composer require studio-net/laravel-graphql @dev
 ```
 
-If you're not using Laravel 5.5, don't forget to append facade and service
+If you're not using Laravel 5.5>=, don't forget to append facade and service
 provider to you `config/app.php` file. Next, you have to publish vendor.
 
 ```bash
