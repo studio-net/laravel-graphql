@@ -121,8 +121,14 @@ class StoreTransformer extends Transformer {
 					// $relation is reset because findOrNew updates it and where
 					// clauses are stacked.
 					$relation = $model->{$column}();
-					$relation->findOrNew(array_get($value, 'id', null))
-						->fill($value)->save();
+					$entity = $relation->findOrNew(array_get($value, 'id', null));
+					$fill = [];
+					foreach ($value as $key => $field) {
+						if ($entity->isFillable($value)) {
+							$fill[$key] = $value[$key];
+						}
+					}
+					$entity->fill($fill)->save();
 				}
 			}
 		}
