@@ -124,7 +124,7 @@ class StoreTransformer extends Transformer {
 					$entity = $relation->findOrNew(array_get($value, 'id', null));
 					$fill = [];
 					foreach ($value as $key => $field) {
-						if ($entity->isFillable($value)) {
+						if ($entity->isFillable($key)) {
 							$fill[$key] = $value[$key];
 						}
 					}
