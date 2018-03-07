@@ -115,22 +115,36 @@ class StoreTransformer extends Transformer {
 					$values = [$values];
 				}
 
-				// For each relationship, find or new by id and fill with data
-				foreach ($values as $value) {
-					// TODO: refactor
-					// $relation is reset because findOrNew updates it and where
-					// clauses are stacked.
-					$relation = $model->{$column}();
-					$entity = $relation->findOrNew(array_get($value, 'id', null));
-					$fill = [];
+				if ($relationType === Relations\BelongsToMany::class) {
 
-					foreach (array_keys($value) as $key) {
-						if ($entity->isFillable($key)) {
-							$fill[$key] = $value[$key];
+					$toKeep = array_map(function($value) {
+						return array_get($value, 'id', null);
+					}, $values);
+					
+					$relation = $model->{$column}();
+					$relation->sync(array_filter($toKeep, function($value) { 
+						return !is_null($value); 
+					}));
+
+				} else {
+					// For each relationship, find or new by id and fill with data
+					foreach ($values as $value) {
+						// TODO: refactor
+						// $relation is reset because findOrNew updates it and where
+						// clauses are stacked.
+						$relation = $model->{$column}();
+						$entity = $relation->findOrNew(array_get($value, 'id', null));
+						$fill = [];
+
+						foreach (array_keys($value) as $key) {
+							if ($entity->isFillable($key)) {
+								$fill[$key] = $value[$key];
+							}
 						}
+						$entity->fill($fill)->save();
 					}
-					$entity->fill($fill)->save();
 				}
+				
 			}
 		}
 		$model->save();
