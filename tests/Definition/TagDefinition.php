@@ -3,21 +3,21 @@ namespace StudioNet\GraphQL\Tests\Definition;
 
 use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
-use StudioNet\GraphQL\Tests\Entity\Post;
+use StudioNet\GraphQL\Tests\Entity\Tag;
 
 /**
- * Specify post GraphQL definition
+ * Specify tag GraphQL definition
  *
  * @see EloquentDefinition
  */
-class PostDefinition extends EloquentDefinition {
+class TagDefinition extends EloquentDefinition {
 	/**
 	 * {@inheritDoc}
 	 *
 	 * @return string
 	 */
 	public function getName() {
-		return 'Post';
+		return 'Tag';
 	}
 
 	/**
@@ -26,7 +26,7 @@ class PostDefinition extends EloquentDefinition {
 	 * @return string
 	 */
 	public function getDescription() {
-		return 'Represents a Post';
+		return 'Represents a Tag';
 	}
 
 	/**
@@ -35,7 +35,7 @@ class PostDefinition extends EloquentDefinition {
 	 * @return string
 	 */
 	public function getSource() {
-		return Post::class;
+		return Tag::class;
 	}
 
 	/**
@@ -45,10 +45,9 @@ class PostDefinition extends EloquentDefinition {
 	 */
 	public function getFetchable() {
 		return [
-			'id'      => Type::id(),
-			'title'   => Type::string(),
-			'content' => Type::string(),
-			'tags'    => \GraphQL::listOf('tag'),
+			'id'    => Type::id(),
+			'name'  => Type::string(),
+			'posts' => \GraphQL::listOf('post'),
 		];
 	}
 
@@ -59,9 +58,7 @@ class PostDefinition extends EloquentDefinition {
 	 */
 	public function getMutable() {
 		return [
-			'title'   => Type::string(),
-			'content' => Type::string(),
-			'tags'    => Type::listOf(\GraphQL::input('tag'))
+			'name' => Type::string(),
 		];
 	}
 }

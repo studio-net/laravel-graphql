@@ -32,6 +32,7 @@ class GraphQLTest extends TestCase {
 		$graphql = app(GraphQL::class);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('ensure that we can call registered type', function () use ($graphql) {
 			$this->assertInstanceOf(ObjectType::class, $graphql->type('user'));
@@ -55,6 +56,7 @@ class GraphQLTest extends TestCase {
 		$graphql->registerSchema('default', []);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('test querying a single row', function () {
 			$query = 'query { user(id: 1) { name, posts { title } }}';
@@ -88,6 +90,7 @@ class GraphQLTest extends TestCase {
 		$graphql->registerSchema('default', []);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests datetime rfc3339 type', function () {
 			$query = 'query { user(id: 1) { last_login } }';
@@ -123,6 +126,7 @@ class GraphQLTest extends TestCase {
 		]);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests custom query (viewer)', function () {
 			$query = 'query { viewer { id, name }}';
@@ -155,6 +159,7 @@ class GraphQLTest extends TestCase {
 		]);
 		$graphql->registerDefinition(Definition\CamelCaseUserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('test querying a single row with camel case fields', function () {
 			$query = 'query { user(id: 1) { name, isAdmin }}';

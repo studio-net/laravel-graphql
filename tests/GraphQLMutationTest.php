@@ -26,6 +26,7 @@ class GraphQLMutationTest extends TestCase {
 		$graphql->registerSchema('default', []);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests mutation on user', function () {
 			$query = 'mutation { user(id: 1, with: { name: "toto" }) { id, name } }';
@@ -106,6 +107,7 @@ class GraphQLMutationTest extends TestCase {
 		$graphql->registerSchema('default', []);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
@@ -184,6 +186,7 @@ GQL;
 		$graphql->registerSchema('default', []);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
@@ -258,6 +261,7 @@ GQL;
 		$graphql->registerSchema('default', []);
 		$graphql->registerDefinition(Definition\UserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
@@ -317,6 +321,68 @@ GQL;
 
 			$user = Entity\User::first();
 			$this->assertSame('toto', $user->name);
+		});
+	}
+
+	/**
+	 * Test nested add mutation
+	 *
+	 * @return void
+	 */
+	public function testNestedManyToManyEditMutation() {
+		
+		factory(Entity\User::class, 1)->create()->each(function ($user) {
+			$user->posts()->saveMany(factory(Entity\Post::class, 1)->make());
+		});
+
+		factory(Entity\Tag::class, 5)->create();
+
+
+		$post = Entity\Post::first();
+		$tagsIds = [];
+		foreach(Entity\Tag::all() as $tag) {
+			$tagsIds[] = $tag->id;
+		}
+		$post->tags()->sync($tagsIds);
+
+
+		$tagsUpdate = [];
+		$tagsToRetrieve = [];
+		$cnt = 0;
+		foreach (array_slice	($tagsIds, 0, 2) as $id) {
+			$tagUpdate[] = '{id: "' . $id . '"}';
+			$tagsToRetrieve[] = ["id" => (string)$id];
+			$cnt++;
+		}
+		$tagsUpdate = implode(",", $tagUpdate);
+
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->specify('tests nested m:n mutation on post', 
+			function () use ($post, $tagsToRetrieve, $tagsUpdate) {
+			$query = <<<"GQL"
+mutation MutatePost {
+	post(id: {$post->id}, with: { tags: [$tagsUpdate]}) {
+		id,
+		tags {
+			id
+		}
+	}
+}
+GQL;
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'post' => [
+						'id' => (string) $post->id,
+						'tags' => $tagsToRetrieve
+					]
+				]
+			]);
+
 		});
 	}
 }
