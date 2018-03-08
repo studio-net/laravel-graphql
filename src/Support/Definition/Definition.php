@@ -140,6 +140,15 @@ abstract class Definition implements DefinitionInterface {
 	}
 
 	/**
+	 * Assert rights
+	 * 
+	 * @param string $queryType (list|store|drop)
+	 * @param array $data
+	 * @throws Exception
+	 */
+	public function assertAcl($queryType, $data) {}
+
+	/**
 	 * Return cache element
 	 *
 	 * @param  string $name

@@ -73,15 +73,24 @@ abstract class Transformer extends Cachable {
 
 		return function ($root, array $args, $context, ResolveInfo $info) use ($definition, $app) {
 			$fields = $info->getFieldSelection(3);
+			$reflect = new \ReflectionClass($this);
+			$definition->assertAcl(
+				str_replace("transformer", "", strtolower($reflect->getShortName())),
+				[
+					"fields"  => $fields,
+					"context" => $context,
+				]
+			);
+
 			$opts = [
-				'root' => $root,
-				'args' => array_filter($args),
-				'fields' => $fields,
+				'root'    => $root,
+				'args'    => array_filter($args),
+				'fields'  => $fields,
 				'context' => $context,
-				'info' => $info,
-				'with' => $this->guessWithRelations($definition, $fields),
-				'source' => $app->make($definition->getSource()),
-				'rules' => $definition->getRules()
+				'info'    => $info,
+				'with'    => $this->guessWithRelations($definition, $fields),
+				'source'  => $app->make($definition->getSource()),
+				'rules'   => $definition->getRules()
 			];
 
 			return call_user_func_array([$this, 'getResolver'], [$opts]);
