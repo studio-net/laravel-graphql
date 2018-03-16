@@ -79,6 +79,7 @@ abstract class Transformer extends Cachable {
 				[
 					"fields"  => $fields,
 					"context" => $context,
+					"args"    => $args,
 				]
 			);
 
