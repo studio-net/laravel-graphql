@@ -12,5 +12,4 @@ class PostgreSQLGrammar extends Grammar {
 	public function getKey($key) {
 		return $key;
 	}
-
 }

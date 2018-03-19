@@ -330,7 +330,6 @@ GQL;
 	 * @return void
 	 */
 	public function testNestedManyToManyEditMutation() {
-		
 		factory(Entity\User::class, 1)->create()->each(function ($user) {
 			$user->posts()->saveMany(factory(Entity\Post::class, 1)->make());
 		});
@@ -340,7 +339,7 @@ GQL;
 
 		$post = Entity\Post::first();
 		$tagsIds = [];
-		foreach(Entity\Tag::all() as $tag) {
+		foreach (Entity\Tag::all() as $tag) {
 			$tagsIds[] = $tag->id;
 		}
 		$post->tags()->sync($tagsIds);
@@ -349,7 +348,7 @@ GQL;
 		$tagsUpdate = [];
 		$tagsToRetrieve = [];
 		$cnt = 0;
-		foreach (array_slice	($tagsIds, 0, 2) as $id) {
+		foreach (array_slice($tagsIds, 0, 2) as $id) {
 			$tagUpdate[] = '{id: "' . $id . '"}';
 			$tagsToRetrieve[] = ["id" => (string)$id];
 			$cnt++;
@@ -362,9 +361,10 @@ GQL;
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 		$graphql->registerDefinition(Definition\TagDefinition::class);
 
-		$this->specify('tests nested m:n mutation on post', 
+		$this->specify(
+			'tests nested m:n mutation on post',
 			function () use ($post, $tagsToRetrieve, $tagsUpdate) {
-			$query = <<<"GQL"
+				$query = <<<"GQL"
 mutation MutatePost {
 	post(id: {$post->id}, with: { tags: [$tagsUpdate]}) {
 		id,
@@ -374,7 +374,7 @@ mutation MutatePost {
 	}
 }
 GQL;
-			$this->assertGraphQLEquals($query, [
+				$this->assertGraphQLEquals($query, [
 				'data' => [
 					'post' => [
 						'id' => (string) $post->id,
@@ -382,7 +382,7 @@ GQL;
 					]
 				]
 			]);
-
-		});
+			}
+		);
 	}
 }

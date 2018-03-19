@@ -98,7 +98,7 @@ abstract class TestCase extends BaseTestCase {
 	 */
 	public function executeGraphQL($query, array $opts = []) {
 		$opts = $opts + [
-			'schema'    => array_get($opts, 'schema', 'default'),
+			'schema' => array_get($opts, 'schema', 'default'),
 			'variables' => [],
 		];
 

@@ -18,5 +18,4 @@ interface FilterInterface {
 	 * @return void
 	 */
 	public function updateBuilder(Builder $builder, $value, $key);
-
 }

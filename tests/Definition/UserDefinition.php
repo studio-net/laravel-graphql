@@ -78,8 +78,8 @@ class UserDefinition extends EloquentDefinition {
 	 */
 	public function getFilterable() {
 		return [
-			'id'       => new EqualsOrContainsFilter(),
-			"nameLike" => function($builder, $value) {
+			'id' => new EqualsOrContainsFilter(),
+			"nameLike" => function ($builder, $value) {
 				return $builder->whereRaw('name like ?', $value);
 			},
 		];

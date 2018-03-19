@@ -45,8 +45,8 @@ class TagDefinition extends EloquentDefinition {
 	 */
 	public function getFetchable() {
 		return [
-			'id'    => Type::id(),
-			'name'  => Type::string(),
+			'id' => Type::id(),
+			'name' => Type::string(),
 			'posts' => \GraphQL::listOf('post'),
 		];
 	}

@@ -180,7 +180,6 @@ class GraphQLTest extends TestCase {
 	 * Test filters : equality
 	 */
 	public function testFiltersEquality() {
-
 		factory(Entity\User::class, 2)->create();
 
 		$graphql = app(GraphQL::class);
@@ -193,7 +192,9 @@ class GraphQLTest extends TestCase {
 			$query = 'query ($filter: UserFilter) { users(filter: $filter) { name }}';
 			$user = Entity\User::find(1);
 
-			$this->assertGraphQLEquals($query, [
+			$this->assertGraphQLEquals(
+				$query,
+				[
 				'data' => [
 					'users' => [
 						[
@@ -208,16 +209,15 @@ class GraphQLTest extends TestCase {
 						'id' => '1'
 					]
 				]
-			]);
+			]
+			);
 		});
-
 	}
 
 	/**
 	 * Test filters : equality
 	 */
 	public function testFiltersContains() {
-
 		factory(Entity\User::class, 3)->create();
 
 		$graphql = app(GraphQL::class);
@@ -237,18 +237,17 @@ class GraphQLTest extends TestCase {
 				]
 			]);
 
-			$this->assertSame(['1','3'],
-				array_column($res['data']['users'], 'id'));
-
+			$this->assertSame(
+				['1','3'],
+				array_column($res['data']['users'], 'id')
+			);
 		});
-
 	}
 
 	/**
 	 * Test filters : custom
 	 */
 	public function testFiltersCustom() {
-
 		factory(Entity\User::class)->create(['name' => 'foo']);
 		factory(Entity\User::class)->create(['name' => 'bar']);
 		factory(Entity\User::class)->create(['name' => 'baz']);
@@ -272,10 +271,10 @@ class GraphQLTest extends TestCase {
 				]
 			]);
 
-			$this->assertSame(['bar','baz'],
-				array_column($res['data']['users'], 'name'));
-
+			$this->assertSame(
+				['bar','baz'],
+				array_column($res['data']['users'], 'name')
+			);
 		});
-
 	}
 }

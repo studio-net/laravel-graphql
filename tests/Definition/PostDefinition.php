@@ -45,10 +45,10 @@ class PostDefinition extends EloquentDefinition {
 	 */
 	public function getFetchable() {
 		return [
-			'id'      => Type::id(),
-			'title'   => Type::string(),
+			'id' => Type::id(),
+			'title' => Type::string(),
 			'content' => Type::string(),
-			'tags'    => \GraphQL::listOf('tag'),
+			'tags' => \GraphQL::listOf('tag'),
 		];
 	}
 
@@ -59,9 +59,9 @@ class PostDefinition extends EloquentDefinition {
 	 */
 	public function getMutable() {
 		return [
-			'title'   => Type::string(),
+			'title' => Type::string(),
 			'content' => Type::string(),
-			'tags'    => Type::listOf(\GraphQL::input('tag'))
+			'tags' => Type::listOf(\GraphQL::input('tag'))
 		];
 	}
 }

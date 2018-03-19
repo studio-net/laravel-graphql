@@ -73,7 +73,6 @@ class ListTransformer extends Transformer {
 	 * @return InputObjectType
 	 */
 	private function getFilterType(Definition $definition) {
-
 		$queryableFields = [];
 		foreach ($definition->getFilterable() as $field => $filter) {
 			$queryableFields[$field] = [
@@ -83,10 +82,9 @@ class ListTransformer extends Transformer {
 		}
 
 		return new InputObjectType([
-			'name'   => ucfirst($definition->getName()) . 'Filter',
+			'name' => ucfirst($definition->getName()) . 'Filter',
 			'fields' => $queryableFields,
 		]);
-
 	}
 
 	/**
@@ -137,8 +135,10 @@ class ListTransformer extends Transformer {
 	 * @return Builder
 	 */
 	private function resolveFilterArgument(
-		Builder $builder, array $filter, array $filterables) {
-
+		Builder $builder,
+		array $filter,
+		array $filterables
+	) {
 		$driver = \DB::connection()->getDriverName();
 		$grammar = null;
 

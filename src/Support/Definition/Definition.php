@@ -150,12 +150,14 @@ abstract class Definition implements DefinitionInterface {
 
 	/**
 	 * Assert rights
-	 * 
+	 *
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 * @param string $queryType (list|store|drop)
 	 * @param array $data
 	 * @throws Exception
 	 */
-	public function assertAcl($queryType, $data) {}
+	public function assertAcl($queryType, $data) {
+	}
 
 	/**
 	 * Return cache element

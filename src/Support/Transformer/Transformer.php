@@ -77,22 +77,22 @@ abstract class Transformer extends Cachable {
 			$definition->assertAcl(
 				str_replace("transformer", "", strtolower($reflect->getShortName())),
 				[
-					"fields"  => $fields,
+					"fields" => $fields,
 					"context" => $context,
-					"args"    => $args,
-					'info'    => $info,
+					"args" => $args,
+					'info' => $info,
 				]
 			);
 
 			$opts = [
-				'root'    => $root,
-				'args'    => array_filter($args),
-				'fields'  => $fields,
+				'root' => $root,
+				'args' => array_filter($args),
+				'fields' => $fields,
 				'context' => $context,
-				'info'    => $info,
-				'with'    => $this->guessWithRelations($definition, $fields),
-				'source'  => $app->make($definition->getSource()),
-				'rules'   => $definition->getRules(),
+				'info' => $info,
+				'with' => $this->guessWithRelations($definition, $fields),
+				'source' => $app->make($definition->getSource()),
+				'rules' => $definition->getRules(),
 				'filterables' => $definition->getFilterable(),
 			];
 

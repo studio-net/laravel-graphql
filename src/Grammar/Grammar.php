@@ -23,8 +23,8 @@ abstract class Grammar {
 	public function getBuilderForFilter(Builder $builder, $filter, $filterables) {
 		foreach ($filter as $key => $value) {
 			$builder = $this->getBuilder($builder, [
-				'key'    => $key,
-				'value'  => $value,
+				'key' => $key,
+				'value' => $value,
 				'filter' => $filterables[$key] ?? true,
 			]);
 		}
@@ -44,11 +44,9 @@ abstract class Grammar {
 	 * @SuppressWarnings(PHPMD.ExcessiveParameterList)
 	 */
 	private function getBuilder(Builder $builder, $filter, $operator = "AND") {
-
 		$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
 
-		$builder->$whereFunc(function($b) use ($filter) {
-
+		$builder->$whereFunc(function ($b) use ($filter) {
 			if (is_callable($filter['filter'])) {
 				$filter['filter']($b, $filter['value'], $filter['key']);
 				return;
@@ -56,16 +54,17 @@ abstract class Grammar {
 
 			if ($filter['filter'] instanceof FilterInterface) {
 				$filter['filter']->updateBuilder(
-					$b, $filter['value'], $filter['key']);
+					$b,
+					$filter['value'],
+					$filter['key']
+				);
 				return;
 			}
 
 			throw new FilterException("Invalid filter for $filter[key]");
-
 		});
 
 		return $builder;
-
 	}
 
 	/**

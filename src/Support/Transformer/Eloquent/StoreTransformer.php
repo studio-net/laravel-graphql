@@ -116,16 +116,14 @@ class StoreTransformer extends Transformer {
 				}
 
 				if ($relationType === Relations\BelongsToMany::class) {
-
-					$toKeep = array_map(function($value) {
+					$toKeep = array_map(function ($value) {
 						return array_get($value, 'id', null);
 					}, $values);
 					
 					$relation = $model->{$column}();
-					$relation->sync(array_filter($toKeep, function($value) { 
-						return !is_null($value); 
+					$relation->sync(array_filter($toKeep, function ($value) {
+						return !is_null($value);
 					}));
-
 				} else {
 					// For each relationship, find or new by id and fill with data
 					foreach ($values as $value) {
@@ -144,7 +142,6 @@ class StoreTransformer extends Transformer {
 						$entity->fill($fill)->save();
 					}
 				}
-				
 			}
 		}
 		$model->save();

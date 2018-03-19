@@ -28,11 +28,10 @@ class Post extends Model {
 	 */
 	public function tags() {
 		return $this->belongsToMany(
-			Tag::class, 
+			Tag::class,
 			'tag_post',
 			'post_id',
 			'tag_id'
-		);	
+		);
 	}
-
 }
