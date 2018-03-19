@@ -98,10 +98,14 @@ abstract class TestCase extends BaseTestCase {
 	 */
 	public function executeGraphQL($query, array $opts = []) {
 		$opts = $opts + [
-			'schema' => array_get($opts, 'schema', 'default')
+			'schema'    => array_get($opts, 'schema', 'default'),
+			'variables' => [],
 		];
-		
-		return app(GraphQL::class)->execute($query, [], $opts);
+
+		$variables = $opts['variables'];
+		unset($opts['variables']);
+
+		return app(GraphQL::class)->execute($query, $variables, $opts);
 	}
 
 	/**

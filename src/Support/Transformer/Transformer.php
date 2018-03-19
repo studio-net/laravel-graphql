@@ -92,7 +92,8 @@ abstract class Transformer extends Cachable {
 				'info'    => $info,
 				'with'    => $this->guessWithRelations($definition, $fields),
 				'source'  => $app->make($definition->getSource()),
-				'rules'   => $definition->getRules()
+				'rules'   => $definition->getRules(),
+				'filterables' => $definition->getFilterable(),
 			];
 
 			return call_user_func_array([$this, 'getResolver'], [$opts]);

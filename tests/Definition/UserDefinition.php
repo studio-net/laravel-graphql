@@ -4,6 +4,7 @@ namespace StudioNet\GraphQL\Tests\Definition;
 use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
 use StudioNet\GraphQL\Tests\Entity\User;
+use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
 
 /**
  * Specify user GraphQL definition
@@ -67,6 +68,20 @@ class UserDefinition extends EloquentDefinition {
 			'permissions' => Type::json(),
 			'password' => Type::string(),
 			'posts' => Type::listOf(\GraphQL::input('post'))
+		];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return array
+	 */
+	public function getFilterable() {
+		return [
+			'id'       => new EqualsOrContainsFilter(),
+			"nameLike" => function($builder, $value) {
+				return $builder->whereRaw('name like ?', $value);
+			},
 		];
 	}
 

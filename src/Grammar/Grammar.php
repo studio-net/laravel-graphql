@@ -2,6 +2,8 @@
 namespace StudioNet\GraphQL\Grammar;
 
 use Illuminate\Database\Eloquent\Builder;
+use StudioNet\GraphQL\Filter\FilterInterface;
+use StudioNet\GraphQL\Exception\FilterException;
 
 /**
  * Decode filter grammar.
@@ -11,34 +13,20 @@ abstract class Grammar {
 	const VALUE = '/^(\(.*\))?(\s+)?(?<value>(.*))$/';
 
 	/**
-	 * Return SQL operator for given string operator
-	 *
-	 * @param  string|null $operator
-	 * @param  string $value
-	 * @return string
-	 */
-	public function getOperator($operator, $value) {
-		switch ($operator) {
-			case 'lte': $operator = '<=' ; break;
-			case 'lt': $operator = '<'  ; break;
-			case 'gt': $operator = '>'  ; break;
-			case 'gte': $operator = '>=' ; break;
-			default: $operator = (strpos($value, '%') !== false) ? 'like' : '='; break;
-		}
-
-		return $operator;
-	}
-
-	/**
 	 * Return affected builder for given filter
 	 *
 	 * @param  Builder $builder
 	 * @param  array $filter
+	 * @param  array $filterables
 	 * @return Builder
 	 */
-	public function getBuilderForFilter(Builder $builder, $filter) {
+	public function getBuilderForFilter(Builder $builder, $filter, $filterables) {
 		foreach ($filter as $key => $value) {
-			$builder = $this->getBuilder($builder, $key, $value);
+			$builder = $this->getBuilder($builder, [
+				'key'    => $key,
+				'value'  => $value,
+				'filter' => $filterables[$key] ?? true,
+			]);
 		}
 
 		return $builder;
@@ -55,25 +43,29 @@ abstract class Grammar {
 	 * @return Builder
 	 * @SuppressWarnings(PHPMD.ExcessiveParameterList)
 	 */
-	private function getBuilder(Builder $builder, $key, $value, $operator = "AND") {
-		if (is_array($value)) {
-			$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
+	private function getBuilder(Builder $builder, $filter, $operator = "AND") {
 
-			$builder->$whereFunc(function ($query) use ($value, $operator, $key) {
-				foreach ($value as $command => $v) {
-					$command = (strtolower($command) === 'or') ? "OR" : $operator;
-					$query = $this->getBuilder($query, $key, $v, $command);
-				}
-			});
-		} else {
-			$comparator = $this->getOperator($this->getMatch(self::OPERATOR, $value), $value);
-			$value = $this->getMatch(self::VALUE, $value);
-			$whereFunc = strtolower($operator) === 'or' ? "orWhereRaw": "whereRaw";
+		$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
 
-			$builder->$whereFunc("{$this->getKey($key)} {$comparator} ?", [$value]);
-		}
+		$builder->$whereFunc(function($b) use ($filter) {
+
+			if (is_callable($filter['filter'])) {
+				$filter['filter']($b, $filter['value'], $filter['key']);
+				return;
+			}
+
+			if ($filter['filter'] instanceof FilterInterface) {
+				$filter['filter']->updateBuilder(
+					$b, $filter['value'], $filter['key']);
+				return;
+			}
+
+			throw new FilterException("Invalid filter for $filter[key]");
+
+		});
 
 		return $builder;
+
 	}
 
 	/**

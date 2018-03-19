@@ -48,6 +48,7 @@ namespace App\GraphQL\Definition;
 
 use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
+use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
 use App\User;
 
 /**
@@ -99,6 +100,20 @@ class UserDefinition extends EloquentDefinition {
 
 			// Relationship between user and posts
 			'posts'       => \GraphQL::listOf('post')
+		];
+	}
+
+	/**
+	 * Which fields are filterable ? And how ?
+	 *
+	 * @return array
+	 */
+	public function getFilterable() {
+		return [
+			'id'       => new EqualsOrContainsFilter(),
+			"nameLike" => function($builder, $value) {
+				return $builder->whereRaw('name like ?', $value),
+			},
 		];
 	}
 
@@ -315,56 +330,62 @@ query {
 
 #### Using filters
 
-In order to use operator, you can refer to example below. Otherwise, this is the
-default syntax to use : `(operator) text`, excepting for `%` and `=` that
-doesn't need to handle an operator case, just the string within like `studio-net`
-will produce `= studio-net` and `studio-net%` will produce `ilike 'studio-net%'`.
+When declaring the `getFilterable` array, you can define filters for fields.
 
-| Operator | PostgreSQL | MySQL                          |
-| -------- | ---------- | ------------------------------ |
-| lt       | `<`        | `<`                            |
-| lte      | `<=`       | `<=`                           |
-| gt       | `>`        | `>`                            |
-| gte      | `>=`       | `>=`                           |
-| %        | `ilike`    | `like` (but process a `lower`) |
-| =        | `=`        | `=`                            |
+You can either use a closure, or give class implementing FilterInterface.
 
-By default, the `AND` operator will be used until find `or` array key. All
-elements in `or` key will be considered as `OR`.
+The closure (or the `FilterInterface::updateBuilder` method) is then called
+with:
 
+* $builder : the current laravel query builder
+* $value : the filter value
+* $key : the filter key
+
+You can use the predefined `EqualsOrContainsFilter` like below.
+
+```php
+	public function getFilterable() {
+		return [
+			// Simple equality check (or "in" if value is an array)
+			'id'       => new EqualsOrContainsFilter(),
+			// Customized filter
+			"nameLike" => function($builder, $value) {
+				return $builder->whereRaw('name like ?', $value);
+			},
+		];
+	}
 ```
-[
-	'field' => [
-		'or' => [
-			'toto',
-			'tata',
 
-			'and' => [
-				'%lolo',
-				'lala%'
-			]
-		]
-	]
-]
-
-'field' = ('toto' OR 'tata' OR ('%lolo' AND 'lala%'))
-```
 
 ```graphql
 query {
-	users (take: 2, filter: {"first_name": ["%Targaryen"], "id": {"or" : ["(gt) 5", "1"]}}) {
+	users (take: 2, filter: {"id", "1"}) {
 		id
-		first_name
-		last_name
-
-		posts (take: 5) {
-			id
-			title
-			content
-		}
+		name
 	}
 }
 ```
+This will execute a query : `WHERE id = 1`
+
+```graphql
+query {
+	users (take: 2, filter: {"id", ["1,2"]}) {
+		id
+		name
+	}
+}
+```
+This will execute a query : `WHERE id in (1,2)`
+
+```graphql
+query {
+	users (take: 2, filter: {"nameLike", "%santiago%"}) {
+		id
+		name
+	}
+}
+```
+This will execute a query : `WHERE name like '%santiago%'`
 
 #### Mutation
 

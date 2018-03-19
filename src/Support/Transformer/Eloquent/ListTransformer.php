@@ -73,23 +73,20 @@ class ListTransformer extends Transformer {
 	 * @return InputObjectType
 	 */
 	private function getFilterType(Definition $definition) {
-		// TODO We have to manage this case
-		$fields = array_filter($definition->getFetchable(), function ($field) {
-			return !is_array($field) or array_get($field, 'inputable', false);
-		});
+
+		$queryableFields = [];
+		foreach ($definition->getFilterable() as $field => $filter) {
+			$queryableFields[$field] = [
+				"type" => Type::json(),
+				"filter" => $filter,
+			];
+		}
 
 		return new InputObjectType([
-			'name' => sprintf('%sFilter', ucfirst($definition->getName())),
-			'fields' => array_map(function ($field) {
-				if (is_array($field)) {
-					$field['type'] = Type::json();
-				} else {
-					$field = Type::json();
-				}
-
-				return $field;
-			}, $fields)
+			'name'   => ucfirst($definition->getName()) . 'Filter',
+			'fields' => $queryableFields,
 		]);
+
 	}
 
 	/**
@@ -105,13 +102,27 @@ class ListTransformer extends Transformer {
 		// Parse each arguments in order to affect the query builder
 		foreach ($opts['args'] as $key => $value) {
 			switch ($key) {
-			case 'after': $builder->where($primary, '>', $value)         ; break;
-			case 'before': $builder->where($primary, '<', $value)         ; break;
-			case 'skip': $builder->skip($value)                         ; break;
-			case 'take': $builder->take($value)                         ; break;
-			case 'trashed': $builder->withTrashed()                        ; break;
-			case 'only_trashed': $builder->onlyTrashed()                        ; break;
-			case 'filter': $this->resolveFilterArgument($builder, $value) ; break;
+			case 'after':
+				$builder->where($primary, '>', $value);
+				break;
+			case 'before':
+				$builder->where($primary, '<', $value);
+				break;
+			case 'skip':
+				$builder->skip($value);
+				break;
+			case 'take':
+				$builder->take($value);
+				break;
+			case 'trashed':
+				$builder->withTrashed();
+				break;
+			case 'only_trashed':
+				$builder->onlyTrashed();
+				break;
+			case 'filter':
+				$this->resolveFilterArgument($builder, $value, $opts['filterables']);
+				break;
 			}
 		}
 
@@ -125,13 +136,16 @@ class ListTransformer extends Transformer {
 	 * @param  array $filter
 	 * @return Builder
 	 */
-	private function resolveFilterArgument(Builder $builder, array $filter) {
+	private function resolveFilterArgument(
+		Builder $builder, array $filter, array $filterables) {
+
 		$driver = \DB::connection()->getDriverName();
 		$grammar = null;
 
 		switch ($driver) {
 			case 'pgsql': $grammar = new Grammar\PostgreSQLGrammar ; break;
 			case 'mysql': $grammar = new Grammar\MySQLGrammar      ; break;
+			case 'sqlite': $grammar = new Grammar\SqliteGrammar    ; break;
 		}
 
 		// Assert that grammar exists
@@ -139,6 +153,6 @@ class ListTransformer extends Transformer {
 			throw new \BadMethodCallException("{$driver} driver is not managed");
 		}
 
-		return $grammar->getBuilderForFilter($builder, $filter);
+		return $grammar->getBuilderForFilter($builder, $filter, $filterables);
 	}
 }

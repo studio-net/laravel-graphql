@@ -45,6 +45,15 @@ abstract class Definition implements DefinitionInterface {
 	}
 
 	/**
+	 * Return filterable fields
+	 *
+	 * @return array
+	 */
+	public function getFilterable() {
+		return [];
+	}
+
+	/**
 	 * Return mutation fields rules
 	 *
 	 * @return array

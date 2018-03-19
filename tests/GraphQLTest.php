@@ -175,4 +175,107 @@ class GraphQLTest extends TestCase {
 			]);
 		});
 	}
+
+	/**
+	 * Test filters : equality
+	 */
+	public function testFiltersEquality() {
+
+		factory(Entity\User::class, 2)->create();
+
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->specify('test equality filtering', function () {
+			$query = 'query ($filter: UserFilter) { users(filter: $filter) { name }}';
+			$user = Entity\User::find(1);
+
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'users' => [
+						[
+							'name' => $user->name
+						]
+					]
+				]
+			],
+			[
+				'variables' => [
+					'filter' => [
+						'id' => '1'
+					]
+				]
+			]);
+		});
+
+	}
+
+	/**
+	 * Test filters : equality
+	 */
+	public function testFiltersContains() {
+
+		factory(Entity\User::class, 3)->create();
+
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->specify('test equality containing', function () {
+			$query = 'query ($filter: UserFilter) { users(filter: $filter) { id }}';
+
+			$res = $this->executeGraphQL($query, [
+				'variables' => [
+					'filter' => [
+						'id' => ['1','3']
+					]
+				]
+			]);
+
+			$this->assertSame(['1','3'],
+				array_column($res['data']['users'], 'id'));
+
+		});
+
+	}
+
+	/**
+	 * Test filters : custom
+	 */
+	public function testFiltersCustom() {
+
+		factory(Entity\User::class)->create(['name' => 'foo']);
+		factory(Entity\User::class)->create(['name' => 'bar']);
+		factory(Entity\User::class)->create(['name' => 'baz']);
+		factory(Entity\User::class)->create(['name' => 'foobar']);
+
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->specify('test equality custom', function () {
+			// We should only get users which name starts with 'ba'
+			$query = 'query ($filter: UserFilter) { users(filter: $filter) { name }}';
+
+			$res = $this->executeGraphQL($query, [
+				'variables' => [
+					'filter' => [
+						'nameLike' => 'ba%'
+					]
+				]
+			]);
+
+			$this->assertSame(['bar','baz'],
+				array_column($res['data']['users'], 'name'));
+
+		});
+
+	}
 }

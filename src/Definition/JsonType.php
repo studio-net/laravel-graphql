@@ -23,7 +23,7 @@ class JsonType extends ScalarType {
 	 * @return array
 	 */
 	public function serialize($value) {
-		return (array) $value;
+		return $value;
 	}
 
 	/**
@@ -33,7 +33,7 @@ class JsonType extends ScalarType {
 	 * @return array|null
 	 */
 	public function parseValue($value) {
-		return (is_array($value)) ? $value : null;
+		return $value;
 	}
 
 	/**
