@@ -5,6 +5,7 @@ use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
 use StudioNet\GraphQL\Tests\Entity\User;
 use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Specify user GraphQL definition
@@ -67,7 +68,8 @@ class UserDefinition extends EloquentDefinition {
 			'is_admin' => Type::bool(),
 			'permissions' => Type::json(),
 			'password' => Type::string(),
-			'posts' => Type::listOf(\GraphQL::input('post'))
+			'posts' => Type::listOf(\GraphQL::input('post')),
+			'name_uppercase' => Type::string(),
 		];
 	}
 
@@ -95,4 +97,28 @@ class UserDefinition extends EloquentDefinition {
 			'name' => 'between:3,10'
 		];
 	}
+
+	/**
+	 * Custom input field for name_uppercase
+	 *
+	 * @param Model $model
+	 * @param string $value
+	 */
+	public function inputNameUppercaseField(Model $model, $value) {
+
+		// Executed before save
+		$model->name = mb_strtoupper($value);
+
+		return [
+			'saved' => function() use ($model, $value) {
+				// Executed after save
+				if ($value == 'badvalue') {
+					throw new \Exception("it's a bad value");
+				}
+				$model->name .= ' !';
+			}
+		];
+
+	}
+
 }
