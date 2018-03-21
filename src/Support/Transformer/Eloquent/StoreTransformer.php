@@ -87,7 +87,7 @@ class StoreTransformer extends Transformer {
 				// it can be problematic because empty top level fields are emptied.
 				continue;
 			}
-			
+
 			$relation = $model->{$column}();
 
 			// If we are on a hasOne or belongsTo relationship, we have to
@@ -97,12 +97,12 @@ class StoreTransformer extends Transformer {
 			$relationType = get_class($relation);
 			if (in_array($relationType, [Relations\HasOne::class, Relations\BelongsTo::class])) {
 				$dep = $relation->getRelated()->findOrNew(array_get($values, 'id', null));
-				
+
 				if (empty($dep->id)) {
 					$dep = $relation->firstOrNew([]);
 				}
 				$dep->fill($values)->save();
-				
+
 				switch ($relationType) {
 					case Relations\BelongsTo::class:
 						$relation->associate($dep);
@@ -110,6 +110,25 @@ class StoreTransformer extends Transformer {
 					default:
 						$relation->save($dep);
 				}
+			} else if ($relationType === Relations\MorphTo::class) {
+				$id = array_get($values, 'id', null);
+				$type = array_get($values, '__typename', null);
+
+				if (is_null($type)) {
+					throw new Exception(
+						"Can't update polymorphic relation without specify type");
+				}
+
+				// TODO: maybe there is a smarter way to guess type
+				$className = '\App\\' . $type;
+				if (!class_exists($className)) {
+					throw new Exception("Unknown $className type");
+				}
+
+				$dep = $className::findOrNew($id);
+				$dep->fill($values)->save();
+				$relation->associate($dep);
+
 			} else {
 				if (!is_array(array_first($values))) {
 					$values = [$values];
@@ -119,7 +138,7 @@ class StoreTransformer extends Transformer {
 					$toKeep = array_map(function ($value) {
 						return array_get($value, 'id', null);
 					}, $values);
-					
+
 					$relation = $model->{$column}();
 					$relation->sync(array_filter($toKeep, function ($value) {
 						return !is_null($value);
