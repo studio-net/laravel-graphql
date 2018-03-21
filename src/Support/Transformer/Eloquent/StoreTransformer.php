@@ -72,15 +72,48 @@ class StoreTransformer extends Transformer {
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
 	public function getResolver(array $opts) {
+
+		// Create or update model by ID
 		$model = $opts['source']->findOrNew(array_get($opts['args'], 'id', 0));
-		$data = array_filter($opts['args']['with'], function ($value, $key) use ($model) {
-			return !((is_array($value) or is_null($value)) and method_exists($model, $key));
-		}, ARRAY_FILTER_USE_BOTH);
+
+		$relationInput = [];
+		$savedCallbacks = [];
+
+		// Filter input 'with', excluding some specific fields
+		$data = [];
+		foreach ($opts['args']['with'] as $inputKey => $inputValue) {
+			// If the model has a method with the same name, and the input value is
+			// an array, we'll manage it as a relation, later.
+			if (method_exists($model, $inputKey)) {
+				if (is_array($inputValue) or is_null($inputValue)) {
+					$relationInput[$inputKey] = $inputValue;
+					continue;
+				}
+			}
+
+			// If the definition has an "inputFooBarField" method, use it.
+			$callBackResult = $this->applyInputCallback(
+				$opts['definition'], $model, $inputKey, $inputValue);
+
+			// The callback returned an array, check for "saved"
+			if ($callBackResult !== false) {
+				if (is_array($callBackResult)) {
+					if (isset($callBackResult['saved'])) {
+						$savedCallbacks[] = $callBackResult['saved'];
+					}
+				}
+				// And ignore this field, it's managed by the call back.
+				continue;
+			}
+
+			// Simple Model mapping.
+			$data[$inputKey] = $inputValue;
+		}
 
 		$this->validate($data, $opts['rules']);
 		$model->fill($data);
 
-		foreach (array_diff_key($opts['args']['with'], $data) as $column => $values) {
+		foreach ($relationInput as $column => $values) {
 			if (empty($values)) {
 				// TODO: check if it's pertinent
 				// empty values are ignored because, currently, nothing is deleted through nested update
@@ -163,8 +196,32 @@ class StoreTransformer extends Transformer {
 				}
 			}
 		}
+
 		$model->save();
 
+		// Apply post-save callBacks
+		foreach ($savedCallbacks as $callBack) {
+			call_user_func($callBack);
+		}
+
 		return $model;
+
 	}
+
+
+	private function applyInputCallback($definition, $model, $inputKey, $inputValue) {
+
+		$methodName = sprintf('input%sField', ucfirst(camel_case($inputKey)));
+		$callBack = [$definition, $methodName];
+
+		if (!is_callable($callBack)) {
+			return false;
+		}
+
+		$result = call_user_func_array($callBack, [$model, $inputValue]);
+
+		return $result;
+
+	}
+
 }

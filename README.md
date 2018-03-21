@@ -419,6 +419,67 @@ mutation {
 }
 ```
 
+#### Mutation: custom input fields
+
+You can specify a "mutable" field which is not in the Eloquent Model, and define
+a custom method to it.
+
+For a field named `foo_bar`, the method has to be named `inputFooBarField`, and
+it has the Eloquent Model and the user input value as arguments.
+
+Exemple (in `Definition`) :
+
+```php
+	use Illuminate\Database\Eloquent\Model;
+
+	/* ... */
+
+	public function getMutable() {
+		return [
+			'id' => Type::id(),
+			'name' => Type::string(),
+			// ...
+			// Define a custom input field, which will uppercase the value
+			'name_uppercase' => Type::string(),
+		];
+	}
+
+	/* ... */
+
+	/**
+	 * Custom input field for name_uppercase
+	 *
+	 * @param Model $model
+	 * @param string $value
+	 */
+	public function inputNameUppercaseField(Model $model, $value) {
+		$model->name = mb_strtoupper($value);
+	}
+```
+
+The input method is executed before the model is saved.
+
+You can return an array with a "saved" callback, which will be executed
+post-save (which can be useful for eloquent relational models) :
+
+```php
+	/**
+	 * Custom input field for name_uppercase
+	 *
+	 * @param Model $model
+	 * @param string $value
+	 */
+	public function inputNameUppercaseField(Model $model, $value) {
+		$model->name = mb_strtoupper($value);
+
+		return [
+			'saved' => function() use ($model, $value) {
+				// Executed after save
+			}
+		];
+	}
+```
+
 ## Contribution
 
 If you want participate to the project, thank you ! In order to work properly,

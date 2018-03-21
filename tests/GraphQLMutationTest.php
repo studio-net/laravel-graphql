@@ -385,4 +385,70 @@ GQL;
 			}
 		);
 	}
+
+	/**
+	 * Test mutation with custom input field
+	 *
+	 * @return void
+	 */
+	public function testMutationCustomInputField() {
+
+		factory(Entity\User::class, 1)->create();
+		
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->specify('tests custom input field on user', function () {
+			$query = 'mutation { user(id: 1, with: {'
+				. ' name_uppercase: "foobar" }) { id, name } }';
+
+			// The "presave" and "postsave" should be applied,
+			// so 'foobar' => 'FOOBAR' => 'FOOBAR !'
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'user' => [
+						'id' => '1',
+						'name' => 'FOOBAR !',
+					]
+				]
+			]);
+
+			// But only the "presave" should appear in the DB, so, 'FOOBAR'
+			$user = Entity\User::first();
+			$this->assertSame('FOOBAR', $user->name);
+		});
+
+	}
+
+	/**
+	 * Test mutation with custom input field, throwing exception in post save
+	 *
+	 * @return void
+	 */
+	public function testMutationCustomInputFieldException() {
+
+		factory(Entity\User::class, 1)->create();
+		
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', []);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->specify('tests custom input field on user, with error', function () {
+
+			$query = 'mutation { user(id: 1, with: {'
+				. ' name_uppercase: "badvalue" }) { id, name } }';
+
+			$data = $this->executeGraphQL($query);
+
+			$this->assertSame("it's a bad value", $data['errors'][0]['message']);
+
+		});
+
+	}
+
 }
