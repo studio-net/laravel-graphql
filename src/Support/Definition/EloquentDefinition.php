@@ -55,6 +55,12 @@ abstract class EloquentDefinition extends Definition {
 				'inputable' => false,
 				'resolve' => function ($root) { return $root->trashed(); }
 			];
+			$fields['deleted_at'] = [
+				'type' => Type::datetime(),
+				'description' => 'When was model deleted',
+				'inputable' => false,
+				'resolve' => function ($root) { return $root->deleted_at; }
+			];
 		}
 
 		return $fields;
