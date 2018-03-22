@@ -110,7 +110,7 @@ class UserDefinition extends EloquentDefinition {
 		$model->name = mb_strtoupper($value);
 
 		return [
-			'saved' => function() use ($model, $value) {
+			'saved' => function () use ($model, $value) {
 				// Executed after save
 				if ($value == 'badvalue') {
 					throw new \Exception("it's a bad value");
@@ -118,7 +118,5 @@ class UserDefinition extends EloquentDefinition {
 				$model->name .= ' !';
 			}
 		];
-
 	}
-
 }

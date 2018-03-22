@@ -5,6 +5,7 @@ use StudioNet\GraphQL\Support\Transformer\Transformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
 use Illuminate\Database\Eloquent\Relations;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use StudioNet\GraphQL\Error\ValidationError;
 
@@ -68,6 +69,7 @@ class StoreTransformer extends Transformer {
 	/**
 	 * Return fetchable node resolver
 	 *
+	 * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
 	 * @param  array $opts
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
@@ -93,7 +95,11 @@ class StoreTransformer extends Transformer {
 
 			// If the definition has an "inputFooBarField" method, use it.
 			$callBackResult = $this->applyInputCallback(
-				$opts['definition'], $model, $inputKey, $inputValue);
+				$opts['definition'],
+				$model,
+				$inputKey,
+				$inputValue
+			);
 
 			// The callback returned an array, check for "saved"
 			if ($callBackResult !== false) {
@@ -205,12 +211,25 @@ class StoreTransformer extends Transformer {
 		}
 
 		return $model;
-
 	}
 
 
+	/**
+	 * Applies the custom input callback, if it exists.
+	 *
+	 * Returns either:
+	 * - false (if no callback exists)
+	 * - the result of the callback (which could be an array)
+	 *
+	 * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+	 *
+	 * @param Definition $definition
+	 * @param Model $model
+	 * @param String $inputKey
+	 * @param mixed $inputValue
+	 * @return mixed
+	 */
 	private function applyInputCallback($definition, $model, $inputKey, $inputValue) {
-
 		$methodName = sprintf('input%sField', ucfirst(camel_case($inputKey)));
 		$callBack = [$definition, $methodName];
 
@@ -221,7 +240,5 @@ class StoreTransformer extends Transformer {
 		$result = call_user_func_array($callBack, [$model, $inputValue]);
 
 		return $result;
-
 	}
-
 }
