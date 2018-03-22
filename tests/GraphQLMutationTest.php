@@ -392,7 +392,6 @@ GQL;
 	 * @return void
 	 */
 	public function testMutationCustomInputField() {
-
 		factory(Entity\User::class, 1)->create();
 		
 		$graphql = app(GraphQL::class);
@@ -420,7 +419,6 @@ GQL;
 			$user = Entity\User::first();
 			$this->assertSame('FOOBAR', $user->name);
 		});
-
 	}
 
 	/**
@@ -429,7 +427,6 @@ GQL;
 	 * @return void
 	 */
 	public function testMutationCustomInputFieldException() {
-
 		factory(Entity\User::class, 1)->create();
 		
 		$graphql = app(GraphQL::class);
@@ -439,16 +436,12 @@ GQL;
 		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests custom input field on user, with error', function () {
-
 			$query = 'mutation { user(id: 1, with: {'
 				. ' name_uppercase: "badvalue" }) { id, name } }';
 
 			$data = $this->executeGraphQL($query);
 
 			$this->assertSame("it's a bad value", $data['errors'][0]['message']);
-
 		});
-
 	}
-
 }

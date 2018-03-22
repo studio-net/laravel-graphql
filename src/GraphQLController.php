@@ -47,7 +47,6 @@ class GraphQLController extends Controller {
 			else {
 				$data = $this->executeQuery($schema, $inputs);
 			}
-
 		} catch (\Exception $exception) {
 			$data['errors'] = $exception->getMessage();
 			Log::debug($exception);
