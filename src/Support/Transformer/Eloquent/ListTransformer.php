@@ -62,6 +62,10 @@ class ListTransformer extends Transformer {
 			'filter' => [
 				'type' => $this->getFilterType($definition),
 				'description' => 'Performs search'
+			],
+			'order_by' => [
+				'type' => Type::listOf(Type::string()),
+				'description' => 'Ordering results',
 			]
 		];
 	}
@@ -121,10 +125,31 @@ class ListTransformer extends Transformer {
 			case 'filter':
 				$this->resolveFilterArgument($builder, $value, $opts['filterables']);
 				break;
+			case 'order_by':
+				$this->applyOrderBy($builder, $value);
+				break;
 			}
 		}
 
 		return $builder->get();
+	}
+
+	/**
+	 * Apply the order_by argument
+	 *
+	 * @param Builder $builder
+	 * @param mixed $value
+	 */
+	private function applyOrderBy(Builder $builder, $values) {
+		foreach ($values as $orderToken) {
+			$order     = $orderToken;
+			$direction = 'ASC';
+			if (preg_match('/^(.*)_(asc|desc)$/i', $orderToken, $matches)) {
+				$order     = $matches[1];
+				$direction = strtoupper($matches[2]);
+			}
+			$builder->orderBy($order, $direction);
+		}
 	}
 
 	/**

@@ -387,6 +387,52 @@ query {
 ```
 This will execute a query : `WHERE name like '%santiago%'`
 
+#### Ordering (`order_by`), limit (`take`), offset (`skip`)
+
+You can specify the order of the results (which calls Eloquent's `orderBy`) with
+the `order_by` argument (which is a `String[]`).
+
+```graphql
+query {
+	users (order_by: ["name"]) { id, name }
+}
+```
+
+You can specify a direction by appending `asc` (which is the default) or `desc`
+to the order field :
+
+```graphql
+query {
+	users (order_by: ["name_desc"]) { id, name }
+}
+```
+
+You can specify multiple `order_by` :
+
+```graphql
+query {
+	users (order_by: ["name_asc", "email_desc"]) { id, name }
+}
+```
+
+You can limit the number of results with `take` (`Int`) :
+
+```graphql
+query {
+	users (order_by: ["name"], take: 5) { id, name }
+}
+```
+
+You can skip some results with `skip` (`Int`) :
+
+```graphql
+query {
+	users (order_by: ["name"], take: 5, skip: 10) { id, name }
+}
+```
+
+
+
 #### Mutation
 
 ```graphql
