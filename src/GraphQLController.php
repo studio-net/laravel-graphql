@@ -48,19 +48,25 @@ class GraphQLController extends Controller {
 				$data = $this->executeQuery($schema, $inputs);
 			}
 
-			// If everything is okay, just commit the transaction
-			DB::commit();
 		} catch (\Exception $exception) {
 			$data['errors'] = $exception->getMessage();
+			Log::debug($exception);
+		}
 
+		$hasError = array_key_exists('errors', $data);
+
+		if ($hasError) {
 			// Rollback transaction is any error occurred
 			DB::rollBack();
-			Log::debug($exception);
+			$status = 500;
+		} else {
+			// If everything is okay, just commit the transaction
+			DB::commit();
+			$status = 200;
 		}
 
 		$headers = config('graphql.response.headers', []);
 		$options = config('graphql.response.json_encoding_options', 0);
-		$status = (array_key_exists('errors', $data)) ? 500 : 200;
 
 		return Response::json($data, $status, $headers, $options);
 	}
