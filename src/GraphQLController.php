@@ -57,17 +57,15 @@ class GraphQLController extends Controller {
 		if ($hasError) {
 			// Rollback transaction is any error occurred
 			DB::rollBack();
-			$status = 500;
 		} else {
 			// If everything is okay, just commit the transaction
 			DB::commit();
-			$status = 200;
 		}
 
 		$headers = config('graphql.response.headers', []);
 		$options = config('graphql.response.json_encoding_options', 0);
 
-		return Response::json($data, $status, $headers, $options);
+		return Response::json($data, 200, $headers, $options);
 	}
 
 	/**
