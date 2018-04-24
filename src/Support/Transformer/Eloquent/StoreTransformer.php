@@ -118,7 +118,7 @@ class StoreTransformer extends Transformer {
 
 		$this->validate($data, $opts['rules']);
 		$model->fill($data);
-
+		$syncLater = [];
 		foreach ($relationInput as $column => $values) {
 			if (empty($values)) {
 				// TODO: check if it's pertinent
@@ -179,9 +179,14 @@ class StoreTransformer extends Transformer {
 					}, $values);
 
 					$relation = $model->{$column}();
-					$relation->sync(array_filter($toKeep, function ($value) {
-						return !is_null($value);
-					}));
+					// Do the sync after model save, 'coz if model doesn't exist
+					// in DB yet, it will result with a NOT NULL error in pivot table
+					$syncLater[] = [
+						"relation" => $relation,
+						"values"   => array_filter($toKeep, function ($value) {
+							return !is_null($value);
+						})
+					];
 				} else {
 					// For each relationship, find or new by id and fill with data
 					foreach ($values as $value) {
@@ -204,6 +209,11 @@ class StoreTransformer extends Transformer {
 		}
 
 		$model->save();
+
+		// Sync relations which need to be synced after save
+		foreach ($syncLater as $sync) {
+			$sync["relation"]->sync($sync["values"]);
+		}
 
 		// Apply post-save callBacks
 		foreach ($savedCallbacks as $callBack) {
