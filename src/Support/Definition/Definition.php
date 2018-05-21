@@ -108,7 +108,7 @@ abstract class Definition implements DefinitionInterface {
 				'name' => sprintf('%sInput', ucfirst($this->getName())),
 				'fields' => function () {
 					return array_merge([
-						'id'         => Type::id(),
+						'id' => Type::id(),
 						'__typename' => Type::string(),
 					], $this->getMutable());
 				}

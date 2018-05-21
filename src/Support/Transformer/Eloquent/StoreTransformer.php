@@ -149,25 +149,25 @@ class StoreTransformer extends Transformer {
 					default:
 						$relation->save($dep);
 				}
-			} else if ($relationType === Relations\MorphTo::class) {
+			} elseif ($relationType === Relations\MorphTo::class) {
 				$id = array_get($values, 'id', null);
 				$type = array_get($values, '__typename', null);
 
 				if (is_null($type)) {
-					throw new Exception(
-						"Can't update polymorphic relation without specify type");
+					throw new \Exception(
+						"Can't update polymorphic relation without specify type"
+					);
 				}
 
 				// TODO: maybe there is a smarter way to guess type
 				$className = '\App\\' . $type;
 				if (!class_exists($className)) {
-					throw new Exception("Unknown $className type");
+					throw new \Exception("Unknown $className type");
 				}
 
 				$dep = $className::findOrNew($id);
 				$dep->fill($values)->save();
 				$relation->associate($dep);
-
 			} else {
 				if (!is_array(array_first($values))) {
 					$values = [$values];
@@ -183,7 +183,7 @@ class StoreTransformer extends Transformer {
 					// in DB yet, it will result with a NOT NULL error in pivot table
 					$syncLater[] = [
 						"relation" => $relation,
-						"values"   => array_filter($toKeep, function ($value) {
+						"values" => array_filter($toKeep, function ($value) {
 							return !is_null($value);
 						})
 					];
