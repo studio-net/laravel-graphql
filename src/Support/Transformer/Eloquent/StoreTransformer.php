@@ -183,7 +183,7 @@ class StoreTransformer extends Transformer {
 					// in DB yet, it will result with a NOT NULL error in pivot table
 					$syncLater[] = [
 						"relation" => $relation,
-						"values"   => array_filter($toKeep, function ($value) {
+						"values" => array_filter($toKeep, function ($value) {
 							return !is_null($value);
 						})
 					];

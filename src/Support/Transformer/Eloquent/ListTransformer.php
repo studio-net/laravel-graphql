@@ -142,10 +142,10 @@ class ListTransformer extends Transformer {
 	 */
 	private function applyOrderBy(Builder $builder, $values) {
 		foreach ($values as $orderToken) {
-			$order     = $orderToken;
+			$order = $orderToken;
 			$direction = 'ASC';
 			if (preg_match('/^(.*)_(asc|desc)$/i', $orderToken, $matches)) {
-				$order     = $matches[1];
+				$order = $matches[1];
 				$direction = strtoupper($matches[2]);
 			}
 			$builder->orderBy($order, $direction);
