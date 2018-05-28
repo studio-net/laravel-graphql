@@ -360,8 +360,10 @@ You can use the predefined `EqualsOrContainsFilter` like below.
 ```graphql
 query {
 	users (take: 2, filter: {"id", "1"}) {
-		id
-		name
+		items {
+			id
+			name
+		}
 	}
 }
 ```
@@ -370,8 +372,10 @@ This will execute a query : `WHERE id = 1`
 ```graphql
 query {
 	users (take: 2, filter: {"id", ["1,2"]}) {
-		id
-		name
+		items {
+			id
+			name
+		}
 	}
 }
 ```
@@ -380,21 +384,23 @@ This will execute a query : `WHERE id in (1,2)`
 ```graphql
 query {
 	users (take: 2, filter: {"nameLike", "%santiago%"}) {
-		id
-		name
+		items {
+			id
+			name
+		}
 	}
 }
 ```
 This will execute a query : `WHERE name like '%santiago%'`
 
-#### Ordering (`order_by`), limit (`take`), offset (`skip`)
+#### Ordering (`order_by`)
 
 You can specify the order of the results (which calls Eloquent's `orderBy`) with
 the `order_by` argument (which is a `String[]`).
 
 ```graphql
 query {
-	users (order_by: ["name"]) { id, name }
+	users (order_by: ["name"]) { items { id, name } }
 }
 ```
 
@@ -403,7 +409,7 @@ to the order field :
 
 ```graphql
 query {
-	users (order_by: ["name_desc"]) { id, name }
+	users (order_by: ["name_desc"]) { items { id, name } }
 }
 ```
 
@@ -411,15 +417,17 @@ You can specify multiple `order_by` :
 
 ```graphql
 query {
-	users (order_by: ["name_asc", "email_desc"]) { id, name }
+	users (order_by: ["name_asc", "email_desc"]) { items { id, name } }
 }
 ```
+
+#### Pagination : limit (`take`), offset (`skip`)
 
 You can limit the number of results with `take` (`Int`) :
 
 ```graphql
 query {
-	users (order_by: ["name"], take: 5) { id, name }
+	users (order_by: ["name"], take: 5) { items { id, name } }
 }
 ```
 
@@ -427,11 +435,37 @@ You can skip some results with `skip` (`Int`) :
 
 ```graphql
 query {
-	users (order_by: ["name"], take: 5, skip: 10) { id, name }
+	users (order_by: ["name"], take: 5, skip: 10) { items { id, name } }
 }
 ```
 
+You can get useful pagination information :
 
+```graphql
+query {
+	users (order_by: ["name"], take: 5, skip: 10) {
+		pagination {
+			totalCount
+			page
+			numPages
+			hasNextPage
+			hasPreviousPage
+		}
+		items {
+			id
+			name
+		}
+	}
+}
+```
+
+Where :
+
+* `totalCount` is the total number of results
+* `page` is the current page (based on `take` which is used as the page size)
+* `numPages` is the total number of pages
+* `hasNextPage`, true if there is a next page
+* `hasPreviousPage`, true if there is a previous page
 
 #### Mutation
 
