@@ -10,11 +10,15 @@ use GraphQL\Type\Definition\Type as GraphQLType;
  * @abstract
  */
 abstract class Type extends GraphQLType {
+
 	/** ARRAY */
 	const JSON = 'Json';
 
 	/** DATETIME */
 	const DATETIME = 'Datetime';
+
+	/** PAGINATION */
+	const PAGINATION = 'Pagination';
 
 	/** @var array $cache */
 	protected static $cache = null;
@@ -52,6 +56,15 @@ abstract class Type extends GraphQLType {
 	}
 
 	/**
+	 * Return pagination type
+	 *
+	 * @return PaginationType
+	 */
+	public static function pagination() {
+		return self::getCache(self::PAGINATION);
+	}
+
+	/**
 	 * Alias of `boolean`
 	 *
 	 * @return \GraphQL\Type\Definition\BooleanType
@@ -71,9 +84,11 @@ abstract class Type extends GraphQLType {
 			self::$cache = [
 				self::JSON => new JsonType,
 				self::DATETIME => new DatetimeType,
+				self::PAGINATION => new PaginationType,
 			];
 		}
 
 		return ($name) ? self::$cache[$name] : self::$cache;
 	}
+
 }

@@ -6,12 +6,14 @@ use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Grammar;
 use Illuminate\Database\Eloquent\Builder;
 use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\ObjectType;
 use StudioNet\GraphQL\Definition\Type;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Transform a Definition into query listing
  *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @see Transformer
  */
 class ListTransformer extends Transformer {
@@ -32,7 +34,16 @@ class ListTransformer extends Transformer {
 	 * @return \GraphQL\Type\Definition\ListOfType
 	 */
 	public function resolveType(Definition $definition) {
-		return Type::listOf($definition->resolveType());
+
+		return new ObjectType([
+			'name' => $this->getName($definition) . 'Items',
+			'description' => "Items",
+			'fields' => [
+				'items' => Type::listOf($definition->resolveType()),
+				'pagination' => Type::pagination(),
+			],
+		]);
+
 	}
 
 	/**
@@ -102,6 +113,28 @@ class ListTransformer extends Transformer {
 		$primary = $opts['source']->getKeyName();
 
 		// Parse each arguments in order to affect the query builder
+		// (Before count)
+		foreach ($opts['args'] as $key => $value) {
+			switch ($key) {
+			case 'trashed':
+				$builder->withTrashed();
+				break;
+			case 'only_trashed':
+				$builder->onlyTrashed();
+				break;
+			case 'filter':
+				$this->resolveFilterArgument($builder, $value, $opts['filterables']);
+				break;
+			}
+		}
+
+		// Save the builder before adding pagination arguments
+		$countBuilder = clone($builder);
+
+		$take = null;
+		$skip = null;
+
+		// Parse each arguments in order to affect the query builder (paginate)
 		foreach ($opts['args'] as $key => $value) {
 			switch ($key) {
 			case 'after':
@@ -112,18 +145,11 @@ class ListTransformer extends Transformer {
 				break;
 			case 'skip':
 				$builder->skip($value);
+				$skip = $value;
 				break;
 			case 'take':
 				$builder->take($value);
-				break;
-			case 'trashed':
-				$builder->withTrashed();
-				break;
-			case 'only_trashed':
-				$builder->onlyTrashed();
-				break;
-			case 'filter':
-				$this->resolveFilterArgument($builder, $value, $opts['filterables']);
+				$take = $value;
 				break;
 			case 'order_by':
 				$this->applyOrderBy($builder, $value);
@@ -131,7 +157,31 @@ class ListTransformer extends Transformer {
 			}
 		}
 
-		return $builder->get();
+
+		// Wrap pagination in a closure, so that it's evaluated only if requested
+		$pagination = function() use ($countBuilder, $skip, $take) {
+			$totalCount = $countBuilder->count();
+			$res = [
+				'totalCount' => $totalCount,
+				'page' => 0,
+				'numPages' => 0,
+				'hasNextPage' => false,
+				'hasPreviousPage' => false,
+			];
+			if (!empty($take)) {
+				$res['page'] = ceil($skip / $take);
+				$res['numPages'] = ceil($totalCount / $take);
+				$res['hasNextPage'] = $res['page'] < $res['numPages'];
+				$res['hasPreviousPage'] = $res['page'] > 0;
+			}
+			return $res;
+		};
+
+		return [
+			'items' => $builder->get(),
+			'pagination' => $pagination,
+		];
+
 	}
 
 	/**
