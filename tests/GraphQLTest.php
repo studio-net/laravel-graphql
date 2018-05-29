@@ -189,7 +189,15 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('test equality filtering', function () {
-			$query = 'query ($filter: UserFilter) { users(filter: $filter) { name }}';
+			$query = <<<'EOGQL'
+query ($filter: UserFilter) {
+	users(filter: $filter) {
+		items {
+			name
+		}
+	}
+}
+EOGQL;
 			$user = Entity\User::find(1);
 
 			$this->assertGraphQLEquals(
@@ -197,8 +205,10 @@ class GraphQLTest extends TestCase {
 				[
 				'data' => [
 					'users' => [
-						[
-							'name' => $user->name
+						'items' => [
+							[
+								'name' => $user->name
+							]
 						]
 					]
 				]
@@ -227,7 +237,13 @@ class GraphQLTest extends TestCase {
 		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('test equality containing', function () {
-			$query = 'query ($filter: UserFilter) { users(filter: $filter) { id }}';
+			$query = <<<'EOGQL'
+query ($filter: UserFilter) {
+	users(filter: $filter) {
+		items { id }
+	}
+}
+EOGQL;
 
 			$res = $this->executeGraphQL($query, [
 				'variables' => [
@@ -239,7 +255,7 @@ class GraphQLTest extends TestCase {
 
 			$this->assertSame(
 				['1','3'],
-				array_column($res['data']['users'], 'id')
+				array_column($res['data']['users']['items'], 'id')
 			);
 		});
 	}
@@ -261,7 +277,15 @@ class GraphQLTest extends TestCase {
 
 		$this->specify('test equality custom', function () {
 			// We should only get users which name starts with 'ba'
-			$query = 'query ($filter: UserFilter) { users(filter: $filter) { name }}';
+			$query = <<<'EOGQL'
+query ($filter: UserFilter) {
+	users(filter: $filter) {
+		items {
+				name
+		}
+	}
+}
+EOGQL;
 
 			$res = $this->executeGraphQL($query, [
 				'variables' => [
@@ -273,7 +297,7 @@ class GraphQLTest extends TestCase {
 
 			$this->assertSame(
 				['bar','baz'],
-				array_column($res['data']['users'], 'name')
+				array_column($res['data']['users']['items'], 'name')
 			);
 		});
 	}
