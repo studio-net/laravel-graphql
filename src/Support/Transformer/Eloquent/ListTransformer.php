@@ -169,7 +169,7 @@ class ListTransformer extends Transformer {
 			if (!empty($take)) {
 				$res['page'] = ceil($skip / $take);
 				$res['numPages'] = ceil($totalCount / $take);
-				$res['hasNextPage'] = $res['page'] < $res['numPages'];
+				$res['hasNextPage'] = $res['page'] < $res['numPages'] - 1;
 				$res['hasPreviousPage'] = $res['page'] > 0;
 			}
 			return $res;
