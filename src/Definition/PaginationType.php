@@ -12,7 +12,6 @@ class PaginationType extends ObjectType {
 	 * Constructor
 	 */
 	public function __construct() {
-
 		parent::__construct([
 			'name' => 'Pagination',
 			'description' => "Pagination Informations",
@@ -39,7 +38,5 @@ class PaginationType extends ObjectType {
 				],
 			]
 		]);
-
 	}
-
 }

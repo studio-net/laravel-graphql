@@ -34,7 +34,6 @@ class ListTransformer extends Transformer {
 	 * @return \GraphQL\Type\Definition\ListOfType
 	 */
 	public function resolveType(Definition $definition) {
-
 		return new ObjectType([
 			'name' => $this->getName($definition) . 'Items',
 			'description' => "Items",
@@ -43,7 +42,6 @@ class ListTransformer extends Transformer {
 				'pagination' => Type::pagination(),
 			],
 		]);
-
 	}
 
 	/**
@@ -159,7 +157,7 @@ class ListTransformer extends Transformer {
 
 
 		// Wrap pagination in a closure, so that it's evaluated only if requested
-		$pagination = function() use ($countBuilder, $skip, $take) {
+		$pagination = function () use ($countBuilder, $skip, $take) {
 			$totalCount = $countBuilder->count();
 			$res = [
 				'totalCount' => $totalCount,
@@ -181,7 +179,6 @@ class ListTransformer extends Transformer {
 			'items' => $builder->get(),
 			'pagination' => $pagination,
 		];
-
 	}
 
 	/**

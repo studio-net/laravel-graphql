@@ -90,5 +90,4 @@ abstract class Type extends GraphQLType {
 
 		return ($name) ? self::$cache[$name] : self::$cache;
 	}
-
 }
