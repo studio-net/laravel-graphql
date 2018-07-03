@@ -24,9 +24,7 @@ jobs :
             - composer global require hirak/prestissimo --update-no-dev
             - composer require phpmd/phpmd --no-update --prefer-dist
             - composer require phpstan/phpstan --no-update --prefer-dist
-            - composer require friendsofphp/php-cs-fixer --no-update --prefer-dist
           script :
               - vendor/bin/phpmd src text phpmd.xml
               - vendor/bin/phpmd tests text phpmd.xml
               - vendor/bin/phpstan analyse --autoload-file=_ide_helper.php --level 1 src
-              - vendor/bin/php-cs-fixer fix -v --dry-run --stop-on-violation --using-cache=no
