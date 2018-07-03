@@ -1,6 +1,7 @@
 <?php
 namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,6 +33,26 @@ class ListTransformer extends EloquentTransformer {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
+	 * @param  Definition $definition
+	 * @return array
+	 */
+	public function getArguments(Definition $definition): array {
+		$args = parent::getArguments($definition);
+		$traits = class_uses($definition->getSource());
+
+		if (in_array(SoftDeletes::class, $traits)) {
+			$args = $args + [
+				'only_trashed' => ['type' => Type::bool(), 'description' => 'Show only deleted'],
+				'trashed' => ['type' => Type::bool(), 'description' => 'Show deleted'],
+			];
+		}
+
+		return $args;
+	}
+
+	/**
 	 * {@overide}
 	 *
 	 * @param  Definition $definition
@@ -56,6 +77,7 @@ class ListTransformer extends EloquentTransformer {
 	 * @return \Illuminate\Database\Eloquent\Collection
 	 */
 	protected function then(Builder $builder, array $opts) {
+		$builder = $this->manageBuilderArguments($builder, $opts['args']);
 		$query = $builder->getQuery();
 
 		// Wrap pagination in a closure, so that it's evaluated only if requested
@@ -84,5 +106,24 @@ class ListTransformer extends EloquentTransformer {
 			'items' => $builder->get(),
 			'pagination' => $pagination,
 		];
+	}
+
+	/**
+	 * manageBuilderArguments
+	 *
+	 * @param  Builder $builder
+	 * @param  array $opts
+	 * @return Builder
+	 */
+	protected function manageBuilderArguments(Builder $builder, array $args) {
+		if (array_key_exists('only_trashed', $args)) {
+			$builder->withTrashed();
+		}
+
+		if (array_key_exists('trashed', $args)) {
+			$builder->onlyTrashed();
+		}
+
+		return $builder;
 	}
 }
