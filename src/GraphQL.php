@@ -171,6 +171,7 @@ class GraphQL {
 	 */
 	private function manageQuery(array $queries) {
 		$data = [];
+		$transformers = config('graphql.transformers.query', ['list', 'view']);
 
 		foreach ($queries as $query) {
 			$query = $this->make($query);
@@ -180,7 +181,7 @@ class GraphQL {
 
 		return new ObjectType([
 			'name' => 'Query',
-			'fields' => $this->applyTransformers(['list', 'view'], $data)
+			'fields' => $this->applyTransformers($transformers, $data)
 		]);
 	}
 
@@ -192,6 +193,7 @@ class GraphQL {
 	 */
 	private function manageMutation(array $mutations) {
 		$data = [];
+		$transformers = config('graphql.transformers.mutation', ['store', 'drop', 'batch', 'restore']);
 
 		foreach ($mutations as $mutation) {
 			$mutation = $this->make($mutation);
@@ -201,7 +203,7 @@ class GraphQL {
 
 		return new ObjectType([
 			'name' => 'Mutation',
-			'fields' => $this->applyTransformers(['store', 'drop', 'batch', 'restore'], $data)
+			'fields' => $this->applyTransformers($transformers, $data)
 		]);
 	}
 

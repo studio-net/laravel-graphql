@@ -17,6 +17,12 @@ return [
 		]
 	],
 
+	// Define list of availabled transformers
+	'transformers' => [
+		'query' => ['list', 'view'],
+		'mutation' => ['store', 'drop', 'batch', 'restore']
+	],
+
 	// Type configuration. You can append any data : a transformer will handle
 	// them (if exists). Order matter
 	'definitions' => [
