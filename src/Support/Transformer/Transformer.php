@@ -79,6 +79,7 @@ abstract class Transformer extends Cachable {
 				'fields' => $fields,
 				'context' => $context,
 				'info' => $info,
+				'transformer' => $this,
 				'with' => $this->guessWithRelations($definition, $fields),
 				'source' => $app->make($definition->getSource()),
 				'rules' => $definition->getRules(),
