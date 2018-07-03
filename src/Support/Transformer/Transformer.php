@@ -162,6 +162,7 @@ abstract class Transformer extends Cachable {
 	 * @return array
 	 */
 	public function getPipes(Definition $definition) {
-		return array_get($definition->getPipes(), $this->getTransformerName(), []);
+		$pipes = $definition->getPipes();
+		return array_get($pipes, 'all', []) + array_get($pipes, $this->getTransformerName(), []);
 	}
 }
