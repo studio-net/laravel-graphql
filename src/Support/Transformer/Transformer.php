@@ -91,6 +91,14 @@ abstract class Transformer extends Cachable {
 	}
 
 	/**
+	 * Returns resolver
+	 *
+	 * @param  array $opts
+	 * @return mixed
+	 */
+	abstract protected function getResolver(array $opts);
+
+	/**
 	 * Return relationship based on entity definition construction
 	 *
 	 * @param  Definition $definition

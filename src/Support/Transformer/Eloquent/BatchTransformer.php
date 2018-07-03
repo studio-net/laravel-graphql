@@ -10,6 +10,7 @@ use StudioNet\GraphQL\Definition\Type;
  * Transform a Definition into create/update many mutation
  *
  * @see Transformer
+ * @deprecated This class should not be used anymore. Prefer use batch queries
  */
 class BatchTransformer extends Transformer {
 	/**

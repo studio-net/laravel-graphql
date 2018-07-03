@@ -1,17 +1,17 @@
 <?php
 namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
-use StudioNet\GraphQL\Support\Transformer\Transformer;
+use Illuminate\Database\Eloquent\Builder;
+use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Transform a Definition into query view
  *
  * @see Transformer
  */
-class ViewTransformer extends Transformer {
+class ViewTransformer extends EloquentTransformer {
 	/**
 	 * Return query name
 	 *
@@ -24,13 +24,21 @@ class ViewTransformer extends Transformer {
 
 	/**
 	 * {@inheritDoc}
+	 * @return string
+	 */
+	public function getTransformerName(): string {
+		return 'view';
+	}
+
+	/**
+	 * {@inheritDoc}
 	 *
 	 * @param  Definition $definition
 	 * @return array
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function getArguments(Definition $definition) {
-		return [
+		return parent::getArguments($definition) + [
 			'id' => ['type' => Type::nonNull(Type::id()), 'description' => 'Primary key lookup'],
 		];
 	}
@@ -48,16 +56,18 @@ class ViewTransformer extends Transformer {
 	/**
 	 * Return fetchable node resolver
 	 *
+	 * @param  Builder $builder
 	 * @param  array $opts
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function getResolver(array $opts) {
-		$builder = $opts['source']->newQuery()->with($opts['with']);
+	public function then(Builder $builder, array $opts) {
+		$builder = $builder->with($opts['with']);
 
+		// Appends trashed on `SoftDeletes` source traits
 		if (in_array(SoftDeletes::class, class_uses($opts['source']))) {
-			$builder = $builder->withTrashed();
+			$builder->withTrashed();
 		}
 
-		return $builder->findOrFail(array_get($opts['args'], 'id', 0));
+		return $builder->findOrFail(array_get($opts['args'], 'id'));
 	}
 }
