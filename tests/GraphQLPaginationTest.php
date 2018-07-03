@@ -99,7 +99,7 @@ EOGQL;
 					'hasNextPage' => true,
 					'hasPreviousPage' => true,
 				], $res['data']['users']['pagination']);
-			
+
 			// Page 2
 			$opts['variables']['skip'] = 4;
 			$res = $this->executeGraphQL($query, $opts);

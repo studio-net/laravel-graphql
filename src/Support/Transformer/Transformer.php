@@ -73,18 +73,7 @@ abstract class Transformer extends Cachable {
 
 		return function ($root, array $args, $context, ResolveInfo $info) use ($definition, $app) {
 			$fields = $info->getFieldSelection(3);
-			$reflect = new \ReflectionClass($this);
-			$definition->assertAcl(
-				str_replace("transformer", "", strtolower($reflect->getShortName())),
-				[
-					"fields" => $fields,
-					"context" => $context,
-					"args" => $args,
-					'info' => $info,
-				]
-			);
-
-			$opts = [
+			$opts   = [
 				'root' => $root,
 				'args' => array_filter($args),
 				'fields' => $fields,
@@ -134,6 +123,36 @@ abstract class Transformer extends Cachable {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function getArguments(Definition $definition) {
-		return [];
+		$pipes = $this->getPipes($definition);
+		$args = [];
+
+		foreach ($pipes as $pipe) {
+			$pipe = $this->app->make($pipe);
+
+			if ($pipe instanceof \StudioNet\GraphQL\Support\Pipe\Argumentable) {
+				$args = array_merge($args, $pipe->getArguments($definition));
+			}
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Returns transformer list
+	 *
+	 * @return string
+	 */
+	public function getTransformerName(): string {
+		return 'list';
+	}
+
+	/**
+	 * Returns definition pipes for given transformer name
+	 *
+	 * @param  Definition $definition
+	 * @return array
+	 */
+	public function getPipes(Definition $definition) {
+		return array_get($definition->getPipes(), $this->getTransformerName(), []);
 	}
 }
