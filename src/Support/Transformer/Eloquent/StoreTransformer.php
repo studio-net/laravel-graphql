@@ -13,6 +13,7 @@ use StudioNet\GraphQL\Error\ValidationError;
 /**
  * Transform a Definition into create/update mutation
  *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @see EloquentTransformer
  */
 class StoreTransformer extends EloquentTransformer {
@@ -81,6 +82,7 @@ class StoreTransformer extends EloquentTransformer {
 	 *
 	 * @param  array $opts
 	 * @return \Illuminate\Database\Eloquent\Model
+	 * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
 	 */
 	protected function getResolver(array $opts) {
 		$model = parent::getResolver($opts);

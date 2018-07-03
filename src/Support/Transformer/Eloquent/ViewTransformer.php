@@ -2,6 +2,7 @@
 namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
