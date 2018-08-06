@@ -1,8 +1,8 @@
 <?php
+
 namespace StudioNet\GraphQL\Support\Transformer;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -126,9 +126,13 @@ abstract class Transformer extends Cachable {
 		foreach ($fields as $key => $field) {
 			if (is_array($field) && method_exists($model, $key)) {
 				// get relation name and store it
-				/** @var BelongsToMany $relation */
 				$relation = call_user_func([$model, $key]);
-				$relationNameToStore = $parentRelation ? "{$parentRelation}.{$relation->getRelationName()}" : $relation->getRelationName();
+				if (method_exists($relation, 'getRelationName')) {
+					$relationName = $relation->getRelationName();
+				} else {
+					$relationName = explode('.', $relation->getQualifiedForeignKeyName())[0];
+				}
+				$relationNameToStore = $parentRelation ? "{$parentRelation}.{$relationName}" : $relationName;
 				$relations[] = $relationNameToStore;
 				// also guess relations for found relation
 				$relations = array_merge($relations, $this->guessWithRelations($relation->getModel(), $field, $relationNameToStore));
