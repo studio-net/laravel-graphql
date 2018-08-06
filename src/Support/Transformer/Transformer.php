@@ -75,8 +75,11 @@ abstract class Transformer extends Cachable {
 		return function ($root, array $args, $context, ResolveInfo $info) use ($definition, $app) {
 			$reflect = new \ReflectionClass($this);
 
-			$isListTransformer = $reflect->getShortName() === "ListTransformer";
-			$fieldsDepth = $isListTransformer ? 4 : 3; // may be increase depth?
+			// check, if Paginable interface was implemented by given Transformer
+			// Paginable interface has an extra wrapper for data-fields
+			$isPaginable = $this instanceof Paginable;
+
+			$fieldsDepth = $isPaginable ? 4 : 3; // may be increase depth?
 			$fields = $info->getFieldSelection($fieldsDepth);
 
 			$definition->assertAcl(
@@ -89,7 +92,7 @@ abstract class Transformer extends Cachable {
 				]
 			);
 
-			$fieldsForGuessingRelations = $isListTransformer ? $fields['items'] : $fields;
+			$fieldsForGuessingRelations = $isPaginable ? $fields['items'] : $fields;
 
 			$opts = [
 				'root' => $root,
