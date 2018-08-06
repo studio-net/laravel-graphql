@@ -1,6 +1,7 @@
 <?php
 namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
+use StudioNet\GraphQL\Support\Transformer\Paginable;
 use StudioNet\GraphQL\Support\Transformer\Transformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Grammar;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @see Transformer
  */
-class ListTransformer extends Transformer {
+class ListTransformer extends Transformer implements Paginable {
 	/**
 	 * Return query name
 	 *
