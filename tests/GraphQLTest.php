@@ -3,7 +3,6 @@ namespace StudioNet\GraphQL\Tests;
 
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type as GraphQLType;
 use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
 use StudioNet\GraphQL\Tests\GraphQL\Query\Viewer;
