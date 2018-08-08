@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Label extends Model
 {
+	public $timestamps = false;
+
 	public function posts()
 	{
 		return $this->morphedByMany(Post::class, 'labelable');

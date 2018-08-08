@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Phone extends Model
 {
+	public $timestamps = false;
+
 	/**
 	 * Get the user that owns the phone.
 	 *

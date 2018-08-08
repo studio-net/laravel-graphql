@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Country extends Model
 {
+	public $timestamps = false;
+
 	/**
 	 * Get all of the posts for the country.
 	 *

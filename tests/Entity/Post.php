@@ -18,7 +18,7 @@ class Post extends Model {
 	 * @return \Illuminate\Database\Eloquent\Relations\Relation
 	 */
 	public function author() {
-		return $this->belongsTo(User::class);
+		return $this->belongsTo(User::class, 'user_id');
 	}
 
 	/**
