@@ -48,6 +48,7 @@ class PostDefinition extends EloquentDefinition {
 			'id' => Type::id(),
 			'title' => Type::string(),
 			'content' => Type::string(),
+			'author' => \GraphQL::type('user'),
 			'tags' => \GraphQL::listOf('tag'),
 			'comments' => \GraphQL::listOf('comment'),
 			'labels' => \GraphQL::listOf('label')
