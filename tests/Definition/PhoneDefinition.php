@@ -76,5 +76,4 @@ class PhoneDefinition extends EloquentDefinition {
 			'id' => new EqualsOrContainsFilter()
 		];
 	}
-
 }

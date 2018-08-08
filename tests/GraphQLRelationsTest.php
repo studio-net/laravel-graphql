@@ -12,15 +12,13 @@ use StudioNet\GraphQL\Tests\Entity;
  *
  * @see TestCase
  */
-class GraphQLRelationsTest extends TestCase
-{
+class GraphQLRelationsTest extends TestCase {
 	/**
 	 * Test 1-1 Relation
 	 *
 	 * @return void
 	 */
-	public function testOneToOneRelation()
-	{
+	public function testOneToOneRelation() {
 		factory(Entity\User::class, 5)->create()->each(function ($user) {
 			$user->phone()->save(factory(Entity\Phone::class)->make());
 		});
@@ -56,8 +54,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testOneToOneRelationInverse()
-	{
+	public function testOneToOneRelationInverse() {
 		factory(Entity\User::class, 5)->create()->each(function ($user) {
 			$user->phone()->save(factory(Entity\Phone::class)->make());
 		});
@@ -94,8 +91,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testOneToManyRelation()
-	{
+	public function testOneToManyRelation() {
 		factory(Entity\User::class, 5)->create()->each(function ($user) {
 			$user->posts()->saveMany(factory(Entity\Post::class, 5)->make());
 		});
@@ -132,8 +128,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testOneToManyRelationInverse()
-	{
+	public function testOneToManyRelationInverse() {
 		factory(Entity\User::class, 5)->create()->each(function ($user) {
 			$user->posts()->saveMany(factory(Entity\Post::class, 5)->make());
 		});
@@ -170,8 +165,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testHasManyThroughRelation()
-	{
+	public function testHasManyThroughRelation() {
 		factory(Entity\Country::class, 2)->create()->each(function ($country) {
 			factory(Entity\User::class, 2)->create([
 				'country_id' => $country->id
@@ -213,8 +207,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testPolymorphicOneToOneRelation()
-	{
+	public function testPolymorphicOneToOneRelation() {
 		factory(Entity\User::class, 5)->create()->each(function ($user) {
 			$user->comments()->saveMany(factory(Entity\Comment::class, 5)->make());
 		});
@@ -250,8 +243,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testPolymorphicManyToManyRelation()
-	{
+	public function testPolymorphicManyToManyRelation() {
 		factory(Entity\User::class, 5)->create()->each(function ($user) {
 			$user->labels()->saveMany(factory(Entity\Label::class, 5)->make());
 		});
@@ -287,8 +279,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testPolymorphicManyToManyRelationInverse()
-	{
+	public function testPolymorphicManyToManyRelationInverse() {
 		factory(Entity\User::class, 4)->create()->each(function ($user) {
 			$user->labels()->saveMany(factory(Entity\Label::class, 3)->make());
 			factory(Entity\Post::class, 2)->create([
@@ -330,8 +321,7 @@ class GraphQLRelationsTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testDeepRelations()
-	{
+	public function testDeepRelations() {
 		factory(Entity\Country::class, 2)->create()->each(function ($country) {
 			factory(Entity\User::class, 2)->create([
 				'country_id' => $country->id
@@ -395,8 +385,7 @@ class GraphQLRelationsTest extends TestCase
 	}
 
 
-	private function removeTimeElementFromQueryLog(array $queryLog)
-	{
+	private function removeTimeElementFromQueryLog(array $queryLog) {
 		foreach ($queryLog as &$item) {
 			unset($item['time']);
 		}

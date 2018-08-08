@@ -75,5 +75,4 @@ class LabelDefinition extends EloquentDefinition {
 			'id' => new EqualsOrContainsFilter()
 		];
 	}
-
 }

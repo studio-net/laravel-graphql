@@ -8,15 +8,13 @@ use Illuminate\Database\Schema\Blueprint;
  *
  * @see Migration
  */
-class CreateCommentsTable extends Migration
-{
+class CreateCommentsTable extends Migration {
 	/**
 	 * Run the migrations.
 	 *
 	 * @return void
 	 */
-	public function up()
-	{
+	public function up() {
 		Schema::create('comments', function (Blueprint $table) {
 			$table->increments('id');
 			$table->text('body');
@@ -31,8 +29,7 @@ class CreateCommentsTable extends Migration
 	 *
 	 * @return void
 	 */
-	public function down()
-	{
+	public function down() {
 		Schema::drop('comments');
 	}
 }

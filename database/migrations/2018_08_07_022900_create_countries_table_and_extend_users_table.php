@@ -8,15 +8,13 @@ use Illuminate\Database\Schema\Blueprint;
  *
  * @see Migration
  */
-class CreateCountriesTableAndExtendUsersTable extends Migration
-{
+class CreateCountriesTableAndExtendUsersTable extends Migration {
 	/**
 	 * Run the migrations.
 	 *
 	 * @return void
 	 */
-	public function up()
-	{
+	public function up() {
 		Schema::create('countries', function (Blueprint $table) {
 			$table->increments('id');
 			$table->string('name');
@@ -32,8 +30,7 @@ class CreateCountriesTableAndExtendUsersTable extends Migration
 	 *
 	 * @return void
 	 */
-	public function down()
-	{
+	public function down() {
 		Schema::table('users', function (Blueprint $table) {
 			$table->dropColumn('country_id');
 		});

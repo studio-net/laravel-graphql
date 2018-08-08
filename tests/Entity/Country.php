@@ -5,8 +5,7 @@ namespace StudioNet\GraphQL\Tests\Entity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
-class Country extends Model
-{
+class Country extends Model {
 	public $timestamps = false;
 
 	/**
@@ -14,8 +13,7 @@ class Country extends Model
 	 *
 	 * @return HasManyThrough
 	 */
-	public function posts()
-	{
+	public function posts() {
 		return $this->hasManyThrough(Post::class, User::class);
 	}
 }

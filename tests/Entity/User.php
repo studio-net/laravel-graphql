@@ -42,8 +42,7 @@ class User extends Model {
 	 *
 	 * @return HasOne
 	 */
-	public function phone()
-	{
+	public function phone() {
 		return $this->hasOne(Phone::class);
 	}
 

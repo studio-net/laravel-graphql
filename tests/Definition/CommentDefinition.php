@@ -74,5 +74,4 @@ class CommentDefinition extends EloquentDefinition {
 			'id' => new EqualsOrContainsFilter()
 		];
 	}
-
 }

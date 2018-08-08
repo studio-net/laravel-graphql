@@ -8,15 +8,13 @@ use Illuminate\Database\Schema\Blueprint;
  *
  * @see Migration
  */
-class CreateLabelsAndLabelablesTables extends Migration
-{
+class CreateLabelsAndLabelablesTables extends Migration {
 	/**
 	 * Run the migrations.
 	 *
 	 * @return void
 	 */
-	public function up()
-	{
+	public function up() {
 		Schema::create('labels', function (Blueprint $table) {
 			$table->increments('id');
 			$table->text('name');
@@ -33,8 +31,7 @@ class CreateLabelsAndLabelablesTables extends Migration
 	 *
 	 * @return void
 	 */
-	public function down()
-	{
+	public function down() {
 		Schema::drop('labelables');
 		Schema::drop('labels');
 	}

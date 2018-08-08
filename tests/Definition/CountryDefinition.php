@@ -74,5 +74,4 @@ class CountryDefinition extends EloquentDefinition {
 			'id' => new EqualsOrContainsFilter()
 		];
 	}
-
 }
