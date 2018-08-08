@@ -138,4 +138,21 @@ abstract class TestCase extends BaseTestCase {
 		$graphql->registerDefinition(Definition\CommentDefinition::class);
 		$graphql->registerDefinition(Definition\LabelDefinition::class);
 	}
+
+	/**
+	 * Register all definitions for tests
+	 *
+	 * @param array $registerSchemaOptions Used as second parameter for $graphql->registerSchema()
+	 */
+	public function registerAllDefinitionsCamelCase($registerSchemaOptions = []) {
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', $registerSchemaOptions);
+		$graphql->registerDefinition(Definition\CamelCaseUserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$graphql->registerDefinition(Definition\PhoneDefinition::class);
+		$graphql->registerDefinition(Definition\CountryDefinition::class);
+		$graphql->registerDefinition(Definition\CommentDefinition::class);
+		$graphql->registerDefinition(Definition\LabelDefinition::class);
+	}
 }

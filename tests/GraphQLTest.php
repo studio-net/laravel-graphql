@@ -138,19 +138,11 @@ class GraphQLTest extends TestCase {
 	public function testCamelCaseQuery() {
 		factory(Entity\User::class)->create();
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', [
+		$this->registerAllDefinitionsCamelCase([
 			'query' => [
 				Viewer::class
 			]
 		]);
-		$graphql->registerDefinition(Definition\CamelCaseUserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
-		$graphql->registerDefinition(Definition\PhoneDefinition::class);
-		$graphql->registerDefinition(Definition\CountryDefinition::class);
-		$graphql->registerDefinition(Definition\CommentDefinition::class);
-		$graphql->registerDefinition(Definition\LabelDefinition::class);
 
 		$this->specify('test querying a single row with camel case fields', function () {
 			$query = 'query { user(id: 1) { name, isAdmin }}';
