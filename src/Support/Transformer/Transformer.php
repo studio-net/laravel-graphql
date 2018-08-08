@@ -134,9 +134,10 @@ abstract class Transformer extends Cachable {
 				if ($relation instanceof Relation) {
 					$relationNameToStore = $parentRelation ? "{$parentRelation}.{$key}" : $key;
 					$relations[] = $relationNameToStore;
+
+					// also guess relations for found relation
+					$relations = array_merge($relations, $this->guessWithRelations($relation->getModel(), $field, $relationNameToStore));
 				}
-				// also guess relations for found relation
-				$relations = array_merge($relations, $this->guessWithRelations($relation->getModel(), $field, $relationNameToStore));
 			}
 		}
 
