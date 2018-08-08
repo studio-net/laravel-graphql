@@ -3,21 +3,22 @@ namespace StudioNet\GraphQL\Tests\Definition;
 
 use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
-use StudioNet\GraphQL\Tests\Entity\User;
+use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
+use StudioNet\GraphQL\Tests\Entity\Label;
 
 /**
  * Specify user GraphQL definition
  *
  * @see EloquentDefinition
  */
-class CamelCaseUserDefinition extends EloquentDefinition {
+class LabelDefinition extends EloquentDefinition {
 	/**
 	 * {@inheritDoc}
 	 *
 	 * @return string
 	 */
 	public function getName() {
-		return 'User';
+		return 'Label';
 	}
 
 	/**
@@ -26,7 +27,7 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 	 * @return string
 	 */
 	public function getDescription() {
-		return 'Represents a User';
+		return 'Represents a Label';
 	}
 
 	/**
@@ -35,7 +36,7 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 	 * @return string
 	 */
 	public function getSource() {
-		return User::class;
+		return Label::class;
 	}
 
 	/**
@@ -47,14 +48,8 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 		return [
 			'id' => Type::id(),
 			'name' => Type::string(),
-			'lastLogin' => Type::datetime(),
-			'isAdmin' => Type::bool(),
-			'permissions' => Type::json(),
 			'posts' => \GraphQL::listOf('post'),
-			'phone' => \GraphQL::type('phone'),
-			'country' => \GraphQL::type('country'),
-			'comments' => \GraphQL::listOf('comment'),
-			'labels' => \GraphQL::listOf('label')
+			'users' => \GraphQL::listOf('user'),
 		];
 	}
 
@@ -67,9 +62,18 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 		return [
 			'id' => Type::id(),
 			'name' => Type::string(),
-			'is_admin' => Type::bool(),
-			'permissions' => Type::json(),
-			'password' => Type::string()
 		];
 	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return array
+	 */
+	public function getFilterable() {
+		return [
+			'id' => new EqualsOrContainsFilter()
+		];
+	}
+
 }

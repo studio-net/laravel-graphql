@@ -6,6 +6,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
+use StudioNet\GraphQL\Tests\GraphQL\Query\Viewer;
 
 /**
  * Singleton tests
@@ -29,10 +30,9 @@ class GraphQLTest extends TestCase {
 	 * @return void
 	 */
 	public function testRegisterDefinition() {
+		$this->registerAllDefinitions();
+
 		$graphql = app(GraphQL::class);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('ensure that we can call registered type', function () use ($graphql) {
 			$this->assertInstanceOf(ObjectType::class, $graphql->type('user'));
@@ -52,11 +52,7 @@ class GraphQLTest extends TestCase {
 			$user->posts()->saveMany(factory(Entity\Post::class, 5)->make());
 		});
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify('test querying a single row', function () {
 			$query = 'query { user(id: 1) { name, posts { title } }}';
@@ -86,11 +82,7 @@ class GraphQLTest extends TestCase {
 	public function testScalar() {
 		factory(Entity\User::class)->create();
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify('tests datetime rfc3339 type', function () {
 			$query = 'query { user(id: 1) { last_login } }';
@@ -118,15 +110,11 @@ class GraphQLTest extends TestCase {
 	public function testCustomQuery() {
 		factory(Entity\User::class)->create();
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', [
+		$this->registerAllDefinitions([
 			'query' => [
-				\StudioNet\GraphQL\Tests\GraphQL\Query\Viewer::class
+				Viewer::class
 			]
 		]);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
 
 		$this->specify('tests custom query (viewer)', function () {
 			$query = 'query { viewer { id, name }}';
@@ -154,12 +142,16 @@ class GraphQLTest extends TestCase {
 		$graphql = app(GraphQL::class);
 		$graphql->registerSchema('default', [
 			'query' => [
-				\StudioNet\GraphQL\Tests\GraphQL\Query\Viewer::class
+				Viewer::class
 			]
 		]);
 		$graphql->registerDefinition(Definition\CamelCaseUserDefinition::class);
 		$graphql->registerDefinition(Definition\PostDefinition::class);
 		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$graphql->registerDefinition(Definition\PhoneDefinition::class);
+		$graphql->registerDefinition(Definition\CountryDefinition::class);
+		$graphql->registerDefinition(Definition\CommentDefinition::class);
+		$graphql->registerDefinition(Definition\LabelDefinition::class);
 
 		$this->specify('test querying a single row with camel case fields', function () {
 			$query = 'query { user(id: 1) { name, isAdmin }}';
@@ -182,11 +174,7 @@ class GraphQLTest extends TestCase {
 	public function testFiltersEquality() {
 		factory(Entity\User::class, 2)->create();
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify('test equality filtering', function () {
 			$query = <<<'EOGQL'
@@ -230,11 +218,7 @@ EOGQL;
 	public function testFiltersContains() {
 		factory(Entity\User::class, 3)->create();
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify('test equality containing', function () {
 			$query = <<<'EOGQL'
@@ -269,11 +253,7 @@ EOGQL;
 		factory(Entity\User::class)->create(['name' => 'baz']);
 		factory(Entity\User::class)->create(['name' => 'foobar']);
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify('test equality custom', function () {
 			// We should only get users which name starts with 'ba'

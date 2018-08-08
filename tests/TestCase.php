@@ -26,7 +26,7 @@ abstract class TestCase extends BaseTestCase {
 	 */
 	public function setUp() {
 		parent::setUp();
-	
+
 		// Laravel 5.4 has implemented the service provider's
 		// `loadMigrationsFrom' method and removes the --realpath migrate
 		// option. So, we need to handle unit test for either version
@@ -120,5 +120,22 @@ abstract class TestCase extends BaseTestCase {
 	 */
 	public function assertGraphQLEquals($query, array $assert, array $opts = []) {
 		$this->assertSame($assert, $this->executeGraphQL($query, $opts));
+	}
+
+	/**
+	 * Register all definitions for tests
+	 *
+	 * @param array $registerSchemaOptions Used as second parameter for $graphql->registerSchema()
+	 */
+	public function registerAllDefinitions($registerSchemaOptions = []) {
+		$graphql = app(GraphQL::class);
+		$graphql->registerSchema('default', $registerSchemaOptions);
+		$graphql->registerDefinition(Definition\UserDefinition::class);
+		$graphql->registerDefinition(Definition\PostDefinition::class);
+		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$graphql->registerDefinition(Definition\PhoneDefinition::class);
+		$graphql->registerDefinition(Definition\CountryDefinition::class);
+		$graphql->registerDefinition(Definition\CommentDefinition::class);
+		$graphql->registerDefinition(Definition\LabelDefinition::class);
 	}
 }

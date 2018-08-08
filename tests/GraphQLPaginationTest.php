@@ -19,11 +19,7 @@ class GraphQLPaginationTest extends TestCase {
 			factory(Entity\User::class)->create(['name' => $name]);
 		}
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify('test order_by', function () {
 			$query = <<<'EOGQL'
@@ -52,11 +48,7 @@ EOGQL;
 			factory(Entity\User::class)->create(['name' => $name]);
 		}
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$query = <<<'EOGQL'
 query ($skip: Int, $take: Int) {

@@ -52,7 +52,11 @@ class UserDefinition extends EloquentDefinition {
 			'last_login' => Type::datetime(),
 			'is_admin' => Type::bool(),
 			'permissions' => Type::json(),
-			'posts' => \GraphQL::listOf('post')
+			'posts' => \GraphQL::listOf('post'),
+			'phone' => \GraphQL::type('phone'),
+			'country' => \GraphQL::type('country'),
+			'comments' => \GraphQL::listOf('comment'),
+			'labels' => \GraphQL::listOf('label')
 		];
 	}
 

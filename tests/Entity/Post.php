@@ -15,7 +15,7 @@ class Post extends Model {
 	/**
 	 * Return related posts
 	 *
-	 * @return Illuminate\Database\Eloquent\Relations\Relation
+	 * @return \Illuminate\Database\Eloquent\Relations\Relation
 	 */
 	public function author() {
 		return $this->belongsTo(User::class);
@@ -24,7 +24,7 @@ class Post extends Model {
 	/**
 	 * Return related tags
 	 *
-	 * @return Illuminate\Database\Eloquent\Relations\Relation
+	 * @return \Illuminate\Database\Eloquent\Relations\Relation
 	 */
 	public function tags() {
 		return $this->belongsToMany(
@@ -33,5 +33,13 @@ class Post extends Model {
 			'post_id',
 			'tag_id'
 		);
+	}
+
+	public function comments() {
+		return $this->morphMany(Comment::class, 'commentable');
+	}
+
+	public function labels() {
+		return $this->morphToMany(Label::class, 'labelable');
 	}
 }
