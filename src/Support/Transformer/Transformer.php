@@ -71,9 +71,7 @@ abstract class Transformer extends Cachable {
 	 * @return callable
 	 */
 	public function getResolverCallable(Definition $definition) {
-		$app = $this->app;
-
-		return function ($root, array $args, $context, ResolveInfo $info) use ($definition, $app) {
+		return function ($root, array $args, $context, ResolveInfo $info) use ($definition) {
 			$reflect = new \ReflectionClass($this);
 
 			// check, if Paginable interface was implemented by given Transformer
@@ -102,7 +100,7 @@ abstract class Transformer extends Cachable {
 				'context' => $context,
 				'info' => $info,
 				'with' => $this->guessWithRelations($this->app->make($definition->getSource()), $fieldsForGuessingRelations),
-				'source' => $app->make($definition->getSource()),
+				'source' => $this->app->make($definition->getSource()),
 				'rules' => $definition->getRules(),
 				'filterables' => $definition->getFilterable(),
 				'definition' => $definition,
