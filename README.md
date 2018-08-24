@@ -184,6 +184,7 @@ namespace App\GraphQL\Query;
 
 use StudioNet\GraphQL\Support\Definition\Query;
 use Illuminate\Support\Facades\Auth;
+use App\User;
 
 class Viewer extends Query {
 	/**
@@ -192,13 +193,20 @@ class Viewer extends Query {
 	public function getRelatedType() {
 		return \GraphQL::type('user');
 	}
+	
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getSource() {
+		return User::class;
+	}
 
 	/**
 	 * Return logged user
 	 *
-	 * @return \App\User|null
+	 * @return User|null
 	 */
-	public function getResolver() {
+	public function getResolver($opts) {
 		return Auth::user();
 	}
 }
@@ -221,6 +229,15 @@ return [
 	]
 ];
 ```
+
+`getResolver()` receives an array-argument with followed item:
+
+- `root` 1st argument given by webonyx library - `GraphQL\Executor\Executor::resolveOrError()`
+- `args` 2nd argument given by webonyx library
+- `context` 3rd argument given by webonyx library
+- `info` 4th argument given by webonyx library
+- `fields` array of fields, that were fetched from query. Limited by depth in `StudioNet\GraphQL\GraphQL::FIELD_SELECTION_DEPTH`
+- `with` array of relations, that could/should be eager loaded. **NOTICE:** Finding this relations happens ONLY, if `getSource()` is defined - this method should return a class name of a associated root-type in query. If `getSource()` is not defined, then `with` will be always empty.
 
 ### Mutation
 
