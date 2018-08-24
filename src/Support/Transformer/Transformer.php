@@ -2,9 +2,8 @@
 
 namespace StudioNet\GraphQL\Support\Transformer;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
+use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use GraphQL\Type\Definition\ResolveInfo;
 use StudioNet\GraphQL\Cache\Cachable;
@@ -99,7 +98,7 @@ abstract class Transformer extends Cachable {
 				'fields' => $fields,
 				'context' => $context,
 				'info' => $info,
-				'with' => $this->guessWithRelations($this->app->make($definition->getSource()), $fieldsForGuessingRelations),
+				'with' => GraphQL::guessWithRelations($this->app->make($definition->getSource()), $fieldsForGuessingRelations),
 				'source' => $this->app->make($definition->getSource()),
 				'rules' => $definition->getRules(),
 				'filterables' => $definition->getFilterable(),
@@ -108,38 +107,6 @@ abstract class Transformer extends Cachable {
 
 			return call_user_func_array([$this, 'getResolver'], [$opts]);
 		};
-	}
-
-	/**
-	 * Return relationship based on fields that are queried
-	 *
-	 * @param  Model $model
-	 * @param  array $fields
-	 * @param  string $parentRelation
-	 *
-	 * @return array
-	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-	 */
-	public function guessWithRelations(Model $model, array $fields, string $parentRelation = null) {
-		$relations = [];
-		// Parse each field in order to retrieve relationship elements on root
-		// of array (as relationship are based upon multiple resolvers, we just
-		// have to handle the root fields here)
-		foreach ($fields as $key => $field) {
-			if (is_array($field) && method_exists($model, $key)) {
-				// verify, that given method returns relation
-				$relation = call_user_func([$model, $key]);
-				if ($relation instanceof Relation) {
-					$relationNameToStore = $parentRelation ? "{$parentRelation}.{$key}" : $key;
-					$relations[] = $relationNameToStore;
-
-					// also guess relations for found relation
-					$relations = array_merge($relations, $this->guessWithRelations($relation->getModel(), $field, $relationNameToStore));
-				}
-			}
-		}
-
-		return $relations;
 	}
 
 	/**
