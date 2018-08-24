@@ -28,6 +28,9 @@ class Viewer extends Query {
 		return \GraphQL::type('user');
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function getSource()
 	{
 		return User::class;
