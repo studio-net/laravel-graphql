@@ -4,6 +4,7 @@ namespace StudioNet\GraphQL\Tests;
 
 use Illuminate\Support\Facades\DB;
 use StudioNet\GraphQL\Tests\Entity;
+use StudioNet\GraphQL\Tests\GraphQL\Query\Viewer;
 
 /**
  * Tests for relations resolving.
@@ -383,6 +384,47 @@ class GraphQLRelationsTest extends TestCase {
 			$this->assertSame($madeQueries, $gqlQueries);
 		});
 	}
+
+	/**
+	 * Test eager loading with custom query
+	 *
+	 * @return void
+	 */
+	public function testEagerLoadingWithCustomQuery() {
+		factory(Entity\User::class, 1)->create()->each(function ($user) {
+			$user->phone()->save(factory(Entity\Phone::class)->make());
+		});
+
+		$this->registerAllDefinitions([
+			'query' => [
+				Viewer::class
+			]
+		]);
+
+		// enable query log for comparing queries
+		DB::enableQueryLog();
+
+		$this->specify('Testing eager loading with custom query', function () {
+			// fetch data directly
+			Entity\User::with('phone')->first();
+
+			// get query log and remove 'time' property from each query-element
+			$madeQueries = $this->removeTimeElementFromQueryLog(DB::getQueryLog());
+
+			DB::flushQueryLog();
+
+			// fetch data with graphql
+			$query = 'query { viewer { name phone { label number } }}';
+			$this->executeGraphQL($query);
+
+			// get query log produced duricng fetching over graphql and remove 'time' property from each query-element
+			$gqlQueries = $this->removeTimeElementFromQueryLog(DB::getQueryLog());
+
+			// queries should be the same
+			$this->assertSame($madeQueries, $gqlQueries);
+		});
+	}
+
 
 
 	private function removeTimeElementFromQueryLog(array $queryLog) {

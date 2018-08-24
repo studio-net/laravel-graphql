@@ -28,12 +28,17 @@ class Viewer extends Query {
 		return \GraphQL::type('user');
 	}
 
+	public function getSource()
+	{
+		return User::class;
+	}
+
 	/**
 	 * Resolve query
 	 *
 	 * @return User
 	 */
-	public function getResolver() {
-		return User::first();
+	public function getResolver($opts) {
+		return User::with($opts['with'])->first();
 	}
 }
