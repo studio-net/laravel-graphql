@@ -87,12 +87,12 @@ abstract class Field implements FieldInterface {
 				$fields = $info->getFieldSelection(GraphQL::FIELD_SELECTION_DEPTH);
 
 				$opts = [
-					'root'    => $root,
-					'args'    => $args,
+					'root' => $root,
+					'args' => $args,
 					'context' => $context,
-					'info'    => $info,
-					'fields'  => $fields,
-					'with'    => []
+					'info' => $info,
+					'fields' => $fields,
+					'with' => []
 				];
 
 				// if getSource() returns some model, then guess relation for eager loading

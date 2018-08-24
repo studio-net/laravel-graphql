@@ -31,8 +31,7 @@ class Viewer extends Query {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getSource()
-	{
+	public function getSource() {
 		return User::class;
 	}
 

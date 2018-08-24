@@ -362,5 +362,4 @@ class GraphQL {
 
 		return $relations;
 	}
-
 }
