@@ -78,7 +78,7 @@ abstract class Transformer extends Cachable {
 			// Paginable interface has an extra wrapper for data-fields
 			$isPaginable = $this instanceof Paginable;
 
-			$fieldsDepth = $isPaginable ? 4 : 3; // may be increase depth?
+			$fieldsDepth = $isPaginable ? GraphQL::FIELD_SELECTION_DEPTH + 1 : GraphQL::FIELD_SELECTION_DEPTH;
 			$fields = $info->getFieldSelection($fieldsDepth);
 
 			$definition->assertAcl(

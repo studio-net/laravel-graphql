@@ -25,6 +25,9 @@ class GraphQL {
 	/** @var CachePool $cache */
 	private $cache;
 
+	/** @var int Depth-level, how deep fields will be fetched for relations guessing */
+	const FIELD_SELECTION_DEPTH = 3;
+
 	/**
 	 * __construct
 	 *
