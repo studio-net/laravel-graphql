@@ -88,7 +88,7 @@ abstract class Field implements FieldInterface {
 
 				$opts = [
 					'root'    => $root,
-					'args'    => array_filter($args),
+					'args'    => $args,
 					'context' => $context,
 					'info'    => $info,
 					'fields'  => $fields,
