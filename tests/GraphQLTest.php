@@ -6,6 +6,7 @@ use GraphQL\Type\Definition\ObjectType;
 use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
 use StudioNet\GraphQL\Tests\GraphQL\Query\SimpleString;
+use StudioNet\GraphQL\Tests\GraphQL\Query\Unauthorized;
 use StudioNet\GraphQL\Tests\GraphQL\Query\Viewer;
 
 /**
@@ -151,6 +152,42 @@ class GraphQLTest extends TestCase {
 			$this->assertGraphQLEquals($query, [
 				'data' => [
 					'simplestring' => 'You got this!'
+				]
+			]);
+		});
+	}
+
+	/**
+	 * Test authorize checking
+	 *
+	 * @return void
+	 */
+	public function testAuthorizeChecking() {
+		factory(Entity\User::class)->create();
+
+		$this->registerAllDefinitions([
+			'query' => [
+				Unauthorized::class
+			]
+		]);
+
+		$this->specify('tests unauthorized query (Unauthorized)', function () {
+			$query = 'query { unauthorized }';
+
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'unauthorized' => null
+				],
+				'errors' => [
+					[
+						'message' => 'UNAUTHORIZED',
+						'locations' => [
+							[
+								'line' => 1,
+								'column' => 9
+							]
+						]
+					]
 				]
 			]);
 		});
