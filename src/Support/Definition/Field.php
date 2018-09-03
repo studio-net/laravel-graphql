@@ -1,6 +1,7 @@
 <?php
 namespace StudioNet\GraphQL\Support\Definition;
 
+use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
@@ -84,7 +85,11 @@ abstract class Field implements FieldInterface {
 		// Append resolver if exists
 		if (method_exists($this, 'getResolver')) {
 			$attributes['resolve'] = function ($root, array $args, $context, ResolveInfo $info) {
-				$fields = $info->getFieldSelection(GraphQL::FIELD_SELECTION_DEPTH);
+				if ($info->returnType instanceof ObjectType) {
+					$fields = $info->getFieldSelection(GraphQL::FIELD_SELECTION_DEPTH);
+				} else {
+					$fields = null;
+				}
 
 				$opts = [
 					'root' => $root,
@@ -96,7 +101,7 @@ abstract class Field implements FieldInterface {
 				];
 
 				// if getSource() returns some model, then guess relation for eager loading
-				if (method_exists($this, 'getSource') && is_string($this->getSource())) {
+				if ($fields !== null && method_exists($this, 'getSource') && is_string($this->getSource())) {
 					$source = $this->app->make($this->getSource());
 					if ($source instanceof Model) {
 						$opts['with'] = GraphQL::guessWithRelations($source, $fields);
