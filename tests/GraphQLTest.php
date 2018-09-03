@@ -5,6 +5,7 @@ use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ObjectType;
 use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
+use StudioNet\GraphQL\Tests\GraphQL\Query\SimpleString;
 use StudioNet\GraphQL\Tests\GraphQL\Query\Viewer;
 
 /**
@@ -125,6 +126,31 @@ class GraphQLTest extends TestCase {
 						'id' => (string) $user->id,
 						'name' => $user->name,
 					]
+				]
+			]);
+		});
+	}
+
+	/**
+	 * Test simple string query
+	 *
+	 * @return void
+	 */
+	public function testSimpleStringQuery() {
+		factory(Entity\User::class)->create();
+
+		$this->registerAllDefinitions([
+			'query' => [
+				SimpleString::class
+			]
+		]);
+
+		$this->specify('tests simple string query (SimpleString)', function () {
+			$query = 'query { simplestring }';
+
+			$this->assertGraphQLEquals($query, [
+				'data' => [
+					'simplestring' => 'You got this!'
 				]
 			]);
 		});
