@@ -50,6 +50,7 @@ use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
 use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
 use App\User;
+use Auth;
 
 /**
  * Specify user GraphQL definition
@@ -185,8 +186,17 @@ namespace App\GraphQL\Query;
 use StudioNet\GraphQL\Support\Definition\Query;
 use Illuminate\Support\Facades\Auth;
 use App\User;
+use Auth;
 
 class Viewer extends Query {
+	/**
+	 * {@inheritDoc}
+	 */
+	protected function authorize(array $args) {
+		// check, that user is not a guest
+		return !Auth::guest();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -253,6 +263,14 @@ use StudioNet\GraphQL\Definition\Type;
 use App\User;
 
 class Profile extends Mutation {
+	/**
+	 * {@inheritDoc}
+	 */
+	protected function authorize(array $args) {
+		// check, that user is not a guest
+		return !Auth::guest();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *

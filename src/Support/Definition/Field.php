@@ -1,6 +1,7 @@
 <?php
 namespace StudioNet\GraphQL\Support\Definition;
 
+use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,17 @@ use StudioNet\GraphQL\GraphQL;
 abstract class Field implements FieldInterface {
 	/** @var Application $app */
 	protected $app;
+
+	/**
+	 * Override this in your queries or mutations
+	 * to provide custom authorization
+	 *
+	 * @param  array $args
+	 * @return boolean
+	 */
+	protected function authorize(array $args) {
+		return true;
+	}
 
 	/**
 	 * __construct
@@ -85,6 +97,11 @@ abstract class Field implements FieldInterface {
 		// Append resolver if exists
 		if (method_exists($this, 'getResolver')) {
 			$attributes['resolve'] = function ($root, array $args, $context, ResolveInfo $info) {
+				// check, if allowed to call this query
+				if (!$this->authorize($args)) {
+					throw new Error('UNAUTHORIZED');
+				}
+
 				if ($info->returnType instanceof ObjectType) {
 					$fields = $info->getFieldSelection(GraphQL::FIELD_SELECTION_DEPTH);
 				} else {
