@@ -41,6 +41,23 @@ abstract class EloquentDefinition extends Definition {
 
 	/**
 	 * @override
+	 * @return array
+	 */
+	public function getPipes(): array {
+		return [
+			'list' => [
+				\StudioNet\GraphQL\Support\Pipe\Eloquent\AfterPipe::class,
+				\StudioNet\GraphQL\Support\Pipe\Eloquent\BeforePipe::class,
+				\StudioNet\GraphQL\Support\Pipe\Eloquent\SkipPipe::class,
+				\StudioNet\GraphQL\Support\Pipe\Eloquent\TakePipe::class,
+				\StudioNet\GraphQL\Support\Pipe\Eloquent\OrderByPipe::class,
+				\StudioNet\GraphQL\Support\Pipe\Eloquent\FilterPipe::class,
+			]
+		];
+	}
+
+	/**
+	 * @override
 	 *
 	 * @return array
 	 */

@@ -1,7 +1,8 @@
 <?php
 namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
-use StudioNet\GraphQL\Support\Transformer\Transformer;
+use Illuminate\Database\Eloquent\Builder;
+use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
 use Illuminate\Database\Eloquent\Relations;
@@ -12,9 +13,10 @@ use StudioNet\GraphQL\Error\ValidationError;
 /**
  * Transform a Definition into create/update mutation
  *
- * @see Transformer
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @see EloquentTransformer
  */
-class StoreTransformer extends Transformer {
+class StoreTransformer extends EloquentTransformer {
 	/**
 	 * Return mutation name
 	 *
@@ -23,6 +25,14 @@ class StoreTransformer extends Transformer {
 	 */
 	public function getName(Definition $definition) {
 		return strtolower($definition->getName());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @return string
+	 */
+	public function getTransformerName(): string {
+		return 'store';
 	}
 
 	/**
@@ -42,7 +52,7 @@ class StoreTransformer extends Transformer {
 	 * @return array
 	 */
 	public function getArguments(Definition $definition) {
-		return [
+		return parent::getArguments($definition) + [
 			'id' => ['type' => Type::id(), 'description' => 'Primary key lookup' ],
 			'with' => [
 				'type' => $definition->resolveInputType(),
@@ -62,21 +72,20 @@ class StoreTransformer extends Transformer {
 		$validator = Validator::make($data, $rules);
 
 		if ($validator->fails()) {
-			throw with(new ValidationError('validation'))->setValidator($validator);
+			throw (new ValidationError('validation'))->setValidator($validator);
 		}
 	}
 
 	/**
-	 * Return fetchable node resolver
+	 * @override
+	 * TODO: Should be refactored
 	 *
-	 * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
 	 * @param  array $opts
 	 * @return \Illuminate\Database\Eloquent\Model
+	 * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
 	 */
-	public function getResolver(array $opts) {
-
-		// Create or update model by ID
-		$model = $opts['source']->findOrNew(array_get($opts['args'], 'id', 0));
+	protected function getResolver(array $opts) {
+		$model = parent::getResolver($opts);
 
 		$relationInput = [];
 		$savedCallbacks = [];
@@ -221,6 +230,17 @@ class StoreTransformer extends Transformer {
 		}
 
 		return $model;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param  Builder $builder
+	 * @param  array $opts
+	 * @return \Illuminate\Database\Eloquent\Collection
+	 */
+	protected function then(Builder $builder, array $opts) {
+		return $builder->findOrNew(array_get($opts['args'], 'id', 0));
 	}
 
 

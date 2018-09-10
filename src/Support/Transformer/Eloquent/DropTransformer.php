@@ -1,17 +1,18 @@
 <?php
 namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use StudioNet\GraphQL\Support\Transformer\Transformer;
+use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
 
 /**
  * Transform a Definition into drop mutation
  *
- * @see Transformer
+ * @see EloquentTransformer
  */
-class DropTransformer extends Transformer {
+class DropTransformer extends EloquentTransformer {
 	/**
 	 * Return mutation name
 	 *
@@ -24,16 +25,24 @@ class DropTransformer extends Transformer {
 
 	/**
 	 * {@inheritDoc}
+	 * @return string
+	 */
+	public function getTransformerName(): string {
+		return 'drop';
+	}
+
+	/**
+	 * {@inheritDoc}
 	 *
 	 * @param  Definition $definition
 	 * @return array
 	 */
 	public function getArguments(Definition $definition) {
-		$args = [];
+		$args = parent::getArguments($definition);
 		$traits = class_uses($definition->getSource());
 
 		if (in_array(SoftDeletes::class, $traits)) {
-			$args = [
+			$args = $args + [
 				'force' => ['type' => Type::bool(), 'description' => 'Force deletion']
 			];
 		}
@@ -54,13 +63,13 @@ class DropTransformer extends Transformer {
 	}
 
 	/**
-	 * Return fetchable node resolver
+	 * @override
 	 *
 	 * @param  array $opts
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function getResolver(array $opts) {
-		$model = $opts['source']->findOrFail(array_get($opts['args'], 'id', 0));
+	protected function getResolver(array $opts) {
+		$model = parent::getResolver($opts);
 
 		if (array_get($opts['args'], 'force', false)) {
 			$model->forceDelete();
@@ -69,5 +78,16 @@ class DropTransformer extends Transformer {
 		}
 
 		return $model;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param  Builder $builder
+	 * @param  array $opts
+	 * @return \Illuminate\Database\Eloquent\Model
+	 */
+	protected function then(Builder $builder, array $opts) {
+		return $builder->findOrFail(array_get($opts['args'], 'id'));
 	}
 }

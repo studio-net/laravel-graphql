@@ -70,28 +70,16 @@ abstract class Transformer extends Cachable {
 	 * @return callable
 	 */
 	public function getResolverCallable(Definition $definition) {
-		return function ($root, array $args, $context, ResolveInfo $info) use ($definition) {
+    return function ($root, array $args, $context, ResolveInfo $info) use ($definition) {
 			$reflect = new \ReflectionClass($this);
 
 			// check, if Paginable interface was implemented by given Transformer
 			// Paginable interface has an extra wrapper for data-fields
 			$isPaginable = $this instanceof Paginable;
-
 			$fieldsDepth = $isPaginable ? GraphQL::FIELD_SELECTION_DEPTH + 1 : GraphQL::FIELD_SELECTION_DEPTH;
 			$fields = $info->getFieldSelection($fieldsDepth);
-
-			$definition->assertAcl(
-				str_replace("transformer", "", strtolower($reflect->getShortName())),
-				[
-					"fields" => $fields,
-					"context" => $context,
-					"args" => $args,
-					'info' => $info,
-				]
-			);
-
 			$fieldsForGuessingRelations = $isPaginable ? $fields['items'] : $fields;
-
+  
 			$opts = [
 				'root' => $root,
 				'args' => array_filter($args),
@@ -100,6 +88,7 @@ abstract class Transformer extends Cachable {
 				'info' => $info,
 				'with' => GraphQL::guessWithRelations($this->app->make($definition->getSource()), $fieldsForGuessingRelations),
 				'source' => $this->app->make($definition->getSource()),
+				'transformer' => $this,
 				'rules' => $definition->getRules(),
 				'filterables' => $definition->getFilterable(),
 				'definition' => $definition,
@@ -109,7 +98,7 @@ abstract class Transformer extends Cachable {
 		};
 	}
 
-	/**
+  /**
 	 * Return availabled arguments
 	 *
 	 * @param  Definition $definition
@@ -117,6 +106,37 @@ abstract class Transformer extends Cachable {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function getArguments(Definition $definition) {
-		return [];
+		$pipes = $this->getPipes($definition);
+		$args = [];
+
+		foreach ($pipes as $pipe) {
+			$pipe = $this->app->make($pipe);
+
+			if ($pipe instanceof \StudioNet\GraphQL\Support\Pipe\Argumentable) {
+				$args = array_merge($args, $pipe->getArguments($definition));
+			}
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Returns transformer list
+	 *
+	 * @return string
+	 */
+	public function getTransformerName(): string {
+		return 'list';
+	}
+
+	/**
+	 * Returns definition pipes for given transformer name
+	 *
+	 * @param  Definition $definition
+	 * @return array
+	 */
+	public function getPipes(Definition $definition) {
+		$pipes = $definition->getPipes();
+		return array_get($pipes, 'all', []) + array_get($pipes, $this->getTransformerName(), []);
 	}
 }
