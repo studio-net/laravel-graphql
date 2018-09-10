@@ -1,4 +1,5 @@
 <?php
+
 namespace StudioNet\GraphQL\Support\Transformer;
 
 use Illuminate\Foundation\Application;
@@ -75,20 +76,8 @@ abstract class Transformer extends Cachable {
 			// check, if Paginable interface was implemented by given Transformer
 			// Paginable interface has an extra wrapper for data-fields
 			$isPaginable = $this instanceof Paginable;
-
 			$fieldsDepth = $isPaginable ? GraphQL::FIELD_SELECTION_DEPTH + 1 : GraphQL::FIELD_SELECTION_DEPTH;
 			$fields = $info->getFieldSelection($fieldsDepth);
-
-			$definition->assertAcl(
-				str_replace("transformer", "", strtolower($reflect->getShortName())),
-				[
-					"fields" => $fields,
-					"context" => $context,
-					"args" => $args,
-					'info' => $info,
-				]
-			);
-
 			$fieldsForGuessingRelations = $isPaginable ? $fields['items'] : $fields;
 
 			$opts = [
