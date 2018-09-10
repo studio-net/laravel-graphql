@@ -6,6 +6,9 @@ use GraphQL\Type\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\Query;
 
 class Unauthorized extends Query {
+	/**
+	 * {@inheritdoc}
+	 */
 	protected function authorize(array $args) {
 		return false;
 	}

@@ -24,6 +24,7 @@ abstract class Field implements FieldInterface {
 	 *
 	 * @param  array $args
 	 * @return boolean
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	protected function authorize(array $args) {
 		return true;
@@ -33,7 +34,6 @@ abstract class Field implements FieldInterface {
 	 * __construct
 	 *
 	 * @param  Application $app
-	 * @param  CachePool $cache
 	 * @return void
 	 */
 	public function __construct(Application $app) {
