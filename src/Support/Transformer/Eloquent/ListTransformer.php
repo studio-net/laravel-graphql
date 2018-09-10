@@ -3,7 +3,7 @@ namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
 use StudioNet\GraphQL\Support\Transformer\Paginable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use StudioNet\GraphQL\Support\\EloquentTransformer;
+use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use Illuminate\Database\Eloquent\Builder;
 use GraphQL\Type\Definition\ObjectType;
