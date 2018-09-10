@@ -81,7 +81,7 @@ abstract class Definition implements DefinitionInterface {
 	/**
 	 * Returns availabled pipes
 	 *
-	 * @return void
+	 * @return array
 	 */
 	public function getPipes(): array {
 		return [];
