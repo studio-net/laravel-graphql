@@ -1,5 +1,4 @@
 <?php
-
 namespace StudioNet\GraphQL\Support\Transformer;
 
 use Illuminate\Foundation\Application;
@@ -98,6 +97,7 @@ abstract class Transformer extends Cachable {
 				'fields' => $fields,
 				'context' => $context,
 				'info' => $info,
+				'transformer' => $this,
 				'with' => GraphQL::guessWithRelations($this->app->make($definition->getSource()), $fieldsForGuessingRelations),
 				'source' => $this->app->make($definition->getSource()),
 				'rules' => $definition->getRules(),
@@ -110,6 +110,14 @@ abstract class Transformer extends Cachable {
 	}
 
 	/**
+	 * Returns resolver
+	 *
+	 * @param  array $opts
+	 * @return mixed
+	 */
+	abstract protected function getResolver(array $opts);
+
+	/**
 	 * Return availabled arguments
 	 *
 	 * @param  Definition $definition
@@ -117,6 +125,37 @@ abstract class Transformer extends Cachable {
 	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function getArguments(Definition $definition) {
-		return [];
+		$pipes = $this->getPipes($definition);
+		$args = [];
+
+		foreach ($pipes as $pipe) {
+			$pipe = $this->app->make($pipe);
+
+			if ($pipe instanceof \StudioNet\GraphQL\Support\Pipe\Argumentable) {
+				$args = array_merge($args, $pipe->getArguments($definition));
+			}
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Returns transformer list
+	 *
+	 * @return string
+	 */
+	public function getTransformerName(): string {
+		return 'list';
+	}
+
+	/**
+	 * Returns definition pipes for given transformer name
+	 *
+	 * @param  Definition $definition
+	 * @return array
+	 */
+	public function getPipes(Definition $definition) {
+		$pipes = $definition->getPipes();
+		return array_get($pipes, 'all', []) + array_get($pipes, $this->getTransformerName(), []);
 	}
 }

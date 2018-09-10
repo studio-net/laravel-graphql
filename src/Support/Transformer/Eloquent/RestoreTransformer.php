@@ -1,16 +1,17 @@
 <?php
 namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
-use StudioNet\GraphQL\Support\Transformer\Transformer;
+use Illuminate\Database\Eloquent\Builder;
+use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
 
 /**
  * Transform a Definition into restore mutation
  *
- * @see Transformer
+ * @see EloquentTransformer
  */
-class RestoreTransformer extends Transformer {
+class RestoreTransformer extends EloquentTransformer {
 	/**
 	 * Return mutation name
 	 *
@@ -23,12 +24,20 @@ class RestoreTransformer extends Transformer {
 
 	/**
 	 * {@inheritDoc}
+	 * @return string
+	 */
+	public function getTransformerName(): string {
+		return 'restore';
+	}
+
+	/**
+	 * {@inheritDoc}
 	 *
 	 * @param  Definition $definition
 	 * @return array
 	 */
 	public function getArguments(Definition $definition) {
-		return [
+		return parent::getArguments($definition) + [
 			'id' => ['type' => Type::nonNull(Type::id()), 'description' => 'Primary key lookup' ]
 		];
 	}
@@ -44,15 +53,26 @@ class RestoreTransformer extends Transformer {
 	}
 
 	/**
-	 * Return fetchable node resolver
+	 * {@inheritDoc}
 	 *
 	 * @param  array $opts
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function getResolver(array $opts) {
-		$model = $opts['source']->withTrashed()->findOrFail(array_get($opts['args'], 'id', 0));
+	protected function getResolver(array $opts) {
+		$model = parent::getResolver($opts);
 		$model->restore();
 
 		return $model;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param  Builder $builder
+	 * @param  array $opts
+	 * @return \Illuminate\Database\Eloquent\Model
+	 */
+	protected function then(Builder $builder, array $opts) {
+		return $builder->withTrashed()->findOrFail(array_get($opts['args'], 'id'));
 	}
 }

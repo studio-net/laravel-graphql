@@ -79,6 +79,15 @@ abstract class Definition implements DefinitionInterface {
 	}
 
 	/**
+	 * Returns availabled pipes
+	 *
+	 * @return void
+	 */
+	public function getPipes(): array {
+		return [];
+	}
+
+	/**
 	 * Resolve fetchable type
 	 *
 	 * @return ObjectType
