@@ -33,6 +33,7 @@ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 - [Definition](#definition)
 - [Query](#query)
 - [Mutation](#mutation)
+- [Require authorization](#require-authorization)
 - [Self documentation](#self-documentation)
 - [Examples](#examples)
 
@@ -328,6 +329,14 @@ return [
 	]
 ];
 ```
+
+### Require authorization
+
+Currently you have a possibility to protect your own queries and mutations. You have to implement `authorize()` method in your query/mutation, that return a boolean, that indicates, if requested query/mutation has to be executed. If method return `false`, an `UNAUTHORIZED` GraphQL-Error will be thrown.
+
+Usage examples are in query and mutation above.
+
+Protection of definition transformers are currently not implemented, but may be will in the future. By now you have to define your query/mutation yourself, and protect it then with logic in `authorize()`.
 
 ### Self documentation
 
