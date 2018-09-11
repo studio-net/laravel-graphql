@@ -1,10 +1,6 @@
 <?php
 namespace StudioNet\GraphQL\Tests;
 
-use GraphQL\Type\Definition\ListOfType;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type as GraphQLType;
-use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
 
 /**
@@ -19,11 +15,7 @@ class GraphQLPaginationTest extends TestCase {
 			factory(Entity\User::class)->create(['name' => $name]);
 		}
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify('test order_by', function () {
 			$query = <<<'EOGQL'
@@ -52,11 +44,7 @@ EOGQL;
 			factory(Entity\User::class)->create(['name' => $name]);
 		}
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$query = <<<'EOGQL'
 query ($skip: Int, $take: Int) {

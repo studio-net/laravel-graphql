@@ -3,6 +3,7 @@ namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
+use StudioNet\GraphQL\Support\Transformer\Paginable;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use Illuminate\Database\Eloquent\Builder;
 use GraphQL\Type\Definition\ObjectType;
@@ -13,7 +14,7 @@ use StudioNet\GraphQL\Definition\Type;
  *
  * @see EloquentTransformer
  */
-class ListTransformer extends EloquentTransformer {
+class ListTransformer extends EloquentTransformer implements Paginable {
 	/**
 	 * Return query name
 	 *

@@ -33,8 +33,10 @@ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 - [Definition](#definition)
 - [Query](#query)
 - [Mutation](#mutation)
+- [Require authorization](#require-authorization)
 - [Self documentation](#self-documentation)
 - [Examples](#examples)
+- [N+1 Problem](#n+1-problem)
 
 ### Definition
 
@@ -50,6 +52,7 @@ use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
 use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
 use App\User;
+use Auth;
 
 /**
  * Specify user GraphQL definition
@@ -184,21 +187,38 @@ namespace App\GraphQL\Query;
 
 use StudioNet\GraphQL\Support\Definition\Query;
 use Illuminate\Support\Facades\Auth;
+use App\User;
+use Auth;
 
 class Viewer extends Query {
+	/**
+	 * {@inheritDoc}
+	 */
+	protected function authorize(array $args) {
+		// check, that user is not a guest
+		return !Auth::guest();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public function getRelatedType() {
 		return \GraphQL::type('user');
 	}
+	
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getSource() {
+		return User::class;
+	}
 
 	/**
 	 * Return logged user
 	 *
-	 * @return \App\User|null
+	 * @return User|null
 	 */
-	public function getResolver() {
+	public function getResolver($opts) {
 		return Auth::user();
 	}
 }
@@ -222,6 +242,15 @@ return [
 ];
 ```
 
+`getResolver()` receives an array-argument with followed item:
+
+- `root` 1st argument given by webonyx library - `GraphQL\Executor\Executor::resolveOrError()`
+- `args` 2nd argument given by webonyx library
+- `context` 3rd argument given by webonyx library
+- `info` 4th argument given by webonyx library
+- `fields` array of fields, that were fetched from query. Limited by depth in `StudioNet\GraphQL\GraphQL::FIELD_SELECTION_DEPTH`
+- `with` array of relations, that could/should be eager loaded. **NOTICE:** Finding this relations happens ONLY, if `getSource()` is defined - this method should return a class name of a associated root-type in query. If `getSource()` is not defined, then `with` will be always empty.
+
 ### Mutation
 
 Mutation are used to update or create data.
@@ -236,6 +265,14 @@ use StudioNet\GraphQL\Definition\Type;
 use App\User;
 
 class Profile extends Mutation {
+	/**
+	 * {@inheritDoc}
+	 */
+	protected function authorize(array $args) {
+		// check, that user is not a guest
+		return !Auth::guest();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -293,6 +330,14 @@ return [
 	]
 ];
 ```
+
+### Require authorization
+
+Currently you have a possibility to protect your own queries and mutations. You have to implement `authorize()` method in your query/mutation, that return a boolean, that indicates, if requested query/mutation has to be executed. If method return `false`, an `UNAUTHORIZED` GraphQL-Error will be thrown.
+
+Usage examples are in query and mutation above.
+
+Protection of definition transformers are currently not implemented, but may be will in the future. By now you have to define your query/mutation yourself, and protect it then with logic in `authorize()`.
 
 ### Self documentation
 
@@ -559,6 +604,14 @@ post-save (which can be useful for eloquent relational models) :
 		];
 	}
 ```
+
+### N+1 Problem
+
+The common question is, if graphql library solves n+1 problem. This occures, when graphql resolves relation. Often entities are fetched without relations, and when graphql query needs to fetch relation, for each fetched entity relation would be fetched from SQL separately. So instead of executing 2 SQL queries, you will get N+1 queries, where N is the count of results of root entity. In that example you would query only one relation. If you query more relations, then it becomes N^2+1 problem.
+
+To solve it, Eloquent has already options to eager load relations. Transformers in this library use eager loading, depends on what you query.
+
+Currently this smart detection works perfect only on View and List Transformers. Other transformers will be reworked soon.
 
 ## Contribution
 

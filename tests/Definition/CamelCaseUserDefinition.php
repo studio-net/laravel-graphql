@@ -50,7 +50,11 @@ class CamelCaseUserDefinition extends EloquentDefinition {
 			'lastLogin' => Type::datetime(),
 			'isAdmin' => Type::bool(),
 			'permissions' => Type::json(),
-			'posts' => \GraphQL::listOf('post')
+			'posts' => \GraphQL::listOf('post'),
+			'phone' => \GraphQL::type('phone'),
+			'country' => \GraphQL::type('country'),
+			'comments' => \GraphQL::listOf('comment'),
+			'labels' => \GraphQL::listOf('label')
 		];
 	}
 

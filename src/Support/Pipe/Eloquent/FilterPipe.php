@@ -29,9 +29,9 @@ class FilterPipe implements Argumentable {
 			$grammar = null;
 
 			switch ($driver) {
-				case 'pgsql'  : $grammar  = new Grammar\PostgreSQLGrammar ; break;
-				case 'mysql'  : $grammar  = new Grammar\MySQLGrammar      ; break;
-				case 'sqlite' : $grammar = new Grammar\SqliteGrammar      ; break;
+				case 'pgsql': $grammar = new Grammar\PostgreSQLGrammar ; break;
+				case 'mysql': $grammar = new Grammar\MySQLGrammar      ; break;
+				case 'sqlite': $grammar = new Grammar\SqliteGrammar      ; break;
 			}
 
 			// Assert that grammar exists

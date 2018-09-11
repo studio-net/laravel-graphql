@@ -1,12 +1,13 @@
 <?php
+
 namespace StudioNet\GraphQL\Support\Transformer;
 
 use Illuminate\Foundation\Application;
+use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use GraphQL\Type\Definition\ResolveInfo;
 use StudioNet\GraphQL\Cache\Cachable;
 use StudioNet\GraphQL\Cache\CachePool;
-use GraphQL\Type\Definition\InputObjectType;
 
 /**
  * Define transformer base class
@@ -69,19 +70,23 @@ abstract class Transformer extends Cachable {
 	 * @return callable
 	 */
 	public function getResolverCallable(Definition $definition) {
-		$app = $this->app;
+		return function ($root, array $args, $context, ResolveInfo $info) use ($definition) {
+			// check, if Paginable interface was implemented by given Transformer
+			// Paginable interface has an extra wrapper for data-fields
+			$isPaginable = $this instanceof Paginable;
+			$fieldsDepth = $isPaginable ? GraphQL::FIELD_SELECTION_DEPTH + 1 : GraphQL::FIELD_SELECTION_DEPTH;
+			$fields = $info->getFieldSelection($fieldsDepth);
+			$fieldsForGuessingRelations = $isPaginable ? $fields['items'] : $fields;
 
-		return function ($root, array $args, $context, ResolveInfo $info) use ($definition, $app) {
-			$fields = $info->getFieldSelection(3);
-			$opts   = [
+			$opts = [
 				'root' => $root,
 				'args' => array_filter($args),
 				'fields' => $fields,
 				'context' => $context,
 				'info' => $info,
 				'transformer' => $this,
-				'with' => $this->guessWithRelations($definition, $fields),
-				'source' => $app->make($definition->getSource()),
+				'with' => GraphQL::guessWithRelations($this->app->make($definition->getSource()), $fieldsForGuessingRelations),
+				'source' => $this->app->make($definition->getSource()),
 				'rules' => $definition->getRules(),
 				'filterables' => $definition->getFilterable(),
 				'definition' => $definition,
@@ -98,31 +103,6 @@ abstract class Transformer extends Cachable {
 	 * @return mixed
 	 */
 	abstract protected function getResolver(array $opts);
-
-	/**
-	 * Return relationship based on entity definition construction
-	 *
-	 * @param  Definition $definition
-	 * @param  array $fields
-	 * @return array
-	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-	 */
-	public function guessWithRelations(Definition $definition, array $fields) {
-		$relations = [];
-		$source = $this->app->make($definition->getSource());
-
-		// Parse each field in order to retrieve relationship elements on root
-		// of array (as relationship are based upon multiple resolvers, we just
-		// have to handle the root fields here)
-		foreach ($fields as $key => $field) {
-			// TODO Improve this checker
-			if (is_array($field) and method_exists($source, $key)) {
-				array_push($relations, $key);
-			}
-		}
-
-		return $relations;
-	}
 
 	/**
 	 * Return availabled arguments

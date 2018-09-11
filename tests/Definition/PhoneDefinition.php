@@ -3,21 +3,22 @@ namespace StudioNet\GraphQL\Tests\Definition;
 
 use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
-use StudioNet\GraphQL\Tests\Entity\Post;
+use StudioNet\GraphQL\Tests\Entity\Phone;
+use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
 
 /**
- * Specify post GraphQL definition
+ * Specify user GraphQL definition
  *
  * @see EloquentDefinition
  */
-class PostDefinition extends EloquentDefinition {
+class PhoneDefinition extends EloquentDefinition {
 	/**
 	 * {@inheritDoc}
 	 *
 	 * @return string
 	 */
 	public function getName() {
-		return 'Post';
+		return 'Phone';
 	}
 
 	/**
@@ -26,7 +27,7 @@ class PostDefinition extends EloquentDefinition {
 	 * @return string
 	 */
 	public function getDescription() {
-		return 'Represents a Post';
+		return 'Represents a Phone';
 	}
 
 	/**
@@ -35,7 +36,7 @@ class PostDefinition extends EloquentDefinition {
 	 * @return string
 	 */
 	public function getSource() {
-		return Post::class;
+		return Phone::class;
 	}
 
 	/**
@@ -46,12 +47,9 @@ class PostDefinition extends EloquentDefinition {
 	public function getFetchable() {
 		return [
 			'id' => Type::id(),
-			'title' => Type::string(),
-			'content' => Type::string(),
-			'author' => \GraphQL::type('user'),
-			'tags' => \GraphQL::listOf('tag'),
-			'comments' => \GraphQL::listOf('comment'),
-			'labels' => \GraphQL::listOf('label')
+			'label' => Type::string(),
+			'number' => Type::string(),
+			'user' => \GraphQL::type('user')
 		];
 	}
 
@@ -62,9 +60,20 @@ class PostDefinition extends EloquentDefinition {
 	 */
 	public function getMutable() {
 		return [
-			'title' => Type::string(),
-			'content' => Type::string(),
-			'tags' => Type::listOf(\GraphQL::input('tag'))
+			'id' => Type::id(),
+			'label' => Type::string(),
+			'number' => Type::string(),
+		];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return array
+	 */
+	public function getFilterable() {
+		return [
+			'id' => new EqualsOrContainsFilter()
 		];
 	}
 }

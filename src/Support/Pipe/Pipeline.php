@@ -18,7 +18,7 @@ class Pipeline extends PipelineBase {
 	 * @override
 	 * @return \Closure
 	 */
-    protected function carry() {
+	protected function carry() {
 		return function ($stack, $pipe) {
 			return function ($passable) use ($stack, $pipe) {
 				if (is_callable($pipe)) {
@@ -26,9 +26,7 @@ class Pipeline extends PipelineBase {
 					// otherwise we'll resolve the pipes out of the container and call it with
 					// the appropriate method and arguments, returning the results back out.
 					return $pipe($passable, $stack, ...$this->parameters);
-				}
-
-				elseif (!is_object($pipe)) {
+				} elseif (!is_object($pipe)) {
 					list($name, $parameters) = $this->parsePipeString($pipe);
 
 					// If the pipe is a string we will parse the string and resolve the class out
@@ -36,9 +34,7 @@ class Pipeline extends PipelineBase {
 					// execute the pipe function giving in the parameters that are required.
 					$pipe = $this->getContainer()->make($name);
 					$parameters = array_merge([$passable, $stack], array_merge($this->parameters, $parameters));
-				}
-
-				else {
+				} else {
 					// If the pipe is already an object we'll just make a callable and pass it to
 					// the pipe as-is. There is no need to do any extra parsing and formatting
 					// since the object we're given was already a fully instantiated object.
@@ -48,7 +44,7 @@ class Pipeline extends PipelineBase {
 				return method_exists($pipe, $this->method) ? $pipe->{$this->method}(...$parameters) : $pipe(...$parameters);
 			};
 		};
-    }
+	}
 
 	/**
 	 * with

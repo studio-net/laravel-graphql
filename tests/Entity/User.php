@@ -2,6 +2,8 @@
 namespace StudioNet\GraphQL\Tests\Entity;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * User
@@ -29,9 +31,30 @@ class User extends Model {
 	/**
 	 * Return related posts
 	 *
-	 * @return Illuminate\Database\Eloquent\Relations\Relation
+	 * @return HasMany
 	 */
 	public function posts() {
 		return $this->hasMany(Post::class);
+	}
+
+	/**
+	 * Get the phone record associated with the user.
+	 *
+	 * @return HasOne
+	 */
+	public function phone() {
+		return $this->hasOne(Phone::class);
+	}
+
+	public function country() {
+		return $this->belongsTo(Country::class);
+	}
+
+	public function comments() {
+		return $this->morphMany(Comment::class, 'commentable');
+	}
+
+	public function labels() {
+		return $this->morphToMany(Label::class, 'labelable');
 	}
 }

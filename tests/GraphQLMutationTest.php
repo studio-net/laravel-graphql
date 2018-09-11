@@ -1,10 +1,6 @@
 <?php
 namespace StudioNet\GraphQL\Tests;
 
-use GraphQL\Type\Definition\ListOfType;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type as GraphQLType;
-use StudioNet\GraphQL\GraphQL;
 use StudioNet\GraphQL\Tests\Entity;
 
 /**
@@ -21,12 +17,8 @@ class GraphQLMutationTest extends TestCase {
 	 */
 	public function testMutation() {
 		factory(Entity\User::class, 5)->create();
-		
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->registerAllDefinitions();
 
 		$this->specify('tests mutation on user', function () {
 			$query = 'mutation { user(id: 1, with: { name: "toto" }) { id, name } }';
@@ -102,12 +94,8 @@ class GraphQLMutationTest extends TestCase {
 	 */
 	public function testNestedMutation() {
 		factory(Entity\User::class, 5)->create();
-		
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->registerAllDefinitions();
 
 		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
@@ -181,12 +169,8 @@ GQL;
 	 */
 	public function testNestedEditMutation() {
 		factory(Entity\User::class, 5)->create();
-		
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->registerAllDefinitions();
 
 		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
@@ -256,12 +240,8 @@ GQL;
 	 */
 	public function testNestedEditNullMutation() {
 		factory(Entity\User::class, 5)->create();
-		
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->registerAllDefinitions();
 
 		$this->specify('tests nested mutation on user', function () {
 			$query = <<<'GQL'
@@ -355,11 +335,7 @@ GQL;
 		}
 		$tagsUpdate = implode(",", $tagUpdate);
 
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+		$this->registerAllDefinitions();
 
 		$this->specify(
 			'tests nested m:n mutation on post',
@@ -393,12 +369,8 @@ GQL;
 	 */
 	public function testMutationCustomInputField() {
 		factory(Entity\User::class, 1)->create();
-		
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->registerAllDefinitions();
 
 		$this->specify('tests custom input field on user', function () {
 			$query = 'mutation { user(id: 1, with: {'
@@ -428,12 +400,8 @@ GQL;
 	 */
 	public function testMutationCustomInputFieldException() {
 		factory(Entity\User::class, 1)->create();
-		
-		$graphql = app(GraphQL::class);
-		$graphql->registerSchema('default', []);
-		$graphql->registerDefinition(Definition\UserDefinition::class);
-		$graphql->registerDefinition(Definition\PostDefinition::class);
-		$graphql->registerDefinition(Definition\TagDefinition::class);
+
+		$this->registerAllDefinitions();
 
 		$this->specify('tests custom input field on user, with error', function () {
 			$query = 'mutation { user(id: 1, with: {'

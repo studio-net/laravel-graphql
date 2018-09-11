@@ -15,7 +15,7 @@ class Tag extends Model {
 	/**
 	 * Return related posts
 	 *
-	 * @return Illuminate\Database\Eloquent\Relations\Relation
+	 * @return \Illuminate\Database\Eloquent\Relations\Relation
 	 */
 	public function posts() {
 		return $this->belongsToMany(

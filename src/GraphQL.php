@@ -7,6 +7,7 @@ use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as Type;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
 use StudioNet\GraphQL\Cache\CachePool;
 use StudioNet\GraphQL\Support\Definition\Definition;
@@ -24,6 +25,9 @@ class GraphQL {
 
 	/** @var CachePool $cache */
 	private $cache;
+
+	/** @var int Depth-level, how deep fields will be fetched for relations guessing */
+	const FIELD_SELECTION_DEPTH = 3;
 
 	/**
 	 * __construct
@@ -327,5 +331,37 @@ class GraphQL {
 	 */
 	private function make($cls) {
 		return (is_string($cls)) ? $this->app->make($cls) : $cls;
+	}
+
+	/**
+	 * Return relationship based on fields that are queried
+	 *
+	 * @param  Model $model
+	 * @param  array $fields
+	 * @param  string $parentRelation
+	 *
+	 * @return array
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+	 */
+	public static function guessWithRelations(Model $model, array $fields, string $parentRelation = null) {
+		$relations = [];
+		// Parse each field in order to retrieve relationship elements on root
+		// of array (as relationship are based upon multiple resolvers, we just
+		// have to handle the root fields here)
+		foreach ($fields as $key => $field) {
+			if (is_array($field) && method_exists($model, $key)) {
+				// verify, that given method returns relation
+				$relation = call_user_func([$model, $key]);
+				if ($relation instanceof Relation) {
+					$relationNameToStore = $parentRelation ? "{$parentRelation}.{$key}" : $key;
+					$relations[] = $relationNameToStore;
+
+					// also guess relations for found relation
+					$relations = array_merge($relations, self::guessWithRelations($relation->getModel(), $field, $relationNameToStore));
+				}
+			}
+		}
+
+		return $relations;
 	}
 }
