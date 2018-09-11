@@ -36,6 +36,7 @@ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 - [Require authorization](#require-authorization)
 - [Self documentation](#self-documentation)
 - [Examples](#examples)
+- [N+1 Problem](#n+1-problem)
 
 ### Definition
 
@@ -603,6 +604,14 @@ post-save (which can be useful for eloquent relational models) :
 		];
 	}
 ```
+
+### N+1 Problem
+
+The common question is, if graphql library solves n+1 problem. This occures, when graphql resolves relation. Often entities are fetched without relations, and when graphql query needs to fetch relation, for each fetched entity relation would be fetched from SQL separately. So instead of executing 2 SQL queries, you will get N+1 queries, where N is the count of results of root entity. In that example you would query only one relation. If you query more relations, then it becomes N^2+1 problem.
+
+To solve it, Eloquent has already options to eager load relations. Transformers in this library use eager loading, depends on what you query.
+
+Currently this smart detection works perfect only on View and List Transformers. Other transformers will be reworked soon.
 
 ## Contribution
 
