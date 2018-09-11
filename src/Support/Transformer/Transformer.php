@@ -71,8 +71,6 @@ abstract class Transformer extends Cachable {
 	 */
 	public function getResolverCallable(Definition $definition) {
 		return function ($root, array $args, $context, ResolveInfo $info) use ($definition) {
-			$reflect = new \ReflectionClass($this);
-
 			// check, if Paginable interface was implemented by given Transformer
 			// Paginable interface has an extra wrapper for data-fields
 			$isPaginable = $this instanceof Paginable;
