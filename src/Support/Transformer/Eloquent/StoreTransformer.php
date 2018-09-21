@@ -3,6 +3,7 @@ namespace StudioNet\GraphQL\Support\Transformer\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
 use StudioNet\GraphQL\Support\Transformer\EloquentTransformer;
+use StudioNet\GraphQL\Support\Transformer\Eloquent\Relation\RelationTransformer;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Definition\Type;
 use Illuminate\Database\Eloquent\Relations;
@@ -127,7 +128,7 @@ class StoreTransformer extends EloquentTransformer {
 
 		$this->validate($data, $opts['rules']);
 		$model->fill($data);
-		$syncLater = [];
+		$relationTransformers = [];
 		foreach ($relationInput as $column => $values) {
 			if (empty($values)) {
 				// TODO: check if it's pertinent
@@ -135,93 +136,22 @@ class StoreTransformer extends EloquentTransformer {
 				// it can be problematic because empty top level fields are emptied.
 				continue;
 			}
-
-			$relation = $model->{$column}();
-
-			// If we are on a hasOne or belongsTo relationship, we have to
-			// manage the firstOrNew case
-			//
-			// https://laracasts.com/discuss/channels/general-discussion/hasone-create-duplicates
-			$relationType = get_class($relation);
-			if (in_array($relationType, [Relations\HasOne::class, Relations\BelongsTo::class])) {
-				$dep = $relation->getRelated()->findOrNew(array_get($values, 'id', null));
-
-				if (empty($dep->id)) {
-					$dep = $relation->firstOrNew([]);
-				}
-				$dep->fill($values)->save();
-
-				switch ($relationType) {
-					case Relations\BelongsTo::class:
-						$relation->associate($dep);
-						break;
-					default:
-						$relation->save($dep);
-				}
-			} elseif ($relationType === Relations\MorphTo::class) {
-				$id = array_get($values, 'id', null);
-				$type = array_get($values, '__typename', null);
-
-				if (is_null($type)) {
-					throw new \Exception(
-						"Can't update polymorphic relation without specify type"
-					);
-				}
-
-				// TODO: maybe there is a smarter way to guess type
-				$className = '\App\\' . $type;
-				if (!class_exists($className)) {
-					throw new \Exception("Unknown $className type");
-				}
-
-				$dep = $className::findOrNew($id);
-				$dep->fill($values)->save();
-				$relation->associate($dep);
-			} else {
-				if (!is_array(array_first($values))) {
-					$values = [$values];
-				}
-
-				if ($relationType === Relations\BelongsToMany::class) {
-					$toKeep = array_map(function ($value) {
-						return array_get($value, 'id', null);
-					}, $values);
-
-					$relation = $model->{$column}();
-					// Do the sync after model save, 'coz if model doesn't exist
-					// in DB yet, it will result with a NOT NULL error in pivot table
-					$syncLater[] = [
-						"relation" => $relation,
-						"values" => array_filter($toKeep, function ($value) {
-							return !is_null($value);
-						})
-					];
-				} else {
-					// For each relationship, find or new by id and fill with data
-					foreach ($values as $value) {
-						// TODO: refactor
-						// $relation is reset because findOrNew updates it and where
-						// clauses are stacked.
-						$relation = $model->{$column}();
-						$entity = $relation->findOrNew(array_get($value, 'id', null));
-						$fill = [];
-
-						foreach (array_keys($value) as $key) {
-							if ($entity->isFillable($key)) {
-								$fill[$key] = $value[$key];
-							}
-						}
-						$entity->fill($fill)->save();
-					}
-				}
-			}
+			$relationTransformer = Relation\RelationTransformerFactory::getTransformer(
+				$model,
+				$column,
+				$values
+			);
+			$relationTransformer->transform();
+			$relationTransformers[] = $relationTransformer;
 		}
 
 		$model->save();
 
 		// Sync relations which need to be synced after save
-		foreach ($syncLater as $sync) {
-			$sync["relation"]->sync($sync["values"]);
+		// TODO: it will be create to attach a callback to $model
+		// to be fired at 'saved' event
+		foreach ($relationTransformers as $relationTransformer) {
+			$relationTransformer->afterSave();
 		}
 
 		// Apply post-save callBacks
