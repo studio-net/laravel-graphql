@@ -19,11 +19,13 @@ abstract class EloquentTransformer extends Transformer {
 	 */
 	protected function getResolver(array $opts) {
 		$query = $opts['source']->newQuery();
-		// this is a small workaround, that should be omitted and reworked with store transformer!
-		// add with only, if we don't use store transformer
-		if ((!$opts['transformer'] instanceof StoreTransformer)) {
+
+		// this is a small workaround, that should be omitted and reworked with
+		// store transformer! add with only, if we don't use store transformer
+		if (!($opts['transformer'] instanceof StoreTransformer)) {
 			$query->with($opts['with']);
 		}
+
 		return (new Pipeline($this->app))
 			->send($query)
 			->with($opts)

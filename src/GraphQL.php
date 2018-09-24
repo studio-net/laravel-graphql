@@ -345,6 +345,7 @@ class GraphQL {
 	 */
 	public static function guessWithRelations(Model $model, array $fields, string $parentRelation = null) {
 		$relations = [];
+
 		// Parse each field in order to retrieve relationship elements on root
 		// of array (as relationship are based upon multiple resolvers, we just
 		// have to handle the root fields here)
@@ -352,6 +353,7 @@ class GraphQL {
 			if (is_array($field) && method_exists($model, $key)) {
 				// verify, that given method returns relation
 				$relation = call_user_func([$model, $key]);
+
 				if ($relation instanceof Relation) {
 					$relationNameToStore = $parentRelation ? "{$parentRelation}.{$key}" : $key;
 					$relations[] = $relationNameToStore;
