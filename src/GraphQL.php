@@ -135,7 +135,11 @@ class GraphQL {
 
 		// rethrow internal exception (will be catched in the controller)
 		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)
-			->toArray(Debug::RETHROW_INTERNAL_EXCEPTIONS);
+			// override default error formatter to handle dev mode
+			->setErrorFormatter(function (Error $error) {
+				return self::formatGraphQLException($error->getPrevious());
+			})
+			->toArray();
 	}
 
 	/**
