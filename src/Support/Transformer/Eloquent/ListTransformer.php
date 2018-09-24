@@ -118,11 +118,11 @@ class ListTransformer extends EloquentTransformer implements Paginable {
 	 */
 	protected function manageBuilderArguments(Builder $builder, array $args) {
 		if (array_key_exists('only_trashed', $args)) {
-			$builder->withTrashed();
+			$builder->onlyTrashed();
 		}
 
 		if (array_key_exists('trashed', $args)) {
-			$builder->onlyTrashed();
+			$builder->withTrashed();
 		}
 
 		return $builder;
