@@ -13,6 +13,8 @@ use StudioNet\GraphQL\Cache\CachePool;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use GraphQL\Error\Error;
 use StudioNet\GraphQL\Error\ValidationError;
+use GraphQL\Error\Debug;
+use GraphQL\Error\FormattedError;
 
 /**
  * GraphQL implementation singleton
@@ -131,40 +133,37 @@ class GraphQL {
 			return $result;
 		};
 
-		$data = GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver);
-
-		if (!empty($data->errors)) {
-			return [
-				'data' => $data->data,
-				'errors' => array_map([$this, 'formatError'], $data->errors)
-			];
-		}
-
-		return $data->toArray(true);
+		// rethrow internal exception (will be catched in the controller)
+		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)
+			->toArray(Debug::RETHROW_INTERNAL_EXCEPTIONS);
 	}
 
 	/**
-	 * Format error
+	 * handle GraphQL exception
 	 *
-	 * @param  Error $e
+	 * @param  \Throwable $e
 	 * @return array
+	 * @static
 	 */
-	protected function formatError(Error $e) {
-		$error = ['message' => $e->getMessage()];
-		$locs = $e->getLocations();
-		$prev = $e->getPrevious();
+	static public function formatGraphQLException(\Throwable $e): array {
+		$debug = false;
 
-		if (!empty($locs)) {
-			$error['locations'] = array_map(function ($loc) { return $loc->toArray(); }, $locs);
+		// if debug mode is activated, we have to include debug message and
+		// trace to easily found exception
+		if (config('app.debug')) {
+			$debug = DEBUG::INCLUDE_DEBUG_MESSAGE | Debug::INCLUDE_TRACE;
 		}
 
-		if (!empty($prev)) {
-			if ($prev instanceof ValidationError) {
-				$error['validation'] = $prev->getValidatorMessages()->toArray();
-			}
+		// create the array exception based on default GraphQL implementation
+		$data = FormattedError::createFromException($e, $debug);
+
+		// for validation error, we have to add new entry in exception to
+		// know which field is wrong
+		if ($e instanceof ValidationError) {
+			$data['validation'] = $e->getValidatorMessages()->toArray();
 		}
 
-		return $error;
+		return $data;
 	}
 
 	/**

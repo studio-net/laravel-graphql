@@ -48,7 +48,7 @@ class GraphQLController extends Controller {
 				$data = $this->executeQuery($schema, $inputs);
 			}
 		} catch (\Exception $exception) {
-			$data['errors'] = $exception->getMessage();
+			$data = \GraphQL::formatGraphQLException($exception);
 			Log::debug($exception);
 		}
 
