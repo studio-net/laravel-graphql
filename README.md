@@ -36,7 +36,7 @@ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 - [Require authorization](#require-authorization)
 - [Self documentation](#self-documentation)
 - [Examples](#examples)
-- [N+1 Problem](#n+1-problem)
+- [N+1 Problem](#n1-problem)
 
 ### Definition
 
