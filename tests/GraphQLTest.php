@@ -175,20 +175,15 @@ class GraphQLTest extends TestCase {
 			$query = 'query { unauthorized }';
 
 			$this->assertGraphQLEquals($query, [
-				'data' => [
-					'unauthorized' => null
-				],
 				'errors' => [
 					[
 						'message' => 'UNAUTHORIZED',
-						'locations' => [
-							[
-								'line' => 1,
-								'column' => 9
-							]
-						]
+						'category' => 'graphql'
 					]
-				]
+				],
+				'data' => [
+					'unauthorized' => null
+				],
 			]);
 		});
 	}

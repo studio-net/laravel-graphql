@@ -38,25 +38,20 @@ class GraphQLMutationTest extends TestCase {
 		$this->specify('tests validation', function () {
 			$query = 'mutation { user(id: 1, with: { name: "la" }) { id, name } }';
 			$this->assertGraphQLEquals($query, [
-				'data' => [
-					'user' => null
-				],
 				'errors' => [
 					[
 						'message' => 'validation',
-						'locations' => [
-							[
-								'line' => 1,
-								'column' => 12,
-							],
-						],
+						'category' => 'graphql',
 						'validation' => [
 							'name' => [
 								'The name must be between 3 and 10 characters.'
 							]
 						]
 					]
-				]
+				],
+				'data' => [
+					'user' => null
+				],
 			]);
 		});
 
@@ -408,8 +403,7 @@ GQL;
 				. ' name_uppercase: "badvalue" }) { id, name } }';
 
 			$data = $this->executeGraphQL($query);
-
-			$this->assertSame("it's a bad value", $data['errors'][0]['message']);
+			$this->assertSame("Internal server error", $data['errors'][0]['message']);
 		});
 	}
 }
