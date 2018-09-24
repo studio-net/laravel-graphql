@@ -50,7 +50,7 @@ class GraphQLController extends Controller {
 
 			$responseCode = 200;
 		} catch (\Exception $exception) {
-			$data = \GraphQL::formatGraphQLException($exception);
+			$data = GraphQL::formatGraphQLException($exception);
 			$responseCode = 500;
 
 			Log::debug($exception);
