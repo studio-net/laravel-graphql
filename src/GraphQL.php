@@ -137,7 +137,7 @@ class GraphQL {
 		return GraphQLBase::executeQuery($schema, $query, $root, $context, $variables, $operation, $fieldResolver)
 			// override default error formatter to handle dev mode
 			->setErrorFormatter(function (Error $error) {
-				return self::formatGraphQLException($error->getPrevious());
+				return self::formatGraphQLException($error->getPrevious() ?? $error);
 			})
 			->toArray();
 	}
@@ -145,11 +145,11 @@ class GraphQL {
 	/**
 	 * handle GraphQL exception
 	 *
-	 * @param  \Throwable $e
+	 * @param  \Throwable|\GraphQL\Error\Error $e
 	 * @return array
 	 * @static
 	 */
-	static public function formatGraphQLException(\Throwable $e): array {
+	static public function formatGraphQLException($e): array {
 		$debug = false;
 
 		// if debug mode is activated, we have to include debug message and
