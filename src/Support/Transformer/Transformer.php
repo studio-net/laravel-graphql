@@ -116,6 +116,12 @@ abstract class Transformer extends Cachable {
 		$args = [];
 
 		foreach ($pipes as $pipe) {
+			// we can't use callable with arguments
+			if (is_callable($pipe)) {
+				continue;
+			}
+
+			// a class pipe can handle argumentable interface
 			$pipe = $this->app->make($pipe);
 
 			if ($pipe instanceof \StudioNet\GraphQL\Support\Pipe\Argumentable) {
