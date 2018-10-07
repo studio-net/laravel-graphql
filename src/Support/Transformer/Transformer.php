@@ -120,9 +120,10 @@ abstract class Transformer extends Cachable {
 			if (is_callable($pipe)) {
 				continue;
 			}
-
+			// pipe string definition may contain parameters, that are separated from the pipe class name with semicolon
+			$parsedPipeString = explode(':', $pipe, 2);
 			// a class pipe can handle argumentable interface
-			$pipe = $this->app->make($pipe);
+			$pipe = $this->app->make($parsedPipeString[0]);
 
 			if ($pipe instanceof \StudioNet\GraphQL\Support\Pipe\Argumentable) {
 				$args = array_merge($args, $pipe->getArguments($definition));
