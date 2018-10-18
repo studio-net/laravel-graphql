@@ -149,7 +149,7 @@ class GraphQL {
 	 * @return array
 	 * @static
 	 */
-	static public function formatGraphQLException($e): array {
+	public static function formatGraphQLException($e): array {
 		$debug = false;
 
 		// if debug mode is activated, we have to include debug message and
