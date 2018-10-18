@@ -33,6 +33,7 @@ php artisan vendor:publish --provider="StudioNet\GraphQL\ServiceProvider"
 - [Definition](#definition)
 - [Query](#query)
 - [Mutation](#mutation)
+- [Pipeline](#pipeline)
 - [Require authorization](#require-authorization)
 - [Self documentation](#self-documentation)
 - [Examples](#examples)
@@ -329,6 +330,108 @@ return [
 		\App\GraphQL\Definition\UserDefinition::class
 	]
 ];
+```
+
+### Pipeline
+
+Pipeline are used to convert a definition into queryable and mutable operations.
+But, you can easily create your own and manage useful cases like asserting ACL
+before doing anything, etc.
+
+Pipeline is implemented using the same [Laravel Middleware](https://laravel.com/docs/5.7/middleware) format
+but pass as first argument the Eloquent Query Builder.
+
+## Create new pipe
+
+```php
+namespace App/GraphQL/Pipe;
+
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
+
+class OnlyAuthored {
+	/**
+	 * returns only posts that the viewer handle
+	 *
+	 * @param  Builder $builder
+	 * @param  Closure $next
+	 * @param  array $opts
+	 * @return \Illuminate\Database\Eloquent\Model
+	 */
+	public function handle(Builder $builder, Closure $next, array $opts) {
+		$builder->where('author_id', $opts['context']->getKey());
+
+		return $next($builder);
+	}
+}
+```
+
+```php
+namespace App\GraphQL\Definition;
+
+class PostDefinition extends EloquentDefinition {
+	// ...
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return array
+	 */
+	public function getPipes(): array {
+		return array_merge_recursive(parent::getPipes(), [
+			'list' => [\App\GraphQL\Pipe\OnlyAuthored::class],
+		]);
+	}
+	
+	// ...
+}
+```
+
+With this sample, when you'll query `posts` query, you'll only get viewer posts,
+not all one. Also, you can specify arguments in the pipe, like following :
+
+```php
+namespace App/GraphQL/Pipe;
+
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
+use GraphQL\Type\Definition\Type;
+use StudioNet\GraphQL\Support\Pipe\Argumentable;
+use StudioNet\GraphQL\Support\Definition\Definition;
+
+class FilterableGroups implements Argumentable {
+	/**
+	 * returns only given groups
+	 *
+	 * @param  Builder $builder
+	 * @param  Closure $next
+	 * @param  array $opts
+	 * @return \Illuminate\Database\Eloquent\Model
+	 */
+	public function handle(Builder $builder, Closure $next, array $opts) {
+		if (array_get($opts, ['args.group_ids', false])) {
+			$builder->whereIn('group_id', $opts['args']['group_ids']);
+		}
+
+		return $next($builder);
+	}
+
+	/**
+	 * @implements
+	 *
+	 * @param  Definition $definition
+	 * @return array
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+	 */
+	public function getArguments(Definition $definition): array {
+		return [
+			'groups_id' => [
+				'type' => Type::json(),
+				'description' => 'Filtering by group IDs'
+			]
+		];
+	}
+}
 ```
 
 ### Require authorization
