@@ -41,7 +41,9 @@ class GraphQLMutationTest extends TestCase {
 				'errors' => [
 					[
 						'message' => 'validation',
-						'category' => 'graphql',
+						'extensions' => [
+							'category' => 'graphql',
+						],
 						'validation' => [
 							'name' => [
 								'The name must be between 3 and 10 characters.'

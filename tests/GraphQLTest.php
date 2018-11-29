@@ -178,7 +178,9 @@ class GraphQLTest extends TestCase {
 				'errors' => [
 					[
 						'message' => 'UNAUTHORIZED',
-						'category' => 'graphql'
+						'extensions' => [
+							'category' => 'graphql',
+						],
 					]
 				],
 				'data' => [
