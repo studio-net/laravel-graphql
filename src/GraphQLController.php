@@ -22,6 +22,7 @@ class GraphQLController extends Controller {
 	 * @return \Illuminate\Http\JsonResponse
 	 */
 	public function query(Request $request, $schema = null) {
+
 		$inputs = $request->all();
 		$data = [];
 
@@ -48,11 +49,8 @@ class GraphQLController extends Controller {
 				$data = $this->executeQuery($schema, $inputs);
 			}
 
-			$responseCode = 200;
 		} catch (\Exception $exception) {
 			$data = GraphQL::formatGraphQLException($exception);
-			$responseCode = 500;
-
 			Log::debug($exception);
 		}
 
@@ -61,7 +59,6 @@ class GraphQLController extends Controller {
 		if ($hasError) {
 			// Rollback transaction is any error occurred
 			DB::rollBack();
-			$responseCode = 422;
 		} else {
 			// If everything is okay, just commit the transaction
 			DB::commit();
@@ -70,7 +67,7 @@ class GraphQLController extends Controller {
 		$headers = config('graphql.response.headers', []);
 		$options = config('graphql.response.json_encoding_options', 0);
 
-		return Response::json($data, $responseCode, $headers, $options);
+		return Response::json($data, 200, $headers, $options);
 	}
 
 	/**
