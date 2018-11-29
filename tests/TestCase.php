@@ -80,13 +80,13 @@ abstract class TestCase extends BaseTestCase {
 	}
 
 	/**
-	 * Assert that $schema is an instance of GraphQL\Schema
+	 * Assert that $schema is an instance of GraphQL\Type\Schema
 	 *
 	 * @param  mixed $schema
 	 * @return void
 	 */
 	public function assertGraphQLSchema($schema) {
-		$this->assertInstanceOf(\GraphQL\Schema::class, $schema);
+		$this->assertInstanceOf(\GraphQL\Type\Schema::class, $schema);
 	}
 
 	/**

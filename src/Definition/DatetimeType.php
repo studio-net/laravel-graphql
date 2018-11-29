@@ -40,13 +40,10 @@ class DatetimeType extends ScalarType {
 
 	/**
 	 * {@inheritDoc}
-	 *
-	 * @param  GraphQL\Language\AST\Node $ast
-	 * @return Carbon|null
 	 */
-	public function parseLiteral($ast) {
-		if ($ast instanceof StringValueNode) {
-			return new Carbon($ast->value);
+	public function parseLiteral($valueNode, ?array $variables = null) {
+		if ($valueNode instanceof StringValueNode) {
+			return new Carbon($valueNode->value);
 		}
 		return null;
 	}

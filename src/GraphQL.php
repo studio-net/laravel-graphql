@@ -3,7 +3,7 @@ namespace StudioNet\GraphQL;
 
 use GraphQL\Executor\Executor;
 use GraphQL\GraphQL as GraphQLBase;
-use GraphQL\Schema;
+use GraphQL\Type\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as Type;
 use Illuminate\Database\Eloquent\Model;

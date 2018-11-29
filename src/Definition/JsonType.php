@@ -38,11 +38,8 @@ class JsonType extends ScalarType {
 
 	/**
 	 * {@inheritDoc}
-	 *
-	 * @param  GraphQL\Language\AST $valueNode
-	 * @return array|null
 	 */
-	public function parseLiteral($valueNode) {
+	public function parseLiteral($valueNode, ?array $variables = null) {
 		switch ($valueNode) {
 		case ($valueNode instanceof AST\StringValueNode):
 		case ($valueNode instanceof AST\BooleanValueNode): return $valueNode->value;
