@@ -480,7 +480,7 @@ query {
 
 When declaring the `getFilterable` array, you can define filters for fields.
 
-You can either use a closure, or give class implementing FilterInterface.
+You can either use a closure, an array, or give object of class implementing FilterInterface.
 
 The closure (or the `FilterInterface::updateBuilder` method) is then called
 with:
@@ -489,17 +489,48 @@ with:
 * $value : the filter value
 * $key : the filter key
 
-You can use the predefined `EqualsOrContainsFilter` like below.
+You also may define graphql type for you filterable input field. By default `Type::json()` is used. There are several
+options to define the type (all examples are listed in following code-block):
+
+- if you are using class that implements `TypedFilterInterface`, returned type from method
+`TypedFilterInterface::getType` is used;
+- if you are using closure, you have to define an array with keys `type` containing type you wish and `resolver` 
+containing closure;
+- if you define an array, and in `resolver` is passed an object of class with implemented `TypedFilterInterface`, 
+then type of `TypedFilterInterface::getType` will overwrite the type in an array key `type`;
+- in all other situations `Type::json()` will be used as default type
+
+You can also use the predefined `EqualsOrContainsFilter` like below.
 
 ```php
 	public function getFilterable() {
 		return [
-			// Simple equality check (or "in" if value is an array)
+			// Simple equality check (or "in" if value is an array). Type is Type::json()
 			'id'       => new EqualsOrContainsFilter(),
-			// Customized filter
+			
+			// Customized filter. Type is Type::json()
 			"nameLike" => function($builder, $value) {
 				return $builder->whereRaw('name like ?', $value);
 			},
+			
+			// type is Type::string()
+			"anotherFilter" => [
+				"type" => Type::string(),
+				"resolver" => function($builder, $value) {
+					return $builder->whereRaw('anotherFilter like ?', $value);				
+				}
+			],
+			
+			// type is what is returned from `ComplexFilter::getType()`.
+			// This is the preffered way to define filters, as it keeps definitions code clean
+			"complexFilter" => new ComplexFilter(),
+			
+			// type in array will be overriden by what is returned from `ComplexFilter::getType()`.
+			// this kind of difinition is not clear, but is implemented for backward compatibilities. Please don't use it
+			"complexFilter2" => [
+				"type" => Type::int(),
+				"resolver" => new ComplexFilter()
+			],
 		];
 	}
 ```

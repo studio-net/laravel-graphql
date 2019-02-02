@@ -332,4 +332,119 @@ EOGQL;
 			);
 		});
 	}
+
+
+	/**
+	 * Test filters : typed filter
+	 */
+	public function testTypedFilter() {
+		factory(Entity\User::class)->create(['name' => 'foo']);
+		factory(Entity\User::class)->create(['name' => 'bar']);
+		factory(Entity\User::class)->create(['name' => 'baz']);
+		factory(Entity\User::class)->create(['name' => 'foobar']);
+
+		$this->registerAllDefinitions();
+
+		$this->specify('test equality custom', function () {
+			// We should only get users which name starts with 'ba'
+			$query = <<<'EOGQL'
+query ($filter: UserFilter) {
+	users(filter: $filter) {
+		items {
+				name
+		}
+	}
+}
+EOGQL;
+
+			$res = $this->executeGraphQL($query, [
+				'variables' => [
+					'filter' => [
+						'nameLikeViaTypedFilter' => 'ba'
+					]
+				]
+			]);
+
+			$this->assertSame(
+				['bar','baz','foobar'],
+				array_column($res['data']['users']['items'], 'name')
+			);
+		});
+	}
+
+	/**
+	 * Test filters : closure filter as array
+	 */
+	public function testFilterAsArrayClosure() {
+		factory(Entity\User::class)->create(['name' => 'foo']);
+		factory(Entity\User::class)->create(['name' => 'bar']);
+		factory(Entity\User::class)->create(['name' => 'baz']);
+		factory(Entity\User::class)->create(['name' => 'foobar']);
+
+		$this->registerAllDefinitions();
+
+		$this->specify('test equality custom', function () {
+			// We should only get users which name starts with 'ba'
+			$query = <<<'EOGQL'
+query ($filter: UserFilter) {
+	users(filter: $filter) {
+		items {
+				name
+		}
+	}
+}
+EOGQL;
+
+			$res = $this->executeGraphQL($query, [
+				'variables' => [
+					'filter' => [
+						'nameLikeArrayClosure' => 'ba%'
+					]
+				]
+			]);
+
+			$this->assertSame(
+				['bar','baz'],
+				array_column($res['data']['users']['items'], 'name')
+			);
+		});
+	}
+
+	/**
+	 * Test filters : typed filter as array
+	 */
+	public function testFilterAsArrayTypedFilter() {
+		factory(Entity\User::class)->create(['name' => 'foo']);
+		factory(Entity\User::class)->create(['name' => 'bar']);
+		factory(Entity\User::class)->create(['name' => 'baz']);
+		factory(Entity\User::class)->create(['name' => 'foobar']);
+
+		$this->registerAllDefinitions();
+
+		$this->specify('test equality custom', function () {
+			// We should only get users which name starts with 'ba'
+			$query = <<<'EOGQL'
+query ($filter: UserFilter) {
+	users(filter: $filter) {
+		items {
+				name
+		}
+	}
+}
+EOGQL;
+
+			$res = $this->executeGraphQL($query, [
+				'variables' => [
+					'filter' => [
+						'nameLikeArrayTypedFilter' => 'ba'
+					]
+				]
+			]);
+
+			$this->assertSame(
+				['bar','baz','foobar'],
+				array_column($res['data']['users']['items'], 'name')
+			);
+		});
+	}
 }
