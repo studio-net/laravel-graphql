@@ -50,11 +50,10 @@ abstract class Grammar {
 			$resolver = $filter['filter'];
 			// check, if we got an array, and try fetch resolver
 			if (is_array($filter['filter'])) {
-				if (key_exists('resolver', $filter['filter'])) {
-					$resolver = $filter['filter']['resolver'];
-				} else {
+				if (!key_exists('resolver', $filter['filter'])) {
 					throw new FilterException("Invalid filter for $filter[key]");
 				}
+				$resolver = $filter['filter']['resolver'];
 			}
 
 			// if we got simple closure, call it
