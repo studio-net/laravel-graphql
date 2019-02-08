@@ -22,7 +22,6 @@ class GraphQLController extends Controller {
 	 * @return \Illuminate\Http\JsonResponse
 	 */
 	public function query(Request $request, $schema = null) {
-
 		$inputs = $request->all();
 		$data = [];
 
@@ -48,7 +47,6 @@ class GraphQLController extends Controller {
 			else {
 				$data = $this->executeQuery($schema, $inputs);
 			}
-
 		} catch (\Exception $exception) {
 			$data = GraphQL::formatGraphQLException($exception);
 			Log::debug($exception);

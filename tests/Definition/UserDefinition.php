@@ -1,11 +1,13 @@
 <?php
 namespace StudioNet\GraphQL\Tests\Definition;
 
+use Illuminate\Database\Eloquent\Builder;
 use StudioNet\GraphQL\Definition\Type;
 use StudioNet\GraphQL\Support\Definition\EloquentDefinition;
 use StudioNet\GraphQL\Tests\Entity\User;
 use StudioNet\GraphQL\Filter\EqualsOrContainsFilter;
 use Illuminate\Database\Eloquent\Model;
+use StudioNet\GraphQL\Tests\Filters\LikeFilter;
 
 /**
  * Specify user GraphQL definition
@@ -85,9 +87,20 @@ class UserDefinition extends EloquentDefinition {
 	public function getFilterable() {
 		return [
 			'id' => new EqualsOrContainsFilter(),
-			"nameLike" => function ($builder, $value) {
+			"nameLike" => function (Builder $builder, $value) {
 				return $builder->whereRaw('name like ?', $value);
 			},
+			"nameLikeViaTypedFilter" => new LikeFilter('name'),
+			"nameLikeArrayClosure" => [
+				"type" => Type::string(),
+				"resolver" => function (Builder $builder, $value) {
+					return $builder->whereRaw('name like ?', $value);
+				}
+			],
+			"nameLikeArrayTypedFilter" => [
+				"type" => Type::int(), // NOTE: this type will be overridden by LikeFilter::getType()
+				"resolver" => new LikeFilter('name')
+			],
 		];
 	}
 

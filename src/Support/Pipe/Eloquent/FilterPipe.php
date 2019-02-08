@@ -5,6 +5,8 @@ use Closure;
 use GraphQL\Type\Definition\InputObjectType;
 use Illuminate\Database\Eloquent\Builder;
 use StudioNet\GraphQL\Definition\Type;
+use StudioNet\GraphQL\Filter\FilterInterface;
+use StudioNet\GraphQL\Filter\TypedFilterInterface;
 use StudioNet\GraphQL\Grammar;
 use StudioNet\GraphQL\Support\Definition\Definition;
 use StudioNet\GraphQL\Support\Pipe\Argumentable;
@@ -66,7 +68,24 @@ class FilterPipe implements Argumentable {
 		$queryable = [];
 
 		foreach ($definition->getFilterable() as $field => $filter) {
-			$queryable[$field] = ['type' => Type::json(), 'filter' => $filter];
+			// define default values
+			$fieldType = Type::json();
+
+			// if we got instance of TypedFilterInterface, extract type
+			if ($filter instanceof TypedFilterInterface) {
+				$fieldType = $filter->getType();
+			}
+
+			// if we got an array, try to fetch type and resolver Function/FilterInterface
+			if (is_array($filter)) {
+				if ($filter['resolver'] instanceof TypedFilterInterface) {
+					$fieldType = $filter['resolver']->getType();
+				} else {
+					$fieldType = array_get($filter, 'type', Type::json());
+				}
+			}
+
+			$queryable[$field] = $fieldType;
 		}
 
 		return new InputObjectType([

@@ -47,13 +47,24 @@ abstract class Grammar {
 		$whereFunc = strtolower($operator) === 'or' ? "orWhere": "where";
 
 		$builder->$whereFunc(function ($b) use ($filter) {
-			if (is_callable($filter['filter'])) {
-				$filter['filter']($b, $filter['value'], $filter['key']);
+			$resolver = $filter['filter'];
+			// check, if we got an array, and try fetch resolver
+			if (is_array($filter['filter'])) {
+				if (!key_exists('resolver', $filter['filter'])) {
+					throw new FilterException("Invalid filter for $filter[key]");
+				}
+				$resolver = $filter['filter']['resolver'];
+			}
+
+			// if we got simple closure, call it
+			if (is_callable($resolver)) {
+				$resolver($b, $filter['value'], $filter['key']);
 				return;
 			}
 
-			if ($filter['filter'] instanceof FilterInterface) {
-				$filter['filter']->updateBuilder(
+			// if we got instance of FilterInterface, execute it
+			if ($resolver instanceof FilterInterface) {
+				$resolver->updateBuilder(
 					$b,
 					$filter['value'],
 					$filter['key']
