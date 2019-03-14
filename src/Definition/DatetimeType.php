@@ -25,7 +25,10 @@ class DatetimeType extends ScalarType {
 	 * @return array
 	 */
 	public function serialize($value) {
-		return $this->toTimestamp($value);
+		$carbon = new Carbon($value);
+		$carbon->timezone('UTC');
+		$str = $carbon->toIso8601String();
+		return $str;
 	}
 
 	/**
@@ -35,7 +38,9 @@ class DatetimeType extends ScalarType {
 	 * @return array|null
 	 */
 	public function parseValue($value) {
-		return new Carbon($value);
+		$carbon = new Carbon($value);
+		$carbon->timezone(config('app.timezone'));
+		return $carbon;
 	}
 
 	/**
@@ -43,18 +48,11 @@ class DatetimeType extends ScalarType {
 	 */
 	public function parseLiteral($valueNode, ?array $variables = null) {
 		if ($valueNode instanceof StringValueNode) {
-			return new Carbon($valueNode->value);
+			$carbon = new Carbon($valueNode->value);
+			$carbon->timezone(config('app.timezone'));
+			return $carbon;
 		}
 		return null;
 	}
 
-	/**
-	 * Turn value into timestamp
-	 *
-	 * @param  string|int $value
-	 * @return int
-	 */
-	private function toTimestamp($value) {
-		return (new Carbon($value))->toRfc3339String();
-	}
 }
