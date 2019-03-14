@@ -78,7 +78,7 @@ class FilterPipe implements Argumentable {
 
 			// if we got an array, try to fetch type and resolver Function/FilterInterface
 			if (is_array($filter)) {
-				if ($filter['resolver'] instanceof TypedFilterInterface) {
+				if (isset($filter['resolver']) && $filter['resolver'] instanceof TypedFilterInterface) {
 					$fieldType = $filter['resolver']->getType();
 				} else {
 					$fieldType = array_get($filter, 'type', Type::json());
